@@ -48,25 +48,47 @@ theorem Nat.two_mul (m: Nat) : 2 * m = 0 + m + m := by
 
 /-- This lemma will be useful to prove Lemma 2.3.2. -/
 lemma Nat.mul_zero (n: Nat) : n * 0 = 0 := by
-  sorry
+  revert n; apply induction
+  · rw [zero_mul]
+  intro n ih
+  rw [succ_mul, ih, add_zero]
 
 /-- This lemma will be useful to prove Lemma 2.3.2. -/
 lemma Nat.mul_succ (n m:Nat) : n * m++ = n * m + n := by
-  sorry
+  revert n; apply induction
+  · rw [zero_mul, zero_mul, add_zero]
+  intro n ih
+  rw [succ_mul, succ_mul, ih, add_succ, add_succ]
+  rw [add_assoc, add_assoc, add_comm n]
 
 /-- Lemma 2.3.2 (Multiplication is commutative) / Exercise 2.3.1 -/
 lemma Nat.mul_comm (n m: Nat) : n * m = m * n := by
-  sorry
+  revert m; apply induction
+  · apply mul_zero
+  intro m ih
+  rw [mul_succ, succ_mul, ih]
 
 theorem Nat.mul_one (m: Nat) : m * 1 = m := by
   rw [mul_comm, one_mul]
 
+lemma Nat.pos_mul_pos {n m: Nat} (h₁: n.isPos) (h₂: m.isPos) : (n * m).isPos := by
+  obtain ⟨a, ⟨rfl⟩⟩ := uniq_succ_eq _ h₁
+  obtain ⟨b, ⟨rfl⟩⟩ := uniq_succ_eq _ h₂
+  rw [mul_succ, add_succ]
+  tauto
+
 /-- Lemma 2.3.3 (Positive natural numbers have no zero divisors) / Exercise 2.3.2 -/
 lemma Nat.mul_eq_zero_iff (n m: Nat) : n * m = 0 ↔ n = 0 ∨ m = 0 := by
-  sorry
-
-lemma Nat.pos_mul_pos {n m: Nat} (h₁: n.isPos) (h₂: m.isPos) : (n * m).isPos := by
-  sorry
+  constructor
+  · intro h
+    by_cases hpos : n ≠ 0 ∧ m ≠ 0
+    · have := pos_mul_pos hpos.left hpos.right
+      contradiction
+    tauto
+  intro h
+  rcases h with case1 | case2
+  · rw [case1, zero_mul]
+  rw [case2, mul_zero]
 
 /-- Proposition 2.3.4 (Distributive law)-/
 theorem Nat.mul_add (a b c: Nat) : a * (b + c) = a * b + a * c := by
@@ -84,7 +106,10 @@ theorem Nat.add_mul (a b c: Nat) : (a + b)*c = a*c + b*c := by
 
 /-- Proposition 2.3.5 (Multiplication is associative) / Exercise 2.3.3 -/
 theorem Nat.mul_assoc (a b c: Nat) : (a * b) * c = a * (b * c) := by
-  sorry
+  revert c; apply induction
+  · rw [mul_zero, mul_zero, mul_zero]
+  intro c habc
+  rw [mul_succ, mul_succ, habc, mul_add]
 
 /-- (Not from textbook)  Nat is a commutative semiring. -/
 instance Nat.instCommSemiring : CommSemiring Nat where
