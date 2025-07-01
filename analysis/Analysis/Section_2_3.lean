@@ -71,6 +71,7 @@ lemma Nat.mul_comm (n m: Nat) : n * m = m * n := by
 theorem Nat.mul_one (m: Nat) : m * 1 = m := by
   rw [mul_comm, one_mul]
 
+/-- This lemma will be useful to prove Lemma 2.3.3. -/
 lemma Nat.pos_mul_pos {n m: Nat} (h₁: n.isPos) (h₂: m.isPos) : (n * m).isPos := by
   obtain ⟨a, ⟨rfl⟩⟩ := uniq_succ_eq _ h₁
   obtain ⟨b, ⟨rfl⟩⟩ := uniq_succ_eq _ h₂
