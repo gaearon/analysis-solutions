@@ -191,7 +191,29 @@ instance Nat.isOrderedRing : IsOrderedRing Nat where
 /-- Proposition 2.3.9 (Euclid's division lemma) / Exercise 2.3.5 -/
 theorem Nat.exists_div_mod (n :Nat) {q: Nat} (hq: q.isPos) :
     ∃ m r: Nat, 0 ≤ r ∧ r < q ∧ n = m * q + r := by
-  sorry
+  revert n; apply induction
+  · use 0, 0, by tauto
+    constructor
+    · use (by tauto)
+      symm
+      exact hq
+    rw [zero_mul, zero_add]
+  rintro n ⟨m, ⟨r, ⟨hr, hrq, hn⟩⟩⟩
+  by_cases h : r++ = q
+  · use m++, 0, by tauto
+    constructor
+    · rw [←h, lt_iff_succ_le, succ_eq_add_one, succ_eq_add_one]
+      rwa [←add_le_add_right]
+    rw [hn, ←add_succ, h, succ_mul, add_zero]
+  use m, r++;
+  constructor
+  · apply le_trans hr
+    apply le_of_lt (succ_gt_self r)
+  constructor
+  · constructor
+    · rwa [←lt_iff_succ_le]
+    exact h
+  rw [hn, add_succ]
 
 /-- Definition 2.3.11 (Exponentiation for natural numbers) -/
 abbrev Nat.pow (m n: Nat) : Nat := Nat.recurse (fun _ prod ↦ prod * m) 1 n
@@ -212,6 +234,8 @@ theorem Nat.pow_succ (m n: Nat) : (m:Nat) ^ n++ = m^n * m :=
 /-- Exercise 2.3.4-/
 theorem Nat.sq_add_eq (a b: Nat) :
     (a + b) ^ (2 : Nat) = a ^ (2 : Nat) + 2 * a * b + b ^ (2 : Nat) := by
-  sorry
+  change (a + b) ^ 0++++ = a ^ 0++++ + 0++++ * a * b + b ^ 0++++
+  simp only [pow_succ, pow_zero, mul_add, mul_comm, mul_one, mul_succ, mul_zero]
+  simp only [add_assoc, add_comm, add_zero]
 
 end Chapter2
