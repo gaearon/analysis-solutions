@@ -451,23 +451,24 @@ instance Nat.isOrderedAddMonoid : IsOrderedAddMonoid Nat where
     intro a b hab c
     exact (add_le_add_left a b c).mp hab
 
+lemma le_of_lt_succ : ∀ m n, m < n++ → m ≤ n := by
+  rintro m n ⟨⟨a, ha⟩, ha'⟩
+  by_cases haz : a = 0
+  · rw [haz, add_zero] at ha
+    symm at ha
+    contradiction
+  change a.isPos at haz
+  have ⟨b, hb⟩ := Nat.uniq_succ_eq a haz
+  use b
+  apply Nat.succ_cancel
+  rw [ha, ← Nat.add_succ, hb.1]
+
 /-- Proposition 2.2.14 (Strong principle of induction) / Exercise 2.2.5
     Compare with Mathlib's `Nat.strong_induction_on`
 -/
 theorem Nat.strong_induction {m₀:Nat} {P: Nat → Prop}
   (hind: ∀ m, m ≥ m₀ → (∀ m', m₀ ≤ m' ∧ m' < m → P m') → P m) :
     ∀ m, m ≥ m₀ → P m := by
-  have le_of_lt_succ : ∀ m n, m < n++ → m ≤ n := by
-    rintro m n ⟨⟨a, ha⟩, ha'⟩
-    by_cases haz : a = 0
-    · rw [haz, add_zero] at ha
-      symm at ha
-      contradiction
-    change a.isPos at haz
-    have ⟨b, hb⟩ := uniq_succ_eq a haz
-    use b
-    apply succ_cancel
-    rw [ha, ← add_succ, hb.1]
   let Q n := ∀ m', m₀ ≤ m' ∧ m' < n → P m'
   change ∀ m ≥ m₀, Q m → P m at hind
   have hQ : ∀ n, Q n := by
@@ -496,13 +497,33 @@ theorem Nat.strong_induction {m₀:Nat} {P: Nat → Prop}
 theorem Nat.backwards_induction {n:Nat} {P: Nat → Prop}
   (hind: ∀ m, P (m++) → P m) (hn: P n) :
     ∀ m, m ≤ n → P m := by
-  sorry
+  revert n; apply induction
+  · intro h0 m hm
+    by_cases hmz : m = 0
+    · rwa [hmz]
+    have hm' : m ≥ 0 := by tauto
+    have := ge_antisymm hm' hm
+    contradiction
+  intro n ih hns m hm
+  by_cases hms : m = n++;
+    · rwa [hms]
+  apply ih (hind n hns)
+  apply le_of_lt_succ
+  use hm
 
 /-- Exercise 2.2.7 (induction from a starting point)
     Compare with Mathlib's `Nat.le_induction` -/
 theorem Nat.induction_from {n:Nat} {P: Nat → Prop} (hind: ∀ m, P m → P (m++)) :
     P n → ∀ m, m ≥ n → P m := by
-  sorry
+  intro hbase
+  have h : ∀ a, P (n + a) := by
+    apply induction
+    · rwa [add_zero]
+    intro a hna
+    rw [add_succ]
+    apply hind _ hna
+  rintro _ ⟨_, rfl⟩
+  apply h
 
 
 
