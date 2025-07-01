@@ -148,10 +148,10 @@ theorem Nat.add_eq_zero (a b:Nat) (hab: a + b = 0) : a = 0 ∧ b = 0 := by
   by_contra h
   simp only [not_and_or, ←ne_eq] at h
   rcases h with ha | hb
-  . rw [← isPos_iff] at ha
+  . rw [←isPos_iff] at ha
     have : (a + b).isPos := add_pos_left _ ha
     contradiction
-  rw [← isPos_iff] at hb
+  rw [←isPos_iff] at hb
   have : (a + b).isPos := add_pos_right _ hb
   contradiction
 
@@ -173,7 +173,7 @@ lemma Nat.uniq_succ_eq (a:Nat) (ha: a.isPos) : ∃! b, b++ = a := by
   apply existsUnique_of_exists_of_unique
   · use a
   intro _ _ hx hy
-  rw [← hy] at hx
+  rw [←hy] at hx
   exact succ_cancel hx
 
 /-- Definition 2.2.11 (Ordering of the natural numbers)
@@ -251,7 +251,7 @@ theorem Nat.ge_antisymm {a b:Nat} (hab: a ≥ b) (hba: b ≥ a) : a = b := by
   symm at he
   have : b + (d + e) = b + 0 := by
     nth_rw 1 [add_zero]
-    rw [← add_assoc]
+    rw [←add_assoc]
     exact he
   have hde: (d + e) = 0 := by exact add_left_cancel _ _ _ this
   have hd: d = 0 ∧ e = 0 := by exact add_eq_zero _ _ hde
@@ -290,14 +290,14 @@ theorem Nat.lt_iff_succ_le (a b:Nat) : a < b ↔ a++ ≤ b := by
     obtain ⟨d, ⟨hd⟩⟩ := uniq_succ_eq c cpos
     use d
     rw [succ_eq_add_one, add_assoc, add_comm 1]
-    rw [← succ_eq_add_one, hc, hd]
+    rw [←succ_eq_add_one, hc, hd]
   rintro ⟨c, hc⟩
   rw [succ_eq_add_one, add_assoc, add_comm 1] at hc
   constructor
   · use c + 1
-  rw [hc, ← succ_eq_add_one]
+  rw [hc, ←succ_eq_add_one]
   intro h
-  nth_rewrite 1 [← add_zero a] at h
+  nth_rewrite 1 [←add_zero a] at h
   apply add_left_cancel at h
   tauto
 
@@ -318,7 +318,7 @@ theorem Nat.lt_iff_add_pos (a b:Nat) : a < b ↔ ∃ d:Nat, d.isPos ∧ b = a + 
     rw [isPos_iff] at hc
     contrapose! hc
     rw [hc] at hb
-    nth_rewrite 1 [← add_zero b] at hb
+    nth_rewrite 1 [←add_zero b] at hb
     apply add_left_cancel at hb
     symm
     exact hb
@@ -398,7 +398,7 @@ def Nat.decLe : (a b : Nat) → Decidable (a ≤ b)
         exact this
       | isFalse h =>
         apply isTrue
-        rw [← lt_iff_succ_le]
+        rw [←lt_iff_succ_le]
         constructor
         · assumption
         exact h
@@ -461,7 +461,7 @@ lemma le_of_lt_succ : ∀ m n, m < n++ → m ≤ n := by
   have ⟨b, hb⟩ := Nat.uniq_succ_eq a haz
   use b
   apply Nat.succ_cancel
-  rw [ha, ← Nat.add_succ, hb.1]
+  rw [ha, ←Nat.add_succ, hb.1]
 
 /-- Proposition 2.2.14 (Strong principle of induction) / Exercise 2.2.5
     Compare with Mathlib's `Nat.strong_induction_on`
