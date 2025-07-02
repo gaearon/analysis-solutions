@@ -51,15 +51,33 @@ abbrev Chapter2.Nat.map_add : ∀ (n m : Nat), (n + m).toNat = n.toNat + m.toNat
   induction' n with n hn
   · rw [show zero = 0 from rfl]
     rw [zero_add, _root_.Nat.zero_add]
-  sorry
+  rw [succ_add, succ_toNat, succ_toNat, hn]
+  ring
 
 abbrev Chapter2.Nat.map_mul : ∀ (n m : Nat), (n * m).toNat = n.toNat * m.toNat := by
   intro n m
-  sorry
+  induction' n with n hn
+  · rw [show zero = 0 from rfl]
+    rw [zero_mul, _root_.Nat.zero_mul]
+  rw [succ_mul]
+  have := map_add (n*m) m
+  rw [this, hn]
+  ring
 
 abbrev Chapter2.Nat.map_le_map_iff : ∀ {n m : Nat}, n.toNat ≤ m.toNat ↔ n ≤ m := by
   intro n m
-  sorry
+  constructor
+  · intro h
+    rw [le_iff_exists_add] at h
+    obtain ⟨a, ha⟩ := h
+    use a
+    rw [←equivNat.injective.eq_iff, Equiv.coe_fn_mk, ha, map_add, add_left_cancel_iff]
+    symm
+    apply equivNat.right_inv
+  rintro ⟨a, rfl⟩
+  rw [le_iff_exists_add]
+  use a.toNat
+  apply map_add
 
 abbrev Chapter2.Nat.equivNat_ordered_ring : Chapter2.Nat ≃+*o ℕ where
   toEquiv := equivNat
@@ -69,7 +87,12 @@ abbrev Chapter2.Nat.equivNat_ordered_ring : Chapter2.Nat ≃+*o ℕ where
 
 lemma Chapter2.Nat.pow_eq_pow (n m : Chapter2.Nat) :
     n.toNat ^ m.toNat = n^m := by
-  sorry
+  induction' m with m hm
+  · rw [show zero = 0 from rfl]
+    rw [pow_zero, _root_.pow_zero]
+  rw [pow_succ, _root_.pow_succ, hm]
+  congr
+  apply equivNat.left_inv
 
 
 /-- The Peano axioms for an abstract type `Nat` -/
