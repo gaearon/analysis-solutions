@@ -201,7 +201,10 @@ noncomputable abbrev Equiv.fromNat (P : PeanoAxioms) : Equiv Mathlib_Nat P where
   equiv_succ n := by rfl
 
 /-- The task here is to establish that any two structures obeying the Peano axioms are equivalent. -/
-noncomputable abbrev Equiv.mk' (P Q : PeanoAxioms) : Equiv P Q := by sorry
+noncomputable abbrev Equiv.mk' (P Q : PeanoAxioms) : Equiv P Q := by
+  have eq1 := Equiv.symm (Equiv.fromNat P)
+  have eq2 := Equiv.fromNat Q
+  exact Equiv.trans eq1 eq2
 
 /-- There is only one equivalence between any two structures obeying the Peano axioms. -/
 theorem Equiv.uniq {P Q : PeanoAxioms} (equiv1 equiv2 : PeanoAxioms.Equiv P Q) :
@@ -210,7 +213,10 @@ theorem Equiv.uniq {P Q : PeanoAxioms} (equiv1 equiv2 : PeanoAxioms.Equiv P Q) :
   obtain ⟨equiv2, equiv_zero2, equiv_succ2⟩ := equiv2
   congr
   ext n
-  sorry
+  revert n; apply P.induction
+  · rw [equiv_zero1, equiv_zero2]
+  intro n ih
+  rw [equiv_succ1, equiv_succ2, ih]
 
 /-- A sample result: recursion is well-defined on any structure obeying the Peano axioms-/
 theorem Nat.recurse_uniq {P : PeanoAxioms} (f: P.Nat → P.Nat → P.Nat) (c: P.Nat) :
