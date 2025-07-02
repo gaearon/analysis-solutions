@@ -131,32 +131,32 @@ abbrev natCast (P : PeanoAxioms) : ℕ → P.Nat := fun n ↦ match n with
   | Nat.zero => P.zero
   | Nat.succ n => P.succ (natCast P n)
 
-lemma zero_natCast {P : PeanoAxioms} : P.natCast 0 = P.zero := rfl
-lemma succ_natCast {P : PeanoAxioms} (n : ℕ) : P.natCast (Nat.succ n) = P.succ (P.natCast n) := rfl
-
 /-- One can start the proof here with `unfold Function.Injective`, although it is not strictly necessary. -/
 theorem natCast_injective (P : PeanoAxioms) : Function.Injective P.natCast  := by
   intro n m h
   induction' n with n hn generalizing m
-  · rw [zero_natCast] at h
+  · rw [natCast] at h
     cases' m with m
     · rfl
-    rw [succ_natCast] at h
+    rw [natCast] at h
     have := P.succ_ne (P.natCast m)
     symm at h
     contradiction
   cases' m with m
-  · rw [zero_natCast, succ_natCast] at h
+  · rw [natCast, natCast] at h
     have := P.succ_ne (P.natCast n)
     contradiction
-  rw [succ_natCast, succ_natCast] at h
+  rw [natCast, natCast] at h
   apply P.succ_cancel at h
   congr
   exact hn h
 
 /-- One can start the proof here with `unfold Function.Surjective`, although it is not strictly necessary. -/
 theorem natCast_surjective (P : PeanoAxioms) : Function.Surjective P.natCast := by
-  sorry
+  apply P.induction
+  · use 0
+  rintro n ⟨a, rfl⟩
+  use a + 1
 
 /-- The notion of an equivalence between two structures obeying the Peano axioms.
     The symbol `≃` is an alias for Mathlib's `Equiv` class; for instance `P.Nat ≃ Q.Nat` is
