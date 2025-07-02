@@ -193,12 +193,12 @@ abbrev Equiv.trans {P Q R: PeanoAxioms} (equiv1 : Equiv P Q) (equiv2 : Equiv Q R
 noncomputable abbrev Equiv.fromNat (P : PeanoAxioms) : Equiv Mathlib_Nat P where
   equiv := {
     toFun := P.natCast
-    invFun := by sorry
-    left_inv := by sorry
-    right_inv := by sorry
+    invFun := by apply Function.invFun P.natCast
+    left_inv := by apply Function.leftInverse_invFun (natCast_injective P)
+    right_inv := by apply Function.rightInverse_invFun (natCast_surjective P)
   }
-  equiv_zero := by sorry
-  equiv_succ n := by sorry
+  equiv_zero := by rfl
+  equiv_succ n := by rfl
 
 /-- The task here is to establish that any two structures obeying the Peano axioms are equivalent. -/
 noncomputable abbrev Equiv.mk' (P Q : PeanoAxioms) : Equiv P Q := by sorry
