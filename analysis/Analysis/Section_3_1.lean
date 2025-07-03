@@ -158,10 +158,16 @@ theorem SetTheory.Set.not_mem_empty : ∀ x, x ∉ (∅:Set) := SetTheory.emptys
 
 /-- Empty set has no elements -/
 theorem SetTheory.Set.eq_empty_iff_forall_notMem {X:Set} : X = ∅ ↔ (∀ x, x ∉ X) := by
-  sorry
+  constructor
+  · intro h x
+    simp only [h, not_mem_empty, not_false_eq_true]
+  intro h
+  simp only [h, ext_iff, not_mem_empty, implies_true]
 
 /-- Empty set is unique -/
 theorem SetTheory.Set.empty_unique : ∃! (X:Set), ∀ x, x ∉ X := by
+  apply existsUnique_of_exists_of_unique
+  · sorry
   sorry
 
 /-- Lemma 3.1.5 (Single choice) -/
