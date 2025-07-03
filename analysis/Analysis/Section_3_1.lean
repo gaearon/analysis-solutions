@@ -254,16 +254,40 @@ theorem SetTheory.Set.pair_uniq (a b:Object) : ∃! (X:Set), ∀ x, x ∈ X ↔ 
   simp only [h1 x, h2 x]
 
 /-- Remark 3.1.8 -/
-theorem SetTheory.Set.pair_comm (a b:Object) : ({a,b}:Set) = {b,a} := by sorry
+theorem SetTheory.Set.pair_comm (a b:Object) : ({a,b}:Set) = {b,a} := by
+  apply ext
+  intro x
+  simp only [mem_pair]
+  tauto
 
 /-- Remark 3.1.8 -/
 theorem SetTheory.Set.pair_self (a:Object) : ({a,a}:Set) = {a} := by
-  sorry
+  apply ext
+  intro x
+  simp only [mem_pair, mem_singleton]
+  tauto
 
 /-- Exercise 3.1.1 -/
 theorem SetTheory.Set.pair_eq_pair {a b c d:Object} (h: ({a,b}:Set) = {c,d}) :
     a = c ∧ b = d ∨ a = d ∧ b = c := by
-  sorry
+  simp only [ext_iff] at h
+  have hacd : a = c ∨ a = d := by
+    specialize h a
+    simp only [mem_pair, true_or, true_iff] at h
+    exact h
+  have hbcd : b = c ∨ b = d := by
+    specialize h b
+    simp only [mem_pair, or_true, true_iff] at h
+    exact h
+  have hcab : c = a ∨ c = b := by
+    specialize h c
+    simp only [mem_pair, true_or, iff_true] at h
+    exact h
+  have hdab : d = a ∨ d = b := by
+    specialize h d
+    simp only [mem_pair, or_true, iff_true] at h
+    exact h
+  tauto
 
 abbrev SetTheory.Set.empty : Set := ∅
 abbrev SetTheory.Set.singleton_empty : Set := {(empty: Object)}
