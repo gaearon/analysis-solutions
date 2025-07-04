@@ -458,11 +458,20 @@ theorem SetTheory.Set.subset_trans {A B C:Set} (hAB:A ⊆ B) (hBC:B ⊆ C) : A �
 
 /-- Proposition 3.1.17 (Partial ordering by set inclusion) -/
 theorem SetTheory.Set.subset_antisymm (A B:Set) (hAB:A ⊆ B) (hBA:B ⊆ A) : A = B := by
-  sorry
+  apply ext
+  intro x
+  rw [subset_def] at *
+  tauto
 
 /-- Proposition 3.1.17 (Partial ordering by set inclusion) -/
 theorem SetTheory.Set.ssubset_trans (A B C:Set) (hAB:A ⊂ B) (hBC:B ⊂ C) : A ⊂ C := by
-  sorry
+  simp [ssubset_def] at *
+  constructor
+  · apply subset_trans hAB.1 hBC.1
+  by_contra hAC
+  simp only [hAC] at hAB
+  have := subset_antisymm B C
+  tauto
 
 
 /--
@@ -539,12 +548,28 @@ theorem SetTheory.Set.specification_axiom'' {A:Set} (P: A → Prop) (x:Object) :
   rw [←specification_axiom' P ⟨ x,h ⟩ ] at hP
   simp at hP; assumption
 
-theorem SetTheory.Set.specify_subset {A:Set} (P: A → Prop) : A.specify P ⊆ A := by sorry
+theorem SetTheory.Set.specify_subset {A:Set} (P: A → Prop) : A.specify P ⊆ A := by
+  rw [subset_def]
+  intro x xap
+  have ⟨xa, _⟩ := (specification_axiom'' P x).mp xap
+  exact xa
 
 /-- This exercise may require some understanding of how  subtypes are implemented in Lean. -/
 theorem SetTheory.Set.specify_congr {A A':Set} (hAA':A = A') {P: A → Prop} {P': A' → Prop}
   (hPP': (x:Object) → (h:x ∈ A) → (h':x ∈ A') → P ⟨ x, h⟩ ↔ P' ⟨ x, h'⟩ ) :
-    A.specify P = A'.specify P' := by sorry
+    A.specify P = A'.specify P' := by
+  apply ext
+  intro x
+  simp only [specification_axiom'']
+  constructor
+  · rintro ⟨xa, pxa⟩
+    have xa' : x ∈ A' := by rwa [hAA'] at xa
+    specialize hPP' x xa xa'
+    use xa', hPP'.mp pxa
+  rintro ⟨xa', pxa'⟩
+  have xa : x ∈ A := by rwa [← hAA'] at xa'
+  specialize hPP' x xa xa'
+  use xa, hPP'.mpr pxa'
 
 instance SetTheory.Set.instIntersection : Inter Set where
   inter X Y := X.specify (fun x ↦ x.val ∈ Y)
