@@ -606,44 +606,76 @@ theorem SetTheory.Set.mem_sdiff (x:Object) (X Y:Set) : x ∈ (X \ Y) ↔ (x ∈ 
   exact (specification_axiom' (fun x ↦ x.val ∉ Y) ⟨ x, hX⟩ ).mpr hY
 
 /-- Proposition 3.1.27(d) / Exercise 3.1.6 -/
-theorem SetTheory.Set.inter_comm (A B:Set) : A ∩ B = B ∩ A := by sorry
+theorem SetTheory.Set.inter_comm (A B:Set) : A ∩ B = B ∩ A := by
+  apply ext
+  simp only [mem_inter]
+  tauto
 
 /-- Proposition 3.1.27(b) -/
-theorem SetTheory.Set.subset_union {A X: Set} (hAX: A ⊆ X) : A ∪ X = X := by sorry
+theorem SetTheory.Set.subset_union {A X: Set} (hAX: A ⊆ X) : A ∪ X = X := by
+  apply ext
+  simp only [subset_def] at hAX
+  simp only [mem_union]
+  tauto
 
 /-- Proposition 3.1.27(b) -/
-theorem SetTheory.Set.union_subset {A X: Set} (hAX: A ⊆ X) : X ∪ A = X := by sorry
+theorem SetTheory.Set.union_subset {A X: Set} (hAX: A ⊆ X) : X ∪ A = X := by
+  apply ext
+  simp only [subset_def] at hAX
+  simp only [mem_union]
+  tauto
 
 /-- Proposition 3.1.27(c) -/
 theorem SetTheory.Set.inter_self (A:Set) : A ∩ A = A := by
-  sorry
+  apply ext
+  simp only [mem_inter]
+  tauto
 
 /-- Proposition 3.1.27(e) -/
-theorem SetTheory.Set.inter_assoc (A B C:Set) : (A ∩ B) ∩ C = A ∩ (B ∩ C) := by sorry
+theorem SetTheory.Set.inter_assoc (A B C:Set) : (A ∩ B) ∩ C = A ∩ (B ∩ C) := by
+  apply ext
+  simp only [mem_inter]
+  tauto
 
 /-- Proposition 3.1.27(f) -/
 theorem  SetTheory.Set.inter_union_distrib_left (A B C:Set) :
     A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) := by
-  sorry
+  apply ext
+  simp only [mem_inter, mem_union]
+  tauto
 
 /-- Proposition 3.1.27(f) -/
 theorem  SetTheory.Set.union_inter_distrib_left (A B C:Set) :
     A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C) := by
-  sorry
+  apply ext
+  simp only [mem_inter, mem_union]
+  tauto
 
 /-- Proposition 3.1.27(f) -/
-theorem SetTheory.Set.union_compl {A X:Set} (hAX: A ⊆ X) : A ∪ (X \ A) = X := by sorry
+theorem SetTheory.Set.union_compl {A X:Set} (hAX: A ⊆ X) : A ∪ (X \ A) = X := by
+  apply ext
+  simp only [mem_inter, mem_union, mem_sdiff]
+  tauto
 
 /-- Proposition 3.1.27(f) -/
-theorem SetTheory.Set.inter_compl {A X:Set} (hAX: A ⊆ X) : A ∩ (X \ A) = ∅ := by sorry
+theorem SetTheory.Set.inter_compl {A X:Set} (hAX: A ⊆ X) : A ∩ (X \ A) = ∅ := by
+  apply ext
+  simp only [mem_inter, mem_sdiff, not_mem_empty]
+  tauto
 
 /-- Proposition 3.1.27(g) -/
 theorem SetTheory.Set.compl_union {A B X:Set} (hAX: A ⊆ X) (hBX: B ⊆ X) :
-    X \ (A ∪ B) = (X \ A) ∩ (X \ B) := by sorry
+    X \ (A ∪ B) = (X \ A) ∩ (X \ B) := by
+  apply ext
+  simp only [mem_inter, mem_union, mem_sdiff]
+  tauto
 
 /-- Proposition 3.1.27(g) -/
 theorem SetTheory.Set.compl_inter {A B X:Set} (hAX: A ⊆ X) (hBX: B ⊆ X) :
-    X \ (A ∩ B) = (X \ A) ∪ (X \ B) := by sorry
+    X \ (A ∩ B) = (X \ A) ∪ (X \ B) := by
+  apply ext
+  simp only [mem_inter, mem_union, mem_sdiff]
+  tauto
 
 /-- Not from textbook: sets form a distributive lattice. -/
 instance SetTheory.Set.instDistribLattice : DistribLattice Set where
@@ -653,12 +685,24 @@ instance SetTheory.Set.instDistribLattice : DistribLattice Set where
   le_antisymm := subset_antisymm
   inf := (· ∩ ·)
   sup := (· ∪ ·)
-  le_sup_left := by sorry
-  le_sup_right := by sorry
-  sup_le := by sorry
-  inf_le_left := by sorry
-  inf_le_right := by sorry
-  le_inf := by sorry
+  le_sup_left := by
+    simp only [subset_def, mem_union]
+    tauto
+  le_sup_right := by
+    simp only [subset_def, mem_union]
+    tauto
+  sup_le := by
+    simp only [subset_def, mem_union]
+    tauto
+  inf_le_left := by
+    simp only [subset_def, mem_inter]
+    tauto
+  inf_le_right := by
+    simp only [subset_def, mem_inter]
+    tauto
+  le_inf := by
+    simp only [subset_def, mem_inter]
+    tauto
   le_sup_inf := by
     intro X Y Z
     change (X ∪ Y) ∩ (X ∪ Z) ⊆ X ∪ (Y ∩ Z)
