@@ -297,27 +297,27 @@ abbrev SetTheory.Set.pair_empty : Set := {(empty: Object), (singleton_empty: Obj
 theorem SetTheory.Set.emptyset_neq_singleton : empty ≠ singleton_empty := by
   intro h
   rw [ext_iff] at h
-  have hes : empty.toObject ∈ singleton_empty := by simp only [mem_singleton]
-  have := (h empty.toObject).mpr hes
-  have := not_mem_empty empty.toObject
+  have hes : (empty: Object) ∈ singleton_empty := by simp only [mem_singleton]
+  have := (h (empty: Object)).mpr hes
+  have := not_mem_empty (empty: Object)
   contradiction
 
 /-- Exercise 3.1.2-/
 theorem SetTheory.Set.emptyset_neq_pair : empty ≠ pair_empty := by
   intro h
   rw [ext_iff] at h
-  have hep : empty.toObject ∈ pair_empty := by simp only [mem_pair, true_or]
-  have := (h empty.toObject).mpr hep
-  have := not_mem_empty empty.toObject
+  have hep : (empty: Object) ∈ pair_empty := by simp only [mem_pair, true_or]
+  have := (h (empty: Object)).mpr hep
+  have := not_mem_empty (empty: Object)
   contradiction
 
 /-- Exercise 3.1.2-/
 theorem SetTheory.Set.singleton_empty_neq_pair : singleton_empty ≠ pair_empty := by
   intro h
   rw [ext_iff] at h
-  have hsp : singleton_empty.toObject ∈ pair_empty := by simp only [mem_pair, or_true]
-  have hss := (h singleton_empty.toObject).mpr hsp
-  have := (mem_singleton singleton_empty.toObject empty.toObject).mp hss
+  have hsp : (singleton_empty: Object) ∈ pair_empty := by simp only [mem_pair, or_true]
+  have hss := (h (singleton_empty: Object)).mpr hsp
+  have := (mem_singleton (singleton_empty: Object) (empty: Object)).mp hss
   rw [coe_eq_iff] at this
   have := emptyset_neq_singleton.symm
   contradiction
