@@ -887,7 +887,14 @@ example : ({1, 2, 3, 4}:Set) \ {2,4,6} = {1, 3} := by
 
 /-- Example 3.1.30 -/
 
-example : ({3,5,9}:Set).replace (P := fun x y ↦ ∃ (n:ℕ), x.val = n ∧ y = (n+1:ℕ)) (by aesop) = {4,6,10} := by sorry
+example : ({3,5,9}:Set).replace (P := fun x y ↦ ∃ (n:ℕ), x.val = n ∧ y = (n+1:ℕ)) (by aesop) = {4,6,10} := by
+  apply ext
+  intro x
+  simp only [replacement_axiom]
+  constructor
+  · rintro ⟨a, ⟨x, ⟨hax, hxs⟩⟩⟩
+    aesop
+  aesop
 
 /-- Example 3.1.31 -/
 
