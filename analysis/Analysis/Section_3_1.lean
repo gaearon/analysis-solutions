@@ -904,53 +904,105 @@ example : ({3,5,9}:Set).replace (P := fun _ y ↦ y=1) (by aesop) = {1} := by
   aesop
 
 /-- Exercise 3.1.5.  One can use the `tfae_have` and `tfae_finish` tactics here. -/
-theorem SetTheory.Set.subset_tfae (A B:Set) : [A ⊆ B, A ∪ B = B, A ∩ B = A].TFAE := by sorry
+theorem SetTheory.Set.subset_tfae (A B:Set) : [A ⊆ B, A ∪ B = B, A ∩ B = A].TFAE := by
+  tfae_have 1 → 2 := by
+    intro h
+    rw [subset_def] at h
+    apply ext
+    aesop
+  tfae_have 2 → 1 := by
+    intro h
+    rw [←h]
+    simp only [subset_def, mem_union]
+    aesop
+  tfae_have 2 → 3 := by
+    intro h
+    apply ext
+    aesop
+  tfae_have 3 → 2 := by
+    intro h
+    rw [←h]
+    apply ext
+    simp only [mem_union, mem_inter]
+    aesop
+  tfae_finish
 
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.inter_subset_left (A B:Set) : A ∩ B ⊆ A := by
-  sorry
+  simp only [subset_def, mem_inter]
+  aesop
 
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.inter_subset_right (A B:Set) : A ∩ B ⊆ B := by
-  sorry
+  simp only [subset_def]
+  aesop
 
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.subset_inter_iff (A B C:Set) : C ⊆ A ∩ B ↔ C ⊆ A ∧ C ⊆ B := by
-  sorry
+  simp only [subset_def]
+  aesop
 
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.subset_union_left (A B:Set) : A ⊆ A ∪ B := by
-  sorry
+  simp only [subset_def]
+  aesop
 
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.subset_union_right (A B:Set) : B ⊆ A ∪ B := by
-  sorry
+  simp only [subset_def]
+  aesop
 
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.union_subset_iff (A B C:Set) : A ∪ B ⊆ C ↔ A ⊆ C ∧ B ⊆ C := by
-  sorry
+  simp only [subset_def]
+  aesop
 
 /-- Exercise 3.1.8 -/
-theorem SetTheory.Set.inter_union_cancel (A B:Set) : A ∩ (A ∪ B) = A := by sorry
+theorem SetTheory.Set.inter_union_cancel (A B:Set) : A ∩ (A ∪ B) = A := by
+  apply ext
+  aesop
 
 /-- Exercise 3.1.8 -/
-theorem SetTheory.Set.union_inter_cancel (A B:Set) : A ∪ (A ∩ B) = A := by sorry
+theorem SetTheory.Set.union_inter_cancel (A B:Set) : A ∪ (A ∩ B) = A := by
+  apply ext
+  aesop
 
 /-- Exercise 3.1.9 -/
 theorem SetTheory.Set.partition_left {A B X:Set} (h_union: A ∪ B = X) (h_inter: A ∩ B = ∅) :
-    A = X \ B := by sorry
+    A = X \ B := by
+  apply ext
+  rw [←h_union]
+  have := eq_empty_iff_forall_notMem.mp h_inter
+  simp only [mem_inter] at this
+  aesop
 
 /-- Exercise 3.1.9 -/
 theorem SetTheory.Set.partition_right {A B X:Set} (h_union: A ∪ B = X) (h_inter: A ∩ B = ∅) :
     B = X \ A := by
-  sorry
+  apply ext
+  rw [←h_union]
+  have := eq_empty_iff_forall_notMem.mp h_inter
+  simp only [mem_inter] at this
+  aesop
 
-/-- Exercise 3.1.10 -/
+/--
+  Exercise 3.1.10.
+  You may find `Function.onFun_apply` and the `fin_cases` tactic useful.
+-/
 theorem SetTheory.Set.pairwise_disjoint (A B:Set) :
-    Pairwise (Function.onFun Disjoint ![A \ B, A ∩ B, B \ A]) := by sorry
+    Pairwise (Function.onFun Disjoint ![A \ B, A ∩ B, B \ A]) := by
+  intro i j hij
+  rw [Function.onFun_apply, disjoint_iff]
+  apply ext
+  fin_cases i <;> fin_cases j <;> aesop
 
 /-- Exercise 3.1.10 -/
-theorem SetTheory.Set.union_eq_partition (A B:Set) : A ∪ B = (A \ B) ∪ (A ∩ B) ∪ (B \ A) := by sorry
+theorem SetTheory.Set.union_eq_partition (A B:Set) : A ∪ B = (A \ B) ∪ (A ∩ B) ∪ (B \ A) := by
+  apply ext
+  intro x
+  have : x ∈ A ∨ x ∉ A := by tauto
+  have : x ∉ B ∨ x ∈ B := by tauto
+  aesop
 
 /--
   Exercise 3.1.11.
