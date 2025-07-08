@@ -1007,22 +1007,64 @@ theorem SetTheory.Set.union_eq_partition (A B:Set) : A ∪ B = (A \ B) ∪ (A �
 /--
   Exercise 3.1.11.
   The challenge is to prove this without using `Set.specify`, `Set.specification_axiom`,
-  or `Set.specification_axiom'`.
+  `Set.specification_axiom'`, or anything built from them (like differences and intersections).
 -/
 theorem SetTheory.Set.specification_from_replacement {A:Set} {P: A → Prop} :
-    ∃ B, B ⊆ A ∧ ∀ x, x.val ∈ B ↔ P x := by sorry
+    ∃ B, B ⊆ A ∧ ∀ x, x.val ∈ B ↔ P x := by
+  let Q x y := P x ∧ x.val = y
+  have hQ : ∀ (x : A.toSubtype) (y y' : Object), Q x y ∧ Q x y' → y = y' := by aesop
+  use (A.replace hQ)
+  constructor
+  · intro x hx
+    obtain ⟨x', ⟨_, rfl⟩⟩ := (replacement_axiom _ _).mp hx
+    exact x'.property
+  intro x
+  rw [replacement_axiom]
+  constructor
+  · rintro ⟨x', _, hx'⟩
+    rw [coe_inj] at hx'
+    rwa [←hx']
+  intro hx
+  use x
 
 /-- Exercise 3.1.12.-/
 theorem SetTheory.Set.subset_union_subset {A B A' B':Set} (hA'A: A' ⊆ A) (hB'B: B' ⊆ B) :
-    A' ∪ B' ⊆ A ∪ B := by sorry
+    A' ∪ B' ⊆ A ∪ B := by
+  simp only [subset_def, mem_union] at *
+  aesop
 
 /-- Exercise 3.1.12.-/
 theorem SetTheory.Set.subset_inter_subset {A B A' B':Set} (hA'A: A' ⊆ A) (hB'B: B' ⊆ B) :
-    A' ∩ B' ⊆ A ∩ B := by sorry
+    A' ∩ B' ⊆ A ∩ B := by
+  simp only [subset_def, mem_inter] at *
+  aesop
 
 /-- Exercise 3.1.12.-/
 theorem SetTheory.Set.subset_diff_subset_counter :
-    ∃ (A B A' B':Set), (A' ⊆ A) ∧ (B' ⊆ B) ∧ ¬ (A' \ B') ⊆ (A \ B) := by sorry
+    ∃ (A B A' B':Set), (A' ⊆ A) ∧ (B' ⊆ B) ∧ ¬ (A' \ B') ⊆ (A \ B) := by
+  suffices h: ∃ (A B A' B':Set), (A' ⊆ A) ∧ (B' ⊆ B) ∧ ∃ x, x ∈ (A' \ B') ∧ x ∉ (A \ B)
+  · have ⟨A, B, A', B', ha, hb, ⟨x, hx⟩⟩ := h
+    use A, B, A', B', ha, hb
+    rw [subset_def]
+    push_neg
+    use x, hx.1, hx.2
+  simp only [subset_def]
+  set x : Object := (emptyset: Object)
+  use {x}, {x}, {x}, emptyset
+  constructor
+  · aesop
+  constructor
+  · apply empty_subset
+  use x
+  constructor
+  · rw [mem_sdiff]
+    constructor
+    · rw [mem_singleton]
+    apply not_mem_empty
+  rw [mem_sdiff]
+  push_neg
+  intro h
+  exact h
 
 /-
   Final part of Exercise 3.1.12: state and prove a reasonable substitute positive result for the
@@ -1030,8 +1072,69 @@ theorem SetTheory.Set.subset_diff_subset_counter :
 -/
 
 /-- Exercise 3.1.13 -/
-theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B ≠ ∅) ↔ ∃ x, A = {x} := by sorry
+theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B ≠ ∅) ↔ ∃ x, A = {x} := by
+  have ssubset_prop {B: Set} (hB: B ⊂ A) : ∃ x, x ∈ A ∧ x ∉ B := by
+    have ⟨x, hx⟩ := nonempty_def hA
+    rw [ssubset_def, subset_def] at hB
+    have hneq := hB.2
+    contrapose! hneq
+    apply ext
+    intro x'
+    constructor
+    · intro hx'
+      exact (hB.1 _ hx')
+    intro hx'
+    exact hneq _ hx'
 
+  constructor
+  · intro h
+    have ⟨x, hx⟩ := nonempty_def hA
+    use x
+    apply ext
+    intro x'
+    simp only [mem_singleton]
+    constructor
+    · intro hx'A
+      by_contra hxx'
+      have : ∃ B ⊂ A, B ≠ ∅ := by
+        use {x}
+        constructor
+        · simp only [ssubset_def, subset_def]
+          constructor
+          · intro x'' hx''
+            rw [mem_singleton] at hx''
+            rw [hx'']
+            exact hx
+          intro hxA
+          rw [ext_iff] at hxA
+          have hx's := (hxA x').mpr hx'A
+          rw [mem_singleton] at hx's
+          contradiction
+        intro hxe
+        have : x ∈ ({x}: Set) := by rw [mem_singleton]
+        have := nonempty_of_inhabited this
+        contradiction
+      contradiction
+    intro hxx'
+    rwa [hxx']
+  intro ⟨x, hA⟩
+  push_neg
+  have has : ∀ x' ∈ A, x = x' := by
+    intro x' hx'
+    rw [hA, mem_singleton] at hx'
+    exact hx'.symm
+  intro B hB
+  by_contra! hB'
+  have ⟨y, hyB⟩ := nonempty_def hB'
+  have hyA : y ∈ A := by
+    simp only [ssubset_def, subset_def] at hB
+    have := hB.1
+    exact this _ hyB
+  have hxy := has _ hyA
+  obtain ⟨z, hzA, hznb⟩ := ssubset_prop hB
+  have hxz : x = z := has _ hzA
+  rw [←hxy, hxz] at hyB
+  contradiction
 
 /-
   Now we introduce connections between this notion of a set, and Mathlib's notion.
