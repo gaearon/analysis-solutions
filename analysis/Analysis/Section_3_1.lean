@@ -1070,6 +1070,10 @@ theorem SetTheory.Set.subset_diff_subset_counter :
   Final part of Exercise 3.1.12: state and prove a reasonable substitute positive result for the
   above theorem that involves set differences.
 -/
+theorem SetTheory.Set.subset_diff_subset (A B A' B':Set) :
+    (A' ⊆ A) → (B' ⊆ B) → (A' \ B) ⊆ (A \ B') := by
+  simp only [subset_def, mem_sdiff]
+  tauto
 
 /-- Exercise 3.1.13 -/
 theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B ≠ ∅) ↔ ∃ x, A = {x} := by
