@@ -1073,67 +1073,55 @@ theorem SetTheory.Set.subset_diff_subset_counter :
 
 /-- Exercise 3.1.13 -/
 theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B ≠ ∅) ↔ ∃ x, A = {x} := by
-  have ssubset_prop {B: Set} (hB: B ⊂ A) : ∃ x, x ∈ A ∧ x ∉ B := by
-    have ⟨x, hx⟩ := nonempty_def hA
-    rw [ssubset_def, subset_def] at hB
-    have hneq := hB.2
-    contrapose! hneq
-    apply ext
-    intro x'
-    constructor
-    · intro hx'
-      exact (hB.1 _ hx')
-    intro hx'
-    exact hneq _ hx'
-
   constructor
   · intro h
     have ⟨x, hx⟩ := nonempty_def hA
     use x
     apply ext
-    intro x'
+    intro y
     simp only [mem_singleton]
     constructor
-    · intro hx'A
-      by_contra hxx'
+    · intro hyA
+      by_contra hxy
       have : ∃ B ⊂ A, B ≠ ∅ := by
         use {x}
         constructor
-        · simp only [ssubset_def, subset_def]
-          constructor
-          · intro x'' hx''
-            rw [mem_singleton] at hx''
-            rw [hx'']
-            exact hx
+        · constructor
+          · intro y' hy'
+            rw [mem_singleton] at hy'
+            rwa [hy']
           intro hxA
-          rw [ext_iff] at hxA
-          have hx's := (hxA x').mpr hx'A
-          rw [mem_singleton] at hx's
+          have : y ∈ ({x}: Set) := by rwa [hxA]
+          rw [mem_singleton] at this
           contradiction
         intro hxe
         have : x ∈ ({x}: Set) := by rw [mem_singleton]
         have := nonempty_of_inhabited this
         contradiction
       contradiction
-    intro hxx'
-    rwa [hxx']
+    intro hxy
+    rwa [hxy]
   intro ⟨x, hA⟩
   push_neg
-  have has : ∀ x' ∈ A, x = x' := by
-    intro x' hx'
-    rw [hA, mem_singleton] at hx'
-    exact hx'.symm
   intro B hB
   by_contra! hB'
   have ⟨y, hyB⟩ := nonempty_def hB'
-  have hyA : y ∈ A := by
-    simp only [ssubset_def, subset_def] at hB
-    have := hB.1
-    exact this _ hyB
-  have hxy := has _ hyA
-  obtain ⟨z, hzA, hznb⟩ := ssubset_prop hB
-  have hxz : x = z := has _ hzA
-  rw [←hxy, hxz] at hyB
+  have hxy : y = x := by
+    have hyA := hB.1 _ hyB
+    rwa [hA, mem_singleton] at hyA
+  rw [hxy] at hyB
+  have : B = A := by
+    apply ext
+    rw [hA]
+    intro x'
+    constructor
+    · intro hx'B
+      have hx'A := hB.1 _ hx'B
+      rwa [hA] at hx'A
+    · intro hx'
+      rw [mem_singleton] at hx'
+      rwa [hx']
+  have := hB.2
   contradiction
 
 /-
