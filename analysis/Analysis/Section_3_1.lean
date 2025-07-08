@@ -1111,16 +1111,10 @@ theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B 
     rwa [hA, mem_singleton] at hyA
   rw [hxy] at hyB
   have : B = A := by
-    apply ext
-    rw [hA]
-    intro x'
-    constructor
-    · intro hx'B
-      have hx'A := hB.1 _ hx'B
-      rwa [hA] at hx'A
-    · intro hx'
-      rw [mem_singleton] at hx'
-      rwa [hx']
+    apply subset_antisymm _ _ hB.1
+    intro z hz
+    rw [hA, mem_singleton] at hz
+    rwa [hz]
   have := hB.2
   contradiction
 
