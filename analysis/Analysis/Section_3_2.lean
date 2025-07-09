@@ -51,7 +51,7 @@ theorem Russells_paradox : ¬ axiom_of_universal_specification := by
 /-- Axiom 3.9 (Regularity ) -/
 theorem SetTheory.Set.axiom_of_regularity {A:Set} (h: A ≠ ∅) :
     ∃ x:A, ∀ S:Set, x.val = S → Disjoint S A := by
-  obtain ⟨ x, h, h' ⟩ := SetTheory.regularity_axiom A (nonempty_def h)
+  obtain ⟨ x, h, h' ⟩ := regularity_axiom A (nonempty_def h)
   use ⟨x, h⟩
   intro S hS
   specialize h' S hS
@@ -153,10 +153,6 @@ theorem SetTheory.Set.not_mem_mem (A B:Set) : (A:Object) ∉ B ∨ (B:Object) �
   aesop
 
 /-- Exercise 3.2.3 -/
--- theorem SetTheory.Set.univ_imp (U: Set) (hU: ∀ x, x ∈ U) :
---     axiom_of_universal_specification := by
---   sorry
-
 theorem SetTheory.Set.univ_iff : axiom_of_universal_specification ↔
   ∃ (U:Set), ∀ x, x ∈ U := by
   constructor
@@ -175,13 +171,11 @@ theorem SetTheory.Set.univ_iff : axiom_of_universal_specification ↔
   rw [specification_axiom'']
   aesop
 
-theorem SetTheory.Set.univ_imp (U: Set) (hU: ∀ x, x ∈ U) :
-    axiom_of_universal_specification := by
-  apply univ_iff.mpr;
-  use U
-
 /-- Exercise 3.2.3 -/
-theorem SetTheory.Set.no_univ : ¬ ∃ (U:Set), ∀ (x:Object), x ∈ U := by sorry
-
+theorem SetTheory.Set.no_univ : ¬ ∃ (U:Set), ∀ (x:Object), x ∈ U := by
+  rintro ⟨U, hU⟩
+  have hU' := hU U
+  have := not_mem_self U
+  contradiction
 
 end Chapter3
