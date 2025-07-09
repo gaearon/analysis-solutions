@@ -51,7 +51,7 @@ theorem Russells_paradox : ¬ axiom_of_universal_specification := by
 /-- Axiom 3.9 (Regularity ) -/
 theorem SetTheory.Set.axiom_of_regularity {A:Set} (h: A ≠ ∅) :
     ∃ x:A, ∀ S:Set, x.val = S → Disjoint S A := by
-  obtain ⟨ x, h, h' ⟩ := regularity_axiom A (nonempty_def h)
+  obtain ⟨ x, h, h' ⟩ := SetTheory.regularity_axiom A (nonempty_def h)
   use ⟨x, h⟩
   intro S hS
   specialize h' S hS
