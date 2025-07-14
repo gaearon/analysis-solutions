@@ -438,47 +438,171 @@ theorem Function.inverse_eq {X Y: Set} [Nonempty X] {f: Function X Y} (h: f.bije
   Exercise 3.3.1.  Although a proof operating directly on functions would be shorter,
   the spirit of the exercise is to show these using the `Function.eq_iff` definition.
 -/
-theorem Function.refl {X Y:Set} (f: Function X Y) : f = f := by sorry
+theorem Function.refl {X Y:Set} (f: Function X Y) : f = f := by
+  rw [Function.eq_iff]
+  intro x
+  rfl
 
-theorem Function.symm {X Y:Set} (f g: Function X Y) : f = g ↔ g = f := by sorry
+theorem Function.symm {X Y:Set} (f g: Function X Y) : f = g ↔ g = f := by
+  repeat rw [Function.eq_iff]
+  constructor
+  · intro h x
+    exact (h x).symm
+  intro h x
+  exact (h x).symm
 
-theorem Function.trans {X Y:Set} {f g h: Function X Y} (hfg: f = g) (hgh: g = h) : f = h := by sorry
+theorem Function.trans {X Y:Set} {f g h: Function X Y} (hfg: f = g) (hgh: g = h) : f = h := by
+  rw [Function.eq_iff] at *
+  intro x
+  specialize_all x
+  rw [hfg, hgh]
 
 theorem Function.comp_congr {X Y Z:Set} {f f': Function X Y} (hff': f = f') {g g': Function Y Z}
-  (hgg': g = g') : g ○ f = g' ○ f' := by sorry
+  (hgg': g = g') : g ○ f = g' ○ f' := by
+  rw [Function.eq_iff] at *
+  intro x
+  specialize_all x
+  simp only [comp_eval, hgg', hff']
 
 /-- Exercise 3.3.2 -/
 theorem Function.comp_of_inj {X Y Z:Set} {f: Function X Y} {g : Function Y Z} (hf: f.one_to_one)
-  (hg: g.one_to_one) : (g ○ f).one_to_one := by sorry
+  (hg: g.one_to_one) : (g ○ f).one_to_one := by
+  rw [one_to_one_iff] at *
+  intro x x'
+  simp only [comp_eval]
+  intro h
+  apply hf
+  apply hg
+  exact h
 
 theorem Function.comp_of_surj {X Y Z:Set} {f: Function X Y} {g : Function Y Z} (hf: f.onto)
-  (hg: g.onto) : (g ○ f).onto := by sorry
+  (hg: g.onto) : (g ○ f).onto := by
+  rw [onto] at *
+  intro x
+  simp only [comp_eval]
+  have ⟨z, hz⟩ := hg x
+  have ⟨y, hy⟩ := hf z
+  use y
+  rw [hy, hz]
 
 /--
   Exercise 3.3.3 - fill in the sorrys in the statements in  a reasonable fashion.
 -/
-example (X: Set) : (SetTheory.Set.f_3_3_11 X).one_to_one ↔ sorry := by sorry
+example (X: Set) : (SetTheory.Set.f_3_3_11 X).one_to_one ↔ True := by
+  rw [iff_true]
+  intro x
+  have := x.property
+  have := SetTheory.Set.not_mem_empty x
+  contradiction
 
-example (X: Set) : (SetTheory.Set.f_3_3_11 X).onto ↔ sorry := by sorry
+example (X: Set) : (SetTheory.Set.f_3_3_11 X).onto ↔ X = ∅ := by
+  constructor
+  · intro h
+    by_contra h'
+    rw [SetTheory.Set.eq_empty_iff_forall_notMem] at h'
+    push_neg at h'
+    obtain ⟨x, hx⟩ := h'
+    rw [Function.onto] at h
+    obtain ⟨y, hy⟩ := h ⟨x, hx⟩
+    have := y.property
+    have := SetTheory.Set.not_mem_empty y
+    contradiction
+  intro h
+  rw [Function.onto]
+  intro x
+  have := x.property
+  simp only [h] at this
+  have := SetTheory.Set.not_mem_empty x
+  contradiction
 
-example (X: Set) : (SetTheory.Set.f_3_3_11 X).bijective ↔ sorry := by sorry
+example (X: Set) : (SetTheory.Set.f_3_3_11 X).bijective ↔ X = ∅ := by
+  constructor
+  · intro ⟨h1, h2⟩
+    rw [SetTheory.Set.eq_empty_iff_forall_notMem]
+    by_contra h
+    push_neg at h
+    obtain ⟨x, hx⟩ := h
+    rw [Function.onto] at h2
+    have ⟨y, hy⟩ := h2 ⟨x, hx⟩
+    have := y.property
+    have := SetTheory.Set.not_mem_empty y
+    contradiction
+  intro h
+  constructor
+  · rw [Function.one_to_one_iff]
+    intro x
+    have := x.property
+    have := SetTheory.Set.not_mem_empty x
+    contradiction
+  rw [SetTheory.Set.eq_empty_iff_forall_notMem] at h
+  rw [Function.onto]
+  intro x
+  have := x.property
+  have := h x
+  contradiction
 
 /--
   Exercise 3.3.4.  State and prove theorems or counterexamples in the case that `hg` or `hf` is
   omitted as a hypothesis.
 -/
 theorem Function.comp_cancel_left {X Y Z:Set} {f f': Function X Y} {g : Function Y Z}
-  (heq : g ○ f = g ○ f') (hg: g.one_to_one) : f = f' := by sorry
+  (heq : g ○ f = g ○ f') (hg: g.one_to_one) : f = f' := by
+  simp only [Function.eq_iff, Function.comp_eval, Function.one_to_one_iff] at *
+  intro x
+  specialize heq x
+  apply hg at heq
+  exact heq
+
+example : ∃ (X Y Z:Set) (f f' : Function X Y) (g : Function Y Z), g ○ f = g ○ f' ∧ f ≠ f' := by
+  use nat, nat, nat
+  use Function.mk_fn (fun x ↦ 0), Function.mk_fn (fun x ↦ 1), Function.mk_fn (fun x ↦ 2)
+  constructor
+  · simp
+  intro h
+  simp [Function.eq_iff] at h
 
 theorem Function.comp_cancel_right {X Y Z:Set} {f: Function X Y} {g g': Function Y Z}
-  (heq : g ○ f = g' ○ f) (hf: f.onto) : g = g' := by sorry
+  (heq : g ○ f = g' ○ f) (hf: f.onto) : g = g' := by
+  simp only [Function.eq_iff, Function.comp_eval, Function.one_to_one_iff] at *
+  intro y
+  obtain ⟨x, hx⟩ := hf y
+  specialize heq x
+  rw [hx] at heq
+  rw [heq]
+
+example : ∃ (X Y Z:Set) (f : Function X Y) (g g' : Function Y Z), g ○ f = g' ○ f ∧ g ≠ g' := by
+  use nat, nat, nat
+  use Function.mk_fn (fun x ↦ 0), Function.mk_fn (fun x ↦ x), Function.mk_fn (fun x ↦ 0)
+  constructor
+  · simp
+  intro h
+  simp [Function.eq_iff] at h
+  specialize h (1:nat) (1:nat).property
+  norm_num at h
 
 /--
   Exercise 3.3.5.  State or prove theorems or counterexamples in the case that `f` is replaced
   with `g` or vice versa in the conclusion.
 -/
 theorem Function.comp_injective {X Y Z:Set} {f: Function X Y} {g : Function Y Z} (hinj :
-    (g ○ f).one_to_one) : f.one_to_one := by sorry
+    (g ○ f).one_to_one) : f.one_to_one := by
+  simp only [Function.one_to_one_iff, Function.comp_eval] at *
+  intro x x' h
+  specialize hinj x x'
+  apply hinj
+  rw [h]
+
+example : ∃ (X Y Z:Set) (f: Function X Y) (g : Function Y Z),
+    (g ○ f).one_to_one ∧ ¬g.one_to_one := by
+  use nat, nat, nat
+  use Function.mk_fn (fun x ↦ (x:ℕ) * (2:ℕ))
+  use Function.mk_fn (fun x ↦ (x:ℕ) / (2:ℕ))
+  constructor
+  · simp
+  rw [Function.one_to_one_iff]
+  push_neg
+  use (0: nat), (1: nat)
+  simp
 
 theorem Function.comp_surjective {X Y Z:Set} {f: Function X Y} {g : Function Y Z}
   (hinj : (g ○ f).onto) : g.onto := by sorry
