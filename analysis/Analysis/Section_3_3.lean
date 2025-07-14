@@ -676,7 +676,7 @@ theorem Function.comp_bijective {X Y Z:Set} {f: Function X Y} {g : Function Y Z}
 theorem Function.inv_of_comp {X Y Z:Set} {f: Function X Y} {g : Function Y Z}
   (hf: f.bijective) (hg: g.bijective) :
     (g ○ f).inverse (Function.comp_bijective hf hg) = (f.inverse hf) ○ (g.inverse hg) := by
-  rw [Function.eq_iff]
+  rw [eq_iff]
   intro z
   simp only [eval, inverse_eval, comp_eval]
   rw [←comp_eval, self_comp_inverse]
@@ -688,25 +688,112 @@ abbrev Function.inclusion {X Y:Set} (h: X ⊆ Y) :
 abbrev Function.id (X:Set) : Function X X := Function.mk_fn (fun x ↦ x)
 
 theorem Function.inclusion_id (X:Set) :
-    Function.inclusion (SetTheory.Set.subset_self X) = Function.id X := by sorry
+    Function.inclusion (SetTheory.Set.subset_self X) = Function.id X := by
+  rw [eq_iff]
+  intro x
+  rfl
 
 theorem Function.inclusion_comp (X Y Z:Set) (hXY: X ⊆ Y) (hYZ: Y ⊆ Z) :
-    Function.inclusion hYZ ○ Function.inclusion hXY = Function.inclusion (SetTheory.Set.subset_trans hXY hYZ) := by sorry
+    Function.inclusion hYZ ○ Function.inclusion hXY = Function.inclusion (SetTheory.Set.subset_trans hXY hYZ) := by
+  rw [eq_iff]
+  intro x
+  simp only [eval_of]
 
-theorem Function.comp_id {A B:Set} (f: Function A B) : f ○ Function.id A = f := by sorry
+theorem Function.comp_id {A B:Set} (f: Function A B) : f ○ Function.id A = f := by
+  rw [eq_iff]
+  intro x
+  simp only [eval_of]
 
-theorem Function.id_comp {A B:Set} (f: Function A B) : Function.id B ○ f = f := by sorry
+theorem Function.id_comp {A B:Set} (f: Function A B) : Function.id B ○ f = f := by
+  rw [eq_iff]
+  intro x
+  simp only [eval_of]
 
 theorem Function.comp_inv {A B:Set} (f: Function A B) (hf: f.bijective) :
-    f ○ f.inverse hf = Function.id B := by sorry
+    f ○ f.inverse hf = Function.id B := by
+  rw [eq_iff]
+  intro x
+  simp only [eval_of]
+  apply self_comp_inverse
 
 theorem Function.inv_comp {A B:Set} (f: Function A B) (hf: f.bijective) :
-    f.inverse hf ○ f = Function.id A := by sorry
+    f.inverse hf ○ f = Function.id A := by
+  rw [eq_iff]
+  intro x
+  simp only [eval_of]
+  apply inverse_comp_self
 
+open Classical in
 theorem Function.glue {X Y Z:Set} (hXY: Disjoint X Y) (f: Function X Z) (g: Function Y Z) :
     ∃! h: Function (X ∪ Y) Z, (h ○ Function.inclusion (SetTheory.Set.subset_union_left X Y) = f)
-    ∧ (h ○ Function.inclusion (SetTheory.Set.subset_union_right X Y) = g) := by sorry
+    ∧ (h ○ Function.inclusion (SetTheory.Set.subset_union_right X Y) = g) := by
+  apply existsUnique_of_exists_of_unique
+  · set fg: Function (X ∪ Y) Z := Function.mk_fn (fun xy ↦
+      if hxy : xy.val ∈ X then f ⟨xy.val, hxy⟩
+      else g ⟨xy.val, by aesop⟩)
+    use fg
+    constructor
+    · rw [eq_iff]
+      intro x
+      have := x.property
+      aesop
+    rw [eq_iff]
+    rw [disjoint_iff] at hXY
+    change X ∩ Y = ∅ at hXY
+    rw [SetTheory.Set.eq_empty_iff_forall_notMem] at hXY
+    intro y
+    specialize hXY y
+    aesop
+  intro fg1 fg2 ⟨hf1, hf2⟩ ⟨hg1, hg2⟩
+  rw [eq_iff]
+  intro xy
+  have hX : X ⊆ (X ∪ Y) := by apply SetTheory.Set.subset_union_left
+  have hY : Y ⊆ (X ∪ Y) := by apply SetTheory.Set.subset_union_right
+  simp only [eq_iff, comp_eval] at *
+  by_cases hxy : xy.val ∈ X
+  · set x : X := ⟨xy.val, hxy⟩
+    have : xy = inclusion hX x := by rw [Function.eval]
+    rw [this, hf1, hg1]
+  by_cases hxy : xy.val ∈ Y
+  · set y : Y := ⟨xy.val, hxy⟩
+    have : xy = inclusion hY y := by rw [Function.eval]
+    rw [this, hf2, hg2]
+  have := xy.property
+  aesop
 
-
+open Classical in
+theorem Function.glue' {X Y Z:Set} (f: Function X Z) (g: Function Y Z)
+    (hfg : ∀ x : ((X ∩ Y): Set), f ⟨x.val, by aesop⟩ = g ⟨x.val, by aesop⟩)  :
+    ∃! h: Function (X ∪ Y) Z, (h ○ Function.inclusion (SetTheory.Set.subset_union_left X Y) = f)
+    ∧ (h ○ Function.inclusion (SetTheory.Set.subset_union_right X Y) = g) := by
+  apply existsUnique_of_exists_of_unique
+  · set fg: Function (X ∪ Y) Z := Function.mk_fn (fun xy ↦
+      if hxy : xy.val ∈ X then f ⟨xy.val, hxy⟩
+      else g ⟨xy.val, by aesop⟩)
+    use fg
+    constructor
+    · rw [eq_iff]
+      intro x
+      have := x.property
+      aesop
+    rw [eq_iff]
+    intro y
+    aesop
+  intro fg1 fg2 ⟨hf1, hf2⟩ ⟨hg1, hg2⟩
+  rw [eq_iff]
+  intro xy
+  have hX : X ⊆ (X ∪ Y) := by apply SetTheory.Set.subset_union_left
+  have hY : Y ⊆ (X ∪ Y) := by apply SetTheory.Set.subset_union_right
+  simp only [eq_iff, comp_eval] at *
+  by_cases hxy : xy.val ∈ X
+  · set x : X := ⟨xy.val, hxy⟩
+    have : xy = inclusion hX x := by rw [Function.eval]
+    rw [this, hf1, hg1]
+  by_cases hxy : xy.val ∈ Y
+  · set y : Y := ⟨xy.val, hxy⟩
+    have : xy = inclusion hY y := by rw [Function.eval]
+    rw [this, hf2, hg2]
+  have := xy.property
+  aesop
 
 end Chapter3
