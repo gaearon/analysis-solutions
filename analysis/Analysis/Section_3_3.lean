@@ -601,32 +601,85 @@ example : ∃ (X Y Z:Set) (f: Function X Y) (g : Function Y Z),
   · simp
   rw [Function.one_to_one_iff]
   push_neg
-  use (0: nat), (1: nat)
+  use 0, 1
   simp
 
 theorem Function.comp_surjective {X Y Z:Set} {f: Function X Y} {g : Function Y Z}
-  (hinj : (g ○ f).onto) : g.onto := by sorry
+    (hinj : (g ○ f).onto) : g.onto := by
+  simp only [Function.onto, Function.comp_eval] at *
+  intro z
+  obtain ⟨x, hx⟩ := hinj z
+  use f.to_fn x
+
+example : ∃ (X Y Z:Set) (f: Function X Y) (g : Function Y Z),
+    (g ○ f).onto ∧ ¬f.onto := by
+  use nat, nat, {0}
+  use Function.mk_fn (fun x ↦ (x:ℕ) + (1:ℕ))
+  use Function.mk_fn (fun x ↦ ⟨0, by simp⟩)
+  constructor
+  · simp
+  rw [Function.onto]
+  push_neg
+  use ((0:ℕ):nat)
+  simp
 
 /-- Exercise 3.3.6 -/
 theorem Function.inverse_comp_self {X Y: Set} {f: Function X Y} (h: f.bijective) (x: X) :
-    (f.inverse h) (f x) = x := by sorry
+    (f.inverse h) (f x) = x := by
+  symm
+  rw [Function.inverse_eval]
 
 theorem Function.self_comp_inverse {X Y: Set} {f: Function X Y} (h: f.bijective) (y: Y) :
-    f ((f.inverse h) y) = y := by sorry
+    f ((f.inverse h) y) = y := by
+  rw [←Function.inverse_eval]
 
 theorem Function.inverse_bijective {X Y: Set} {f: Function X Y} (h: f.bijective) :
-    (f.inverse h).bijective := by sorry
+    (f.inverse h).bijective := by
+  constructor
+  · rw [one_to_one_iff]
+    intro x x' hinj
+    rwa [inverse_eval, self_comp_inverse] at hinj
+  rw [onto]
+  intro x
+  use (f x)
+  rw [inverse_comp_self]
 
 theorem Function.inverse_inverse {X Y: Set} {f: Function X Y} (h: f.bijective) :
-    (f.inverse h).inverse (f.inverse_bijective h) = f := by sorry
+    (f.inverse h).inverse (f.inverse_bijective h) = f := by
+  rw [eq_iff]
+  intro x
+  symm
+  rw [inverse_eval, inverse_comp_self]
 
 theorem Function.comp_bijective {X Y Z:Set} {f: Function X Y} {g : Function Y Z} (hf: f.bijective)
-  (hg: g.bijective) : (g ○ f).bijective := by sorry
+    (hg: g.bijective) : (g ○ f).bijective := by
+  constructor
+  · replace hf := hf.1
+    replace hg := hg.1
+    rw [one_to_one_iff] at *
+    intro x x' h
+    apply hf
+    apply hg
+    simp only [comp_eval] at h
+    exact h
+  replace hf := hf.2
+  replace hg := hg.2
+  rw [onto] at *
+  intro z
+  simp only [comp_eval]
+  obtain ⟨y, hy⟩ := hg z
+  obtain ⟨x, hx⟩ := hf y
+  use x
+  rw [hx, hy]
 
 /-- Exercise 3.3.7 -/
 theorem Function.inv_of_comp {X Y Z:Set} {f: Function X Y} {g : Function Y Z}
   (hf: f.bijective) (hg: g.bijective) :
-    (g ○ f).inverse (Function.comp_bijective hf hg) = (f.inverse hf) ○ (g.inverse hg) := by sorry
+    (g ○ f).inverse (Function.comp_bijective hf hg) = (f.inverse hf) ○ (g.inverse hg) := by
+  rw [Function.eq_iff]
+  intro z
+  simp only [eval, inverse_eval, comp_eval]
+  rw [←comp_eval, self_comp_inverse]
 
 /-- Exercise 3.3.8 -/
 abbrev Function.inclusion {X Y:Set} (h: X ⊆ Y) :
