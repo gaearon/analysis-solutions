@@ -223,7 +223,7 @@ open Classical in
 /-- Exercise 3.4.6 (i) -/
 @[simp]
 theorem SetTheory.Set.mem_powerset {X:Set} (x:Object) :
-    x ∈ powerset X ↔ ∃ Y:Set, x = set_to_object Y ∧ Y ⊆ X := by
+    x ∈ powerset X ↔ ∃ Y:Set, x = Y ∧ Y ⊆ X := by
   rw [powerset, replacement_axiom]
   constructor
   · rintro ⟨_, ⟨f, _, hfx⟩⟩
@@ -283,7 +283,17 @@ theorem SetTheory.Set.union_axiom (A: Set) (x:Object) :
 /-- Example 3.4.12 -/
 theorem SetTheory.Set.example_3_4_12 :
     union { (({2,3}:Set):Object), (({3,4}:Set):Object), (({4,5}:Set):Object) } = {2,3,4,5} := by
-  sorry
+  apply Set.ext
+  intro x
+  simp only [union_axiom, mem_triple, EmbeddingLike.apply_eq_iff_eq]
+  constructor
+  · rintro ⟨S, xs, (rfl | rfl | rfl)⟩
+    · simp_all [Insert.insert]; aesop
+    · simp_all [Insert.insert]; aesop
+    · simp_all [Insert.insert]
+  intro h
+  simp_all [Insert.insert]
+  aesop
 
 /-- Connection with Mathlib union -/
 theorem SetTheory.Set.union_eq (A: Set) :
@@ -321,7 +331,14 @@ theorem SetTheory.Set.iUnion_eq (I: Set) (A: I → Set) :
     (iUnion I A : _root_.Set Object) = ⋃ α, (A α: _root_.Set Object) := by
   ext; simp only [mem_iUnion, _root_.Set.mem_setOf_eq, _root_.Set.mem_iUnion]
 
-theorem SetTheory.Set.iUnion_of_empty (A: (∅:Set) → Set) : iUnion (∅:Set) A = ∅ := by sorry
+theorem SetTheory.Set.iUnion_of_empty (A: (∅:Set) → Set) : iUnion (∅:Set) A = ∅ := by
+  apply ext
+  intro x
+  simp only [not_mem_empty, iff_false, mem_iUnion]
+  push_neg
+  intro α
+  have := α.property
+  aesop
 
 /-- Indexed intersection -/
 noncomputable abbrev SetTheory.Set.nonempty_choose {I:Set} (hI: I ≠ ∅) : I :=
@@ -335,7 +352,13 @@ noncomputable abbrev SetTheory.Set.iInter (I: Set) (hI: I ≠ ∅) (A: I → Set
 
 theorem SetTheory.Set.mem_iInter {I:Set} (hI: I ≠ ∅) (A: I → Set) (x:Object) :
     x ∈ iInter I hI A ↔ ∀ α:I, x ∈ A α := by
-  sorry
+  constructor
+  · intro h
+    rw [specification_axiom''] at h
+    exact h.2
+  intro h
+  rw [specification_axiom'']
+  use h (nonempty_choose hI)
 
 /-- Exercise 3.4.1 -/
 theorem SetTheory.Set.preimage_eq_image_of_inv {X Y V:Set} (f:X → Y) (f_inv: Y → X)
