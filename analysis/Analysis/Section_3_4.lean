@@ -215,13 +215,35 @@ theorem SetTheory.Set.example_3_4_9 (F:Object) :
 
 /-- Exercise 3.4.6 (i). One needs to provide a suitable definition of the power set here. -/
 def SetTheory.Set.powerset (X:Set) : Set :=
-  (({0,1} ^ X): Set).replace (P := sorry) (by sorry)
+  (({0,1} ^ X): Set).replace (P := fun F Y ↦
+    ∃ f : X → ({0,1}: Set), F = (f : Object) ∧ Y = (preimage f {1})
+  ) (by aesop)
 
 open Classical in
 /-- Exercise 3.4.6 (i) -/
 @[simp]
 theorem SetTheory.Set.mem_powerset {X:Set} (x:Object) :
-    x ∈ powerset X ↔ ∃ Y:Set, x = Y ∧ Y ⊆ X := by sorry
+    x ∈ powerset X ↔ ∃ Y:Set, x = set_to_object Y ∧ Y ⊆ X := by
+  rw [powerset, replacement_axiom]
+  constructor
+  · rintro ⟨_, ⟨f, _, hfx⟩⟩
+    use preimage f {1}, hfx
+    simp only [subset_def, mem_preimage']
+    rintro _ ⟨a, ⟨rfl, _⟩⟩
+    use a.property
+  intro h
+  obtain ⟨Y, rfl, _⟩ := h
+  let f : X → ({0,1}: Set) := fun x ↦
+    if x.val ∈ Y then ⟨1, by simp⟩
+    else ⟨0, by simp⟩
+  have hf := (powerset_axiom _).mpr (by use f)
+  use ⟨_, hf⟩, f
+  constructor
+  · rfl
+  congr
+  apply Set.ext
+  simp only [mem_preimage']
+  aesop
 
 /-- Lemma 3.4.10 -/
 theorem SetTheory.Set.exists_powerset (X:Set) :
