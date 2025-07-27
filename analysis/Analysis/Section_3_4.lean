@@ -363,18 +363,41 @@ theorem SetTheory.Set.mem_iInter {I:Set} (hI: I ≠ ∅) (A: I → Set) (x:Objec
 /-- Exercise 3.4.1 -/
 theorem SetTheory.Set.preimage_eq_image_of_inv {X Y V:Set} (f:X → Y) (f_inv: Y → X)
   (hf: Function.LeftInverse f_inv f ∧ Function.RightInverse f_inv f) (hV: V ⊆ Y) :
-    image f_inv V = preimage f V := by sorry
+    image f_inv V = preimage f V := by
+  apply ext
+  intro x
+  simp only [mem_image, mem_preimage']
+  constructor
+  · rintro ⟨y, hy, rfl⟩
+    use (f_inv y), rfl
+    rwa [hf.2]
+  rintro ⟨x', rfl, hx'⟩
+  use (f x'), hx'
+  rw [hf.1]
 
 /- Exercise 3.4.2.  State and prove an assertion connecting `preimage f (image f S)` and `S`. -/
--- theorem SetTheory.Set.preimage_of_image {X Y:Set} (f:X → Y) (S: Set) (hS: S ⊆ X) : sorry := by sorry
+theorem SetTheory.Set.preimage_of_image {X Y:Set} (f:X → Y) (S: Set) (hS: S ⊆ X) :
+    S ⊆ preimage f (image f S) := by
+  simp only [subset_def, mem_preimage', mem_image] at *
+  intro x xs
+  let x': X := ⟨x, hS x xs⟩
+  use x', rfl, x'
 
 /- Exercise 3.4.2.  State and prove an assertion connecting `image f (preimage f U)` and `U`.
 Interestingly, it is not needed for U to be a subset of Y. -/
--- theorem SetTheory.Set.image_of_preimage {X Y:Set} (f:X → Y) (U: Set) : sorry := by sorry
+theorem SetTheory.Set.image_of_preimage {X Y:Set} (f:X → Y) (U: Set) :
+    image f (preimage f U) ⊆ U := by
+  simp only [subset_def, mem_image]
+  rintro y ⟨x, hx, rfl⟩
+  rwa [mem_preimage] at hx
 
 /- Exercise 3.4.2.  State and prove an assertion connecting `preimage f (image f (preimage f U))` and `preimage f U`.
 Interestingly, it is not needed for U to be a subset of Y.-/
--- theorem SetTheory.Set.preimage_of_image_of_preimage {X Y:Set} (f:X → Y) (U: Set) : sorry := by sorry
+theorem SetTheory.Set.preimage_of_image_of_preimage {X Y:Set} (f:X → Y) (U: Set) :
+    preimage f (image f (preimage f U)) = preimage f U := by
+  apply ext
+  simp only [mem_preimage', mem_image]
+  aesop
 
 /--
   Exercise 3.4.3.
