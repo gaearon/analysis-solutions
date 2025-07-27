@@ -442,7 +442,17 @@ def SetTheory.Set.image_of_inter' : Decidable (∀ X Y:Set, ∀ f:X → Y, ∀ A
 
 def SetTheory.Set.image_of_diff' : Decidable (∀ X Y:Set, ∀ f:X → Y, ∀ A B: Set, image f (A \ B) = (image f A) \ (image f B)) := by
   -- The first line of this construction should be either `apply isTrue` or `apply isFalse`
-  sorry
+  apply isFalse
+  push_neg
+  let f : nat → nat := fun x ↦ 0
+  use nat, nat, f, {1, 2}, {2}
+  rw [show ({1, 2}: Set) \ {2} = {1} by apply ext; aesop]
+  intro h
+  rw [ext_iff] at h
+  specialize h 0
+  have : 0 ∈ image f {1} := by rw [mem_image]; use 1; simp [f]
+  have : 0 ∈ image f {2} := by rw [mem_image]; use 2; simp [f]
+  simp_all [f]
 
 /-- Exercise 3.4.4 -/
 theorem SetTheory.Set.preimage_of_inter {X Y:Set} (f:X → Y) (A B: Set) :
