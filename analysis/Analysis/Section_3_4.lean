@@ -495,7 +495,23 @@ theorem SetTheory.Set.image_preimage_of_surj {X Y:Set} (f:X → Y) :
 
 /-- Exercise 3.4.5 -/
 theorem SetTheory.Set.preimage_image_of_inj {X Y:Set} (f:X → Y) :
-    (∀ S, S ⊆ X → preimage f (image f S) = S) ↔ Function.Injective f := by sorry
+    (∀ S, S ⊆ X → preimage f (image f S) = S) ↔ Function.Injective f := by
+  constructor
+  · intro h x1 x2 hf
+    simp only [subset_def] at h
+    have hx: ((f x2): Object) ∈ image f {(x2: Object)} := by rw [mem_image]; aesop
+    rwa [←hf, ←mem_preimage, h _ (by aesop), mem_singleton, coe_inj] at hx
+  intro h S hS
+  apply ext
+  intro x
+  constructor
+  · simp only [mem_preimage', mem_image]
+    rintro ⟨x1, rfl, x2, hx2, heq⟩
+    rw [coe_inj] at heq
+    rwa [←h heq]
+  intro hx
+  simp only [mem_preimage', mem_image]
+  use ⟨x, hS x hx⟩, rfl, ⟨x, hS x hx⟩
 
 /-- Helper lemma for Exercise 3.4.7. -/
 @[simp]
