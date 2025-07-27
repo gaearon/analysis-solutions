@@ -403,17 +403,42 @@ theorem SetTheory.Set.preimage_of_image_of_preimage {X Y:Set} (f:X → Y) (U: Se
   Exercise 3.4.3.
 -/
 theorem SetTheory.Set.image_of_inter {X Y:Set} (f:X → Y) (A B: Set) :
-    image f (A ∩ B) ⊆ (image f A) ∩ (image f B) := by sorry
+    image f (A ∩ B) ⊆ (image f A) ∩ (image f B) := by
+  simp only [subset_def, mem_image, mem_inter]
+  aesop
 
 theorem SetTheory.Set.image_of_diff {X Y:Set} (f:X → Y) (A B: Set) :
-    (image f A) \ (image f B) ⊆ image f (A \ B) := by sorry
+    (image f A) \ (image f B) ⊆ image f (A \ B) := by
+  simp only [subset_def, mem_image, mem_inter, mem_sdiff]
+  rintro y ⟨⟨x, ⟨h1, h2⟩⟩, h'⟩
+  have : (x: Object) ∉ B := by contrapose! h'; use x
+  use x, ⟨h1, this⟩
 
 theorem SetTheory.Set.image_of_union {X Y:Set} (f:X → Y) (A B: Set) :
-    image f (A ∪ B) = (image f A) ∪ (image f B) := by sorry
+    image f (A ∪ B) = (image f A) ∪ (image f B) := by
+  apply ext
+  simp only [mem_image, mem_union]
+  aesop
 
 def SetTheory.Set.image_of_inter' : Decidable (∀ X Y:Set, ∀ f:X → Y, ∀ A B: Set, image f (A ∩ B) = (image f A) ∩ (image f B)) := by
   -- The first line of this construction should be either `apply isTrue` or `apply isFalse`
-  sorry
+  apply isFalse
+  push_neg
+  let f : nat → nat := fun x ↦ 0
+  use nat, nat, f, {1}, {2}
+  intro h
+  rw [show ({1} ∩ {2}: Set) = ∅ by apply ext; simp] at h
+  rw [show (image f ∅) = ∅ by apply ext; simp [mem_image]] at h
+  symm at h
+  rw [eq_empty_iff_forall_notMem] at h
+  contrapose! h
+  simp only [mem_inter, mem_image, f]
+  use 0
+  constructor
+  · use 1
+    norm_num
+  use 2
+  norm_num
 
 def SetTheory.Set.image_of_diff' : Decidable (∀ X Y:Set, ∀ f:X → Y, ∀ A B: Set, image f (A \ B) = (image f A) \ (image f B)) := by
   -- The first line of this construction should be either `apply isTrue` or `apply isFalse`
