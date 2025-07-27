@@ -456,17 +456,42 @@ def SetTheory.Set.image_of_diff' : Decidable (∀ X Y:Set, ∀ f:X → Y, ∀ A 
 
 /-- Exercise 3.4.4 -/
 theorem SetTheory.Set.preimage_of_inter {X Y:Set} (f:X → Y) (A B: Set) :
-    preimage f (A ∩ B) = (preimage f A) ∩ (preimage f B) := by sorry
+    preimage f (A ∩ B) = (preimage f A) ∩ (preimage f B) := by
+  apply ext
+  simp only [mem_preimage', mem_inter]
+  aesop
 
 theorem SetTheory.Set.preimage_of_union {X Y:Set} (f:X → Y) (A B: Set) :
-    preimage f (A ∪ B) = (preimage f A) ∪ (preimage f B) := by sorry
+    preimage f (A ∪ B) = (preimage f A) ∪ (preimage f B) := by
+  apply ext
+  simp only [mem_preimage', mem_union]
+  aesop
 
 theorem SetTheory.Set.preimage_of_diff {X Y:Set} (f:X → Y) (A B: Set) :
-    preimage f (A \ B) = (preimage f A) \ (preimage f B)  := by sorry
+    preimage f (A \ B) = (preimage f A) \ (preimage f B)  := by
+  apply ext
+  simp only [mem_preimage', mem_sdiff]
+  aesop
 
 /-- Exercise 3.4.5 -/
 theorem SetTheory.Set.image_preimage_of_surj {X Y:Set} (f:X → Y) :
-    (∀ S, S ⊆ Y → image f (preimage f S) = S) ↔ Function.Surjective f := by sorry
+    (∀ S, S ⊆ Y → image f (preimage f S) = S) ↔ Function.Surjective f := by
+  constructor
+  · intro h y
+    simp only [subset_def, ext_iff, mem_singleton, mem_image] at h
+    specialize h _ (by aesop) y
+    obtain ⟨x, ⟨_, hx⟩⟩ := h.mpr (by aesop)
+    use x, by rwa [coe_inj] at hx
+  intro h S hS
+  apply ext
+  intro y
+  simp only [mem_image, mem_preimage]
+  constructor
+  · rintro ⟨x, ⟨hx, rfl⟩⟩
+    exact hx
+  intro hy
+  obtain ⟨x, hx⟩ := h ⟨y, hS y hy⟩
+  use x, by rwa [hx], by rw [hx]
 
 /-- Exercise 3.4.5 -/
 theorem SetTheory.Set.preimage_image_of_inj {X Y:Set} (f:X → Y) :
