@@ -527,7 +527,44 @@ lemma SetTheory.Set.mem_union_powerset_replace_iff {S : Set} {P : S.powerset →
 /-- Exercise 3.4.7 -/
 theorem SetTheory.Set.partial_functions {X Y:Set} :
     ∃ Z:Set, ∀ F:Object, F ∈ Z ↔ ∃ X' Y':Set, X' ⊆ X ∧ Y' ⊆ Y ∧ ∃ f: X' → Y', F = f := by
-  sorry
+  use union (Y.powerset.replace (P := fun oY' outer ↦
+    outer = union (X.powerset.replace (P := fun oX' inner ↦
+      ∃ (X' Y' : Set),
+        oX'.val = X' ∧
+        oY'.val = Y' ∧
+        inner = (Y' ^ X': Set)
+    ) (by simp_all))
+  ) (by simp_all))
+  intro F
+  constructor
+  · intro hF
+    rw [union_axiom] at hF
+    obtain ⟨S, hFS, hS⟩ := hF
+    rw [replacement_axiom] at hS
+    obtain ⟨⟨oY', hoY'⟩, hS⟩ := hS
+    rw [EmbeddingLike.apply_eq_iff_eq] at hS
+    subst hS
+    rw [union_axiom] at hFS
+    obtain ⟨S, hFS, hS⟩ := hFS
+    rw [replacement_axiom] at hS
+    obtain ⟨⟨oX', hoX'⟩, X', Y', rfl, rfl, hS⟩ := hS
+    rw [EmbeddingLike.apply_eq_iff_eq] at hS
+    rw [hS, powerset_axiom] at hFS
+    obtain ⟨f, hf⟩ := hFS
+    use X', Y'
+    simp_all only [mem_powerset']
+    tauto
+  · rintro ⟨X', Y', hX', hY', f, rfl⟩
+    rw [mem_iUnion]
+    use ⟨Y', by simp_all⟩
+    rw [union_axiom]
+    use (Y' ^ X')
+    constructor
+    · rw [powerset_axiom]
+      use f
+    · rw [replacement_axiom]
+      use ⟨X', by simp_all⟩
+      use X', Y'
 
 /--
   Exercise 3.4.8.  The point of this exercise is to prove it without using the
