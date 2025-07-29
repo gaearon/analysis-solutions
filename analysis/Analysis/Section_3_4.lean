@@ -145,8 +145,7 @@ theorem SetTheory.Set.preimage_f_3_4_2 : preimage f_3_4_2 {2,4,6} = {1,2,3} := b
 theorem SetTheory.Set.image_preimage_f_3_4_2 :
     image f_3_4_2 (preimage f_3_4_2 {1,2,3}) ≠ {1,2,3} := by
   intro h
-  have : 1 ∉ image f_3_4_2 (preimage f_3_4_2 {1, 2, 3}) := by
-    simp only [mem_image, mem_preimage']; simp
+  have : 1 ∉ image f_3_4_2 (preimage f_3_4_2 {1, 2, 3}) := by simp
   simp_all
 
 /-- Example 3.4.7 (using the Mathlib notion of preimage) -/
@@ -538,33 +537,22 @@ theorem SetTheory.Set.partial_functions {X Y:Set} :
   intro F
   constructor
   · intro hF
-    rw [union_axiom] at hF
-    obtain ⟨S, hFS, hS⟩ := hF
-    rw [replacement_axiom] at hS
-    obtain ⟨⟨oY', hoY'⟩, hS⟩ := hS
-    rw [EmbeddingLike.apply_eq_iff_eq] at hS
-    subst hS
-    rw [union_axiom] at hFS
-    obtain ⟨S, hFS, hS⟩ := hFS
-    rw [replacement_axiom] at hS
-    obtain ⟨⟨oX', hoX'⟩, X', Y', rfl, rfl, hS⟩ := hS
-    rw [EmbeddingLike.apply_eq_iff_eq] at hS
-    rw [hS, powerset_axiom] at hFS
-    obtain ⟨f, hf⟩ := hFS
-    use X', Y'
-    simp_all only [mem_powerset']
+    simp only [mem_union_powerset_replace_iff, EmbeddingLike.apply_eq_iff_eq] at hF
+    obtain ⟨⟨oY', hY'⟩, _, rfl, hF⟩ := hF
+    simp only [mem_union_powerset_replace_iff, EmbeddingLike.apply_eq_iff_eq] at hF
+    obtain ⟨⟨oX', hY'⟩, Y'X', hF, hF'⟩ := hF
+    simp only [EmbeddingLike.apply_eq_iff_eq] at hF
+    obtain ⟨X', Y', rfl, rfl, rfl⟩ := hF
+    simp_all only [mem_powerset', powerset_axiom]
     tauto
-  · rintro ⟨X', Y', hX', hY', f, rfl⟩
-    rw [mem_iUnion]
-    use ⟨Y', by simp_all⟩
-    rw [union_axiom]
-    use (Y' ^ X')
-    constructor
-    · rw [powerset_axiom]
-      use f
-    · rw [replacement_axiom]
-      use ⟨X', by simp_all⟩
-      use X', Y'
+  rintro ⟨X', Y', hX', hY', f, rfl⟩
+  simp_all [mem_union_powerset_replace_iff, EmbeddingLike.apply_eq_iff_eq,
+    exists_eq_left, Subtype.exists]
+  use Y', by simp_all
+  use X', by simp_all
+  use Y' ^ X', by simp_all
+  rw [powerset_axiom]
+  use f
 
 /--
   Exercise 3.4.8.  The point of this exercise is to prove it without using the
