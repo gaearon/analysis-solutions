@@ -283,15 +283,7 @@ theorem SetTheory.Set.union_axiom (A: Set) (x:Object) :
 theorem SetTheory.Set.example_3_4_12 :
     union { (({2,3}:Set):Object), (({3,4}:Set):Object), (({4,5}:Set):Object) } = {2,3,4,5} := by
   apply Set.ext
-  intro x
-  simp only [union_axiom, mem_triple, EmbeddingLike.apply_eq_iff_eq]
-  constructor
-  · rintro ⟨S, xs, (rfl | rfl | rfl)⟩
-    · simp_all [Insert.insert]; aesop
-    · simp_all [Insert.insert]; aesop
-    · simp_all [Insert.insert]
-  intro h
-  simp_all [Insert.insert]
+  simp only [union_axiom, Insert.insert]
   aesop
 
 /-- Connection with Mathlib union -/
