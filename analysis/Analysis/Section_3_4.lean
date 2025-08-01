@@ -559,7 +559,9 @@ theorem SetTheory.Set.partial_functions {X Y:Set} :
   pairwise union operation `∪`.
 -/
 theorem SetTheory.Set.union_pair_exists (X Y:Set) : ∃ Z:Set, ∀ x, x ∈ Z ↔ (x ∈ X ∨ x ∈ Y) := by
-  sorry
+  use union {(X: Object), (Y: Object)}
+  simp [union_axiom]
+  aesop
 
 /-- Exercise 3.4.9 -/
 theorem SetTheory.Set.iInter'_insensitive {I:Set} (β β':I) (A: I → Set) :
