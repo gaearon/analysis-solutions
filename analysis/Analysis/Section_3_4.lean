@@ -565,29 +565,45 @@ theorem SetTheory.Set.union_pair_exists (X Y:Set) : ∃ Z:Set, ∀ x, x ∈ Z �
 
 /-- Exercise 3.4.9 -/
 theorem SetTheory.Set.iInter'_insensitive {I:Set} (β β':I) (A: I → Set) :
-    iInter' I β A = iInter' I β' A := by sorry
+    iInter' I β A = iInter' I β' A := by
+  apply ext; intro x
+  simp_all
 
 /-- Exercise 3.4.10 -/
 theorem SetTheory.Set.union_iUnion {I J:Set} (A: (I ∪ J:Set) → Set) :
     iUnion I (fun α ↦ A ⟨ α.val, by simp [α.property]⟩)
     ∪ iUnion J (fun α ↦ A ⟨ α.val, by simp [α.property]⟩)
-    = iUnion (I ∪ J) A := by sorry
+    = iUnion (I ∪ J) A := by
+  apply ext; intro x
+  simp only [mem_iUnion, mem_union]
+  aesop
 
 /-- Exercise 3.4.10 -/
-theorem SetTheory.Set.union_of_nonempty {I J:Set} (hI: I ≠ ∅) (hJ: J ≠ ∅) : I ∪ J ≠ ∅ := by sorry
+theorem SetTheory.Set.union_of_nonempty {I J:Set} (hI: I ≠ ∅) (hJ: J ≠ ∅) : I ∪ J ≠ ∅ := by
+  intro h
+  simp_all [ext_iff]
 
 /-- Exercise 3.4.10 -/
 theorem SetTheory.Set.inter_iInter {I J:Set} (hI: I ≠ ∅) (hJ: J ≠ ∅) (A: (I ∪ J:Set) → Set) :
     iInter I hI (fun α ↦ A ⟨ α.val, by simp [α.property]⟩)
     ∩ iInter J hJ (fun α ↦ A ⟨ α.val, by simp [α.property]⟩)
-    = iInter (I ∪ J) (union_of_nonempty hI hJ) A := by sorry
+    = iInter (I ∪ J) (union_of_nonempty hI hJ) A := by
+  apply ext; intro x
+  simp only [mem_iInter, mem_inter]
+  aesop
 
 /-- Exercise 3.4.11 -/
 theorem SetTheory.Set.compl_iUnion {X I: Set} (hI: I ≠ ∅) (A: I → Set) :
-    X \ iUnion I A = iInter I hI (fun α ↦ X \ A α) := by sorry
+    X \ iUnion I A = iInter I hI (fun α ↦ X \ A α) := by
+  apply ext; intro x
+  simp only [mem_sdiff, mem_iUnion]
+  aesop
 
 /-- Exercise 3.4.11 -/
 theorem SetTheory.Set.compl_iInter {X I: Set} (hI: I ≠ ∅) (A: I → Set) :
-    X \ iInter I hI A = iUnion I (fun α ↦ X \ A α) := by sorry
+    X \ iInter I hI A = iUnion I (fun α ↦ X \ A α) := by
+  apply ext; intro x
+  simp only [mem_sdiff, mem_iInter, mem_iUnion]
+  aesop
 
 end Chapter3
