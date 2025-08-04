@@ -46,12 +46,34 @@ theorem OrderedPair.eq (x y x' y' : Object) :
 /-- Helper lemma for Exercise 3.5.1 -/
 lemma SetTheory.Set.pair_eq_singleton_iff {a b c: Object} : {a, b} = ({c}: Set) ↔
     a = c ∧ b = c := by
-  sorry
+  constructor
+  · intro h
+    rw [ext_iff] at h
+    have : ∀ x, x = c → x = b := by specialize h b; simp_all
+    simp_all
+  simp_all
 
 /-- Exercise 3.5.1, first part -/
 def OrderedPair.toObject : OrderedPair ↪ Object where
   toFun p := ({ (({p.fst}:Set):Object), (({p.fst, p.snd}:Set):Object) }:Set)
-  inj' := by sorry
+  inj' := by
+    intro p1 p2 hp
+    simp only [EmbeddingLike.apply_eq_iff_eq, ext_iff, mem_pair] at hp
+    rw [OrderedPair.eq]
+    have hfeq : p1.fst = p2.fst := by
+      obtain (_ | hp2) := (hp ({p1.fst}: Set)).mp (Or.inl rfl)
+      · simp_all [ext_iff]
+      symm at hp2
+      simp_all [pair_eq_singleton_iff]
+    use hfeq
+    obtain hp1 := (hp ({p1.fst, p1.snd}: Set)).mp (Or.inr rfl)
+    simp_all only [EmbeddingLike.apply_eq_iff_eq]
+    by_cases h : p1.snd = p2.fst
+    · simp_all [pair_eq_singleton_iff]
+    have : {p2.fst, p1.snd} ≠ ({p2.fst}: Set) := by intro h; simp_all [pair_eq_singleton_iff]
+    simp only [this, false_or] at hp1
+    have := pair_eq_pair hp1
+    simp_all
 
 instance OrderedPair.inst_coeObject : Coe OrderedPair Object where
   coe := toObject
@@ -146,10 +168,10 @@ example : ({1, 2}: Set) ×ˢ ({3, 4, 5}: Set) = ({
 
 /-- Example 3.5.5 / Exercise 3.6.5. There is a bijection between `X ×ˢ Y` and `Y ×ˢ X`. -/
 noncomputable abbrev SetTheory.Set.prod_commutator (X Y:Set) : X ×ˢ Y ≃ Y ×ˢ X where
-  toFun := sorry
-  invFun := sorry
-  left_inv := sorry
-  right_inv := sorry
+  toFun := fun z ↦ mk_cartesian (snd z) (fst z)
+  invFun := fun z ↦ mk_cartesian (snd z) (fst z)
+  left_inv := by intro; simp
+  right_inv := by intro; simp
 
 /-- Example 3.5.5. A function of two variables can be thought of as a function of a pair. -/
 noncomputable abbrev SetTheory.Set.curry_equiv {X Y Z:Set} : (X → Y → Z) ≃ (X ×ˢ Y → Z) where
@@ -182,7 +204,15 @@ theorem SetTheory.Set.tuple_mem_iProd {I: Set} {X: I → Set} (x: ∀ i, X i) :
 
 @[simp]
 theorem SetTheory.Set.tuple_inj {I:Set} {X: I → Set} (x y: ∀ i, X i) :
-    tuple x = tuple y ↔ x = y := by sorry
+    tuple x = tuple y ↔ x = y := by
+  constructor
+  · intro h
+    simp only [coe_of_fun_inj, funext_iff] at h
+    ext x
+    specialize h x
+    simp only [Subtype.mk.injEq] at h
+    exact h
+  tauto
 
 /-- Example 3.5.8. There is a bijection between `(X ×ˢ Y) ×ˢ Z` and `X ×ˢ (Y ×ˢ Z)`. -/
 noncomputable abbrev SetTheory.Set.prod_associator (X Y Z:Set) : (X ×ˢ Y) ×ˢ Z ≃ X ×ˢ (Y ×ˢ Z) where
