@@ -48,7 +48,7 @@ lemma SetTheory.Set.pair_eq_singleton_iff {a b c: Object} : {a, b} = ({c}: Set) 
     a = c ∧ b = c := by
   constructor
   · intro h
-    rw [ext_iff] at h
+    rw [Set.ext_iff] at h
     have : ∀ x, x = c → x = b := by specialize h b; simp_all
     simp_all
   simp_all
@@ -58,11 +58,11 @@ def OrderedPair.toObject : OrderedPair ↪ Object where
   toFun p := ({ (({p.fst}:Set):Object), (({p.fst, p.snd}:Set):Object) }:Set)
   inj' := by
     intro p1 p2 hp
-    simp only [EmbeddingLike.apply_eq_iff_eq, ext_iff, mem_pair] at hp
+    simp only [EmbeddingLike.apply_eq_iff_eq, SetTheory.Set.ext_iff, mem_pair] at hp
     rw [OrderedPair.eq]
     have hfeq : p1.fst = p2.fst := by
       obtain (_ | hp2) := (hp ({p1.fst}: Set)).mp (Or.inl rfl)
-      · simp_all [ext_iff]
+      · simp_all [SetTheory.Set.ext_iff]
       symm at hp2
       simp_all [pair_eq_singleton_iff]
     use hfeq
@@ -227,10 +227,23 @@ noncomputable abbrev SetTheory.Set.prod_associator (X Y Z:Set) : (X ×ˢ Y) ×ˢ
 -/
 noncomputable abbrev SetTheory.Set.singleton_iProd_equiv (i:Object) (X:Set) :
     iProd (fun _:({i}:Set) ↦ X) ≃ X where
-  toFun := sorry
-  invFun := sorry
-  left_inv := sorry
-  right_inv := sorry
+  toFun := fun t ↦ ((mem_iProd _).mp t.property).choose ⟨i, by simp⟩
+  invFun := fun x ↦ ⟨tuple fun _ ↦ x, by rw [mem_iProd]; tauto⟩
+  left_inv := by
+    intro t
+    apply Subtype.ext
+    have hx := ((mem_iProd _).mp t.property).choose_spec
+    simp only [hx, tuple]
+    congr! with i'
+    have hi' := (mem_singleton _ _).mp i'.property
+    rw [hi']
+  right_inv := by
+    intro x
+    dsimp only []
+    generalize_proofs hf
+    have ht := hf.choose_spec
+    rw [tuple_inj] at ht
+    rw [← ht]
 
 /-- Example 3.5.10 -/
 abbrev SetTheory.Set.empty_iProd_equiv (X: (∅:Set) → Set) : iProd X ≃ Unit where
