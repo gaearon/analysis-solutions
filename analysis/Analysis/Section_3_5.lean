@@ -228,29 +228,41 @@ noncomputable abbrev SetTheory.Set.prod_associator (X Y Z:Set) : (X ×ˢ Y) ×ˢ
 noncomputable abbrev SetTheory.Set.singleton_iProd_equiv (i:Object) (X:Set) :
     iProd (fun _:({i}:Set) ↦ X) ≃ X where
   toFun := fun t ↦ ((mem_iProd _).mp t.property).choose ⟨i, by simp⟩
-  invFun := fun x ↦ ⟨tuple fun _ ↦ x, by rw [mem_iProd]; tauto⟩
+  invFun := fun x ↦ ⟨tuple fun _ ↦ x, by apply tuple_mem_iProd⟩
   left_inv := by
     intro t
-    apply Subtype.ext
-    have hx := ((mem_iProd _).mp t.property).choose_spec
-    simp only [hx, tuple]
+    have h := (mem_iProd _).mp t.property
+    have ht := h.choose_spec
+    ext
+    unfold tuple at ht
+    simp_rw [ht]
     congr! with i'
     have hi' := (mem_singleton _ _).mp i'.property
     rw [hi']
   right_inv := by
     intro x
     dsimp only []
-    generalize_proofs hf
-    have ht := hf.choose_spec
+    generalize_proofs h
+    have ht := h.choose_spec
     rw [tuple_inj] at ht
     rw [← ht]
 
 /-- Example 3.5.10 -/
 abbrev SetTheory.Set.empty_iProd_equiv (X: (∅:Set) → Set) : iProd X ≃ Unit where
-  toFun := sorry
-  invFun := sorry
-  left_inv := sorry
-  right_inv := sorry
+  toFun := fun t ↦ ()
+  invFun := fun x ↦ ⟨tuple fun e ↦ False.elim (not_mem_empty _ e.property), by apply tuple_mem_iProd⟩
+  left_inv := by
+    intro t
+    have h := (mem_iProd _).mp t.property
+    obtain ⟨f, hf⟩ := h
+    ext
+    rw [hf]
+    congr! with e
+    have := not_mem_empty e
+    contradiction
+  right_inv := by
+    intro
+    simp
 
 /-- Example 3.5.10 -/
 noncomputable abbrev SetTheory.Set.iProd_of_const_equiv (I:Set) (X: Set) :
