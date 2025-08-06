@@ -234,18 +234,17 @@ noncomputable abbrev SetTheory.Set.singleton_iProd_equiv (i:Object) (X:Set) :
     have h := (mem_iProd _).mp t.property
     have ht := h.choose_spec
     ext
-    unfold tuple at ht
-    simp_rw [ht]
-    congr! with i'
-    have hi' := (mem_singleton _ _).mp i'.property
-    rw [hi']
+    rw [ht, tuple_inj]
+    ext ⟨i', hi'⟩
+    rw [mem_singleton] at hi'
+    simp_rw [hi']
   right_inv := by
     intro x
     dsimp only []
     generalize_proofs h
     have ht := h.choose_spec
     rw [tuple_inj] at ht
-    rw [← ht]
+    rw [←ht]
 
 /-- Example 3.5.10 -/
 abbrev SetTheory.Set.empty_iProd_equiv (X: (∅:Set) → Set) : iProd X ≃ Unit where
@@ -256,8 +255,8 @@ abbrev SetTheory.Set.empty_iProd_equiv (X: (∅:Set) → Set) : iProd X ≃ Unit
     have h := (mem_iProd _).mp t.property
     obtain ⟨f, hf⟩ := h
     ext
-    rw [hf]
-    congr! with e
+    rw [hf, tuple_inj]
+    ext e
     have := not_mem_empty e
     contradiction
   right_inv := by
