@@ -253,9 +253,9 @@ abbrev SetTheory.Set.empty_iProd_equiv (X: (∅:Set) → Set) : iProd X ≃ Unit
   left_inv := by
     intro t
     have h := (mem_iProd _).mp t.property
-    obtain ⟨f, hf⟩ := h
+    obtain ⟨x, ht⟩ := h
     ext
-    rw [hf, tuple_inj]
+    rw [ht, tuple_inj]
     ext e
     have := not_mem_empty e
     contradiction
@@ -266,10 +266,21 @@ abbrev SetTheory.Set.empty_iProd_equiv (X: (∅:Set) → Set) : iProd X ≃ Unit
 /-- Example 3.5.10 -/
 noncomputable abbrev SetTheory.Set.iProd_of_const_equiv (I:Set) (X: Set) :
     iProd (fun i:I ↦ X) ≃ (I → X) where
-  toFun := sorry
-  invFun := sorry
-  left_inv := sorry
-  right_inv := sorry
+  toFun := fun t ↦ ((mem_iProd _).mp t.property).choose
+  invFun := fun x ↦ ⟨tuple x, by apply tuple_mem_iProd⟩
+  left_inv := by
+    intro t
+    have h := (mem_iProd _).mp t.property
+    have ht := h.choose_spec
+    ext
+    rw [ht]
+  right_inv := by
+    intro x
+    dsimp only []
+    generalize_proofs h
+    have ht := h.choose_spec
+    rw [tuple_inj] at ht
+    rw [←ht]
 
 /-- Example 3.5.10 -/
 noncomputable abbrev SetTheory.Set.iProd_equiv_prod (X: ({0,1}:Set) → Set) :
