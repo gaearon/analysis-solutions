@@ -316,10 +316,49 @@ noncomputable abbrev SetTheory.Set.iProd_equiv_prod (X: ({0,1}:Set) → Set) :
 /-- Example 3.5.10 -/
 noncomputable abbrev SetTheory.Set.iProd_equiv_prod_triple (X: ({0,1,2}:Set) → Set) :
     iProd X ≃ (X ⟨ 0, by simp ⟩) ×ˢ (X ⟨ 1, by simp ⟩) ×ˢ (X ⟨ 2, by simp ⟩) where
-  toFun := sorry
-  invFun := sorry
-  left_inv := sorry
-  right_inv := sorry
+  toFun := fun t ↦
+    let x := ((mem_iProd _).mp t.property).choose
+    mk_cartesian (x ⟨0, by simp⟩) (mk_cartesian (x ⟨1, by simp⟩) (x ⟨2, by simp⟩))
+  invFun := fun z ↦ ⟨tuple (X:=X) (fun i ↦ by
+    have : i = ⟨0, by simp⟩ ∨ i = ⟨1, by simp⟩ ∨ i = ⟨2, by simp⟩  := by aesop
+    if h : i = ⟨0, by simp⟩ then rw [h]; exact (fst z)
+    else if h : i = ⟨1, by simp⟩ then rw [h]; exact (fst (snd z))
+    else if h : i = ⟨2, by simp⟩ then rw [h]; exact (snd (snd z))
+    else aesop
+  ), by apply tuple_mem_iProd⟩
+  left_inv := by
+    intro t
+    have h := (mem_iProd _).mp t.property
+    have ht := h.choose_spec
+    ext
+    rw [ht, tuple_inj]
+    ext i
+    dsimp only []
+    if h : i = ⟨0, by simp⟩ then
+      rw [dif_pos h, fst_of_mk_cartesian]
+      subst h
+      rfl
+    else if h : i = ⟨1, by simp⟩ then
+      have h0 : i ≠ ⟨0, by simp⟩ := by aesop
+      rw [dif_neg h0, dif_pos h, snd_of_mk_cartesian, fst_of_mk_cartesian]
+      subst h
+      rfl
+    else if h : i = ⟨2, by simp⟩ then
+      have h0 : i ≠ ⟨0, by simp⟩ := by aesop
+      have h1 : i ≠ ⟨1, by simp⟩ := by aesop
+      rw [dif_neg h0, dif_neg h1, dif_pos h, snd_of_mk_cartesian, snd_of_mk_cartesian]
+      subst h
+      rfl
+    else
+      have : i = ⟨0, by simp⟩ ∨ i = ⟨1, by simp⟩ ∨ i = ⟨2, by simp⟩ := by aesop
+      tauto
+  right_inv := by
+    intro z
+    dsimp only []
+    generalize_proofs _ _ _ _ _ _ _ h
+    have ht := h.choose_spec
+    rw [tuple_inj] at ht
+    simp [←ht]
 
 /-- Connections with Mathlib's `Set.pi` -/
 noncomputable abbrev SetTheory.Set.iProd_equiv_pi (I:Set) (X: I → Set) :
