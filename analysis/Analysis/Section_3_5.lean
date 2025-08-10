@@ -522,7 +522,26 @@ lemma SetTheory.Set.Tuple.ext {n:ℕ} {t t':Tuple n}
 
 /-- Exercise 3.5.2 -/
 theorem SetTheory.Set.Tuple.eq {n:ℕ} (t t':Tuple n) :
-    t = t' ↔ ∀ n : Fin n, ((t.x n):Object) = ((t'.x n):Object) := by sorry
+    t = t' ↔ ∀ n : Fin n, ((t.x n):Object) = ((t'.x n):Object) := by
+  constructor
+  · rintro rfl
+    simp
+  intro h
+  ext o
+  · constructor
+    · intro ho
+      let x : t.X := ⟨o, ho⟩
+      have ⟨m, hm⟩ := t.surj x
+      have : (t.x m) = o := by simp_all only [x]
+      rw [← this, h m]
+      use (t'.x m).property
+    intro ho
+    let x' : t'.X := ⟨o, ho⟩
+    have ⟨m, hm⟩ := t'.surj x'
+    have : (t'.x m) = o := by simp_all only [x']
+    rw [← this, (h m).symm]
+    use (t.x m).property
+  apply h
 
 noncomputable abbrev SetTheory.Set.iProd_equiv_tuples (n:ℕ) (X: Fin n → Set) :
     iProd X ≃ { t:Tuple n // ∀ i, (t.x i:Object) ∈ X i } where
