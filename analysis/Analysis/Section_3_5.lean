@@ -463,7 +463,44 @@ theorem SetTheory.Set.finite_choice {n:ℕ} {X: Fin n → Set} (h: ∀ i, X i �
 /-- Exercise 3.5.1, second part (requires axiom of regularity) -/
 abbrev OrderedPair.toObject' : OrderedPair ↪ Object where
   toFun p := ({ p.fst, (({p.fst, p.snd}:Set):Object) }:Set)
-  inj' := by sorry
+  inj' := by
+    intro p1 p2 hp
+    simp only [EmbeddingLike.apply_eq_iff_eq, SetTheory.Set.ext_iff, mem_pair] at hp
+    rw [OrderedPair.eq]
+    have : p1.fst = p2.fst := by
+      have h1 := hp p1.fst
+      have h2 := hp p2.fst
+      simp only [true_or, or_true, true_iff, iff_true] at h1 h2
+      rcases h1 with (h1' | h1')
+      · tauto
+      rcases h2 with (h2' | h2')
+      · tauto
+      have : ∃ (X: Set), p1.fst = X := by simp [h1']
+      obtain ⟨X, hX⟩ := this
+      have : ∃ (Y: Set), p2.fst = Y := by simp [h2']
+      obtain ⟨Y, hY⟩ := this
+      simp only [hX, hY, EmbeddingLike.apply_eq_iff_eq,
+        SetTheory.Set.ext_iff, SetTheory.Set.mem_pair] at h1' h2'
+      have : (X: Object) ∈ Y := by simp_all
+      have : (Y: Object) ∈ X := by simp_all
+      have := not_mem_mem X Y
+      tauto
+    have h1 : (({p2.fst, p1.snd}: Set): Object) ≠ p2.fst := by
+      intro h'
+      have : ∃ (X: Set), {p2.fst, p1.snd} = X := by simp [h']
+      obtain ⟨X, hX⟩ := this
+      have : ∃ (Y: Set), p2.fst = Y := by rw [←h']; simp
+      obtain ⟨Y, hY⟩ := this
+      apply not_mem_self Y
+      simp_all only [EmbeddingLike.apply_eq_iff_eq, or_self, iff_self_or, forall_eq]
+      simp_rw [SetTheory.Set.ext_iff, SetTheory.Set.mem_pair] at hp
+      specialize hp Y
+      simp_all
+    have h2 := hp ({p2.fst, p1.snd}: Set)
+    simp_all only [EmbeddingLike.apply_eq_iff_eq, false_or, true_iff]
+    rw [SetTheory.Set.ext_iff] at h2
+    have := h2 p1.snd
+    aesop
 
 /-- An alternate definition of a tuple, used in Exercise 3.5.2 -/
 structure SetTheory.Set.Tuple (n:ℕ) where
