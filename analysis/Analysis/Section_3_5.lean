@@ -768,7 +768,7 @@ theorem SetTheory.Set.graph_inj {X Y:Set} (f f': X → Y) :
     ext x
     simp_rw [Set.ext_iff, specification_axiom''] at h
     set p := mk_cartesian x (f x)
-    have := (h p).mp (by use p.property; simp)
+    have := (h p).mp (by simp [p.property])
     simp_all
   tauto
 
