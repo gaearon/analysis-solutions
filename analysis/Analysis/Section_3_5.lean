@@ -762,11 +762,20 @@ abbrev SetTheory.Set.graph {X Y:Set} (f: X → Y) : Set :=
 
 /-- Exercise 3.5.10 -/
 theorem SetTheory.Set.graph_inj {X Y:Set} (f f': X → Y) :
-    graph f = graph f' ↔ f = f' := by sorry
+    graph f = graph f' ↔ f = f' := by
+  constructor
+  · intro h
+    ext x
+    simp_rw [Set.ext_iff, specification_axiom''] at h
+    set p := mk_cartesian x (f x)
+    have := (h p).mp (by use p.property; simp)
+    simp_all
+  tauto
 
 theorem SetTheory.Set.is_graph {X Y G:Set} (hG: G ⊆ X ×ˢ Y)
   (hvert: ∀ x:X, ∃! y:Y, ((⟨x,y⟩:OrderedPair):Object) ∈ G) :
-    ∃! f: X → Y, G = graph f := by sorry
+    ∃! f: X → Y, G = graph f := by
+  sorry
 
 /--
   Exercise 3.5.11. This trivially follows from `SetTheory.Set.powerset_axiom`, but the
