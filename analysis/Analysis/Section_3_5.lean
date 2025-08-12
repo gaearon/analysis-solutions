@@ -746,7 +746,16 @@ theorem SetTheory.Set.iProd_empty_iff {n:ℕ} {X: Fin n → Set} :
 /-- Exercise 3.5.9-/
 theorem SetTheory.Set.iUnion_inter_iUnion {I J: Set} (A: I → Set) (B: J → Set) :
     (iUnion I A) ∩ (iUnion J B) = iUnion (I ×ˢ J) (fun p ↦ (A (fst p)) ∩ (B (snd p))) := by
-  sorry
+  ext x
+  simp only [mem_inter, mem_iUnion]
+  constructor
+  · rintro ⟨⟨i, ha⟩, j, hb⟩
+    use mk_cartesian i j
+    simp [ha, hb]
+  intro ⟨p, ⟨ha, hb⟩⟩
+  constructor
+  · use fst p
+  use snd p
 
 abbrev SetTheory.Set.graph {X Y:Set} (f: X → Y) : Set :=
   (X ×ˢ Y).specify (fun p ↦ (f (fst p) = snd p))
