@@ -715,12 +715,21 @@ def SetTheory.Set.prod_subset_prod' :
 
 /-- Exercise 3.5.7 -/
 theorem SetTheory.Set.direct_sum {X Y Z:Set} (f: Z → X) (g: Z → Y) :
-    ∃! h: Z → X ×ˢ Y, fst ∘ h = f ∧ snd ∘ h = g := by sorry
+    ∃! h: Z → X ×ˢ Y, fst ∘ h = f ∧ snd ∘ h = g := by
+  apply existsUnique_of_exists_of_unique
+  · use fun z ↦ mk_cartesian (f z) (g z)
+    aesop
+  intro h1 h2 ⟨hf, hs⟩ ⟨rfl, rfl⟩
+  ext
+  rw [Function.comp_def, funext_iff] at hf hs
+  rw [pair_eq_fst_snd, pair_eq_fst_snd]
+  simp_all
 
 /-- Exercise 3.5.8 -/
 @[simp]
 theorem SetTheory.Set.iProd_empty_iff {n:ℕ} {X: Fin n → Set} :
-    iProd X = ∅ ↔ ∃ i, X i = ∅ := by sorry
+    iProd X = ∅ ↔ ∃ i, X i = ∅ := by
+  sorry
 
 /-- Exercise 3.5.9-/
 theorem SetTheory.Set.iUnion_inter_iUnion {I J: Set} (A: I → Set) (B: J → Set) :
