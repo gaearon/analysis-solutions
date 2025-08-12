@@ -727,11 +727,26 @@ theorem SetTheory.Set.direct_sum {X Y Z:Set} (f: Z → X) (g: Z → Y) :
 @[simp]
 theorem SetTheory.Set.iProd_empty_iff {n:ℕ} {X: Fin n → Set} :
     iProd X = ∅ ↔ ∃ i, X i = ∅ := by
-  sorry
+  rw [eq_empty_iff_forall_notMem]
+  constructor
+  · intro h
+    by_contra! h'
+    have x : ∀ i, X i := fun i ↦ nonempty_choose (h' i)
+    have : tuple x ∈ iProd X := by rw [mem_iProd]; use x
+    have : tuple x ∉ iProd X := by exact h (tuple x)
+    contradiction
+  intro ⟨i, hi⟩ t ht
+  rw [mem_iProd] at ht
+  obtain ⟨x, _⟩ := ht
+  have := (x i).property
+  simp_rw [hi] at this
+  have := not_mem_empty (x i)
+  contradiction
 
 /-- Exercise 3.5.9-/
 theorem SetTheory.Set.iUnion_inter_iUnion {I J: Set} (A: I → Set) (B: J → Set) :
-    (iUnion I A) ∩ (iUnion J B) = iUnion (I ×ˢ J) (fun p ↦ (A (fst p)) ∩ (B (snd p))) := by sorry
+    (iUnion I A) ∩ (iUnion J B) = iUnion (I ×ˢ J) (fun p ↦ (A (fst p)) ∩ (B (snd p))) := by
+  sorry
 
 abbrev SetTheory.Set.graph {X Y:Set} (f: X → Y) : Set :=
   (X ×ˢ Y).specify (fun p ↦ (f (fst p) = snd p))
