@@ -545,30 +545,86 @@ theorem SetTheory.Set.Tuple.eq {n:ℕ} (t t':Tuple n) :
 
 noncomputable abbrev SetTheory.Set.iProd_equiv_tuples (n:ℕ) (X: Fin n → Set) :
     iProd X ≃ { t:Tuple n // ∀ i, (t.x i:Object) ∈ X i } where
-  toFun := sorry
-  invFun := sorry
-  left_inv := sorry
-  right_inv := sorry
+  toFun := fun t ↦
+    let hx := (mem_iProd _).mp t.property
+    let x := hx.choose
+    ⟨{
+      X := iUnion _ fun i ↦ {((x i): Object)},
+      x := fun i ↦ ⟨x i, by rw [mem_iUnion]; use i; simp⟩,
+      surj := by
+        rintro ⟨o, ho⟩
+        rw [mem_iUnion] at ho
+        obtain ⟨i, hi⟩ := ho
+        rw [mem_singleton] at hi
+        subst hi
+        use i
+    }, by intro i; use (x i).property⟩
+  invFun := fun t ↦
+    let x := fun i ↦ (⟨t.val.x i, t.property i⟩: X i)
+    ⟨tuple x, by rw [mem_iProd]; use x⟩
+  left_inv := by
+    intro t
+    let hx := (mem_iProd _).mp t.property
+    simp [←hx.choose_spec]
+  right_inv := by
+    intro ⟨t, _⟩
+    ext xi
+    · simp only [mem_iUnion, mem_singleton]
+      generalize_proofs hx
+      have := hx.choose_spec
+      rw [tuple_inj] at this
+      simp only [←this]
+      obtain ⟨x, hx⟩ := hx
+      constructor
+      · rintro ⟨i, rfl⟩
+        use (t.x i).property
+      intro hxi
+      obtain ⟨i, hi⟩ := t.surj ⟨xi, hxi⟩
+      use i
+      rw [hi]
+    dsimp only []
+    generalize_proofs hx
+    have := hx.choose_spec
+    rw [tuple_inj] at this
+    rw [←this]
 
 /--
   Exercise 3.5.3. The spirit here is to avoid direct rewrites (which make all of these claims
   trivial), and instead use `OrderedPair.eq` or `SetTheory.Set.tuple_inj`
 -/
-theorem OrderedPair.refl (p: OrderedPair) : p = p := by sorry
+theorem OrderedPair.refl (p: OrderedPair) : p = p := by
+  rw [OrderedPair.eq]
+  constructor <;> rfl
 
-theorem OrderedPair.symm (p q: OrderedPair) : p = q ↔ q = p := by sorry
+theorem OrderedPair.symm (p q: OrderedPair) : p = q ↔ q = p := by
+  constructor
+  all_goals {
+    rw [OrderedPair.eq]
+    intro ⟨h1, h2⟩
+    symm
+    rw [OrderedPair.eq]
+    use h1, h2
+  }
 
-theorem OrderedPair.trans {p q r: OrderedPair} (hpq: p=q) (hqr: q=r) : p=r := by sorry
+theorem OrderedPair.trans {p q r: OrderedPair} (hpq: p=q) (hqr: q=r) : p=r := by
+  rw [OrderedPair.eq] at *
+  rw [←hpq.1, ←hpq.2] at hqr
+  exact hqr
 
 theorem SetTheory.Set.tuple_refl {I:Set} {X: I → Set} (a: ∀ i, X i) :
-    tuple a = tuple a := by sorry
+    tuple a = tuple a := by
+  rw [tuple_inj]
 
 theorem SetTheory.Set.tuple_symm {I:Set} {X: I → Set} (a b: ∀ i, X i) :
-    tuple a = tuple b ↔ tuple b = tuple a := by sorry
+    tuple a = tuple b ↔ tuple b = tuple a := by
+  rw [tuple_inj, tuple_inj]
+  constructor <;> intro <;> symm <;> assumption
 
 theorem SetTheory.Set.tuple_trans {I:Set} {X: I → Set} {a b c: ∀ i, X i}
   (hab: tuple a = tuple b) (hbc : tuple b = tuple c) :
-    tuple a = tuple c := by sorry
+    tuple a = tuple c := by
+  rw [tuple_inj] at *
+  cc
 
 /-- Exercise 3.5.4 -/
 theorem SetTheory.Set.prod_union (A B C:Set) : A ×ˢ (B ∪ C) = (A ×ˢ B) ∪ (A ×ˢ C) := by sorry
