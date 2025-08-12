@@ -661,7 +661,7 @@ def SetTheory.Set.union_of_prod :
   -- the first line of this construction should be `apply isTrue` or `apply isFalse`.
   apply isFalse
   push_neg
-  use {0}, {}, {}, {0}
+  use {0}, ∅, ∅, {0}
   intro h
   rw [Set.ext_iff] at h
   specialize h (OrderedPair.mk 0 0)
@@ -673,7 +673,7 @@ def SetTheory.Set.diff_of_prod :
   -- the first line of this construction should be `apply isTrue` or `apply isFalse`.
   apply isFalse
   push_neg
-  use {0}, {0}, {}, {0}
+  use {0}, {0}, ∅, {0}
   intro h
   rw [Set.ext_iff] at h
   aesop
@@ -684,13 +684,34 @@ def SetTheory.Set.diff_of_prod :
 theorem SetTheory.Set.prod_subset_prod {A B C D:Set}
   (hA: A ≠ ∅) (hB: B ≠ ∅) (hC: C ≠ ∅) (hD: D ≠ ∅) :
     A ×ˢ B ⊆ C ×ˢ D ↔ A ⊆ C ∧ B ⊆ D := by
-
-  sorry
+  simp_rw [subset_def] at *
+  constructor
+  · intro h
+    constructor
+    · intro a ha
+      by_contra h'
+      let b := nonempty_choose hB
+      let p := mk_cartesian ⟨a, ha⟩ b
+      specialize h _ p.property
+      simp_rw [p, mk_cartesian] at h
+      aesop
+    intro b hb
+    by_contra h'
+    let a := nonempty_choose hA
+    let p := mk_cartesian a ⟨b, hb⟩
+    specialize h _ p.property
+    simp_rw [p, mk_cartesian] at h
+    aesop
+  aesop
 
 def SetTheory.Set.prod_subset_prod' :
   Decidable (∀ (A B C D:Set), A ×ˢ B ⊆ C ×ˢ D ↔ A ⊆ C ∧ B ⊆ D) := by
   -- the first line of this construction should be `apply isTrue` or `apply isFalse`.
-  sorry
+  apply isFalse
+  push_neg
+  use {0}, ∅, ∅, ∅
+  simp_rw [subset_def]
+  aesop
 
 /-- Exercise 3.5.7 -/
 theorem SetTheory.Set.direct_sum {X Y Z:Set} (f: Z → X) (g: Z → Y) :
