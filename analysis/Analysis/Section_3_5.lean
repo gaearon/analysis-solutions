@@ -623,8 +623,7 @@ theorem SetTheory.Set.tuple_symm {I:Set} {X: I → Set} (a b: ∀ i, X i) :
 theorem SetTheory.Set.tuple_trans {I:Set} {X: I → Set} {a b c: ∀ i, X i}
   (hab: tuple a = tuple b) (hbc : tuple b = tuple c) :
     tuple a = tuple c := by
-  rw [tuple_inj] at *
-  cc
+  simp_all [tuple_inj]
 
 /-- Exercise 3.5.4 -/
 theorem SetTheory.Set.prod_union (A B C:Set) : A ×ˢ (B ∪ C) = (A ×ˢ B) ∪ (A ×ˢ C) := by
@@ -665,7 +664,7 @@ def SetTheory.Set.union_of_prod :
   intro h
   rw [Set.ext_iff] at h
   specialize h (OrderedPair.mk 0 0)
-  aesop
+  simp_all
 
 /- Exercise 3.5.5 -/
 def SetTheory.Set.diff_of_prod :
@@ -676,7 +675,7 @@ def SetTheory.Set.diff_of_prod :
   use {0}, {0}, ∅, {0}
   intro h
   rw [Set.ext_iff] at h
-  aesop
+  simp_all
 
 /--
   Exercise 3.5.6.
@@ -701,8 +700,8 @@ theorem SetTheory.Set.prod_subset_prod {A B C D:Set}
     let p := mk_cartesian a ⟨b, hb⟩
     specialize h _ p.property
     simp_rw [p, mk_cartesian] at h
-    aesop
-  aesop
+    simp_all
+  simp_all
 
 def SetTheory.Set.prod_subset_prod' :
   Decidable (∀ (A B C D:Set), A ×ˢ B ⊆ C ×ˢ D ↔ A ⊆ C ∧ B ⊆ D) := by
@@ -710,8 +709,7 @@ def SetTheory.Set.prod_subset_prod' :
   apply isFalse
   push_neg
   use {0}, ∅, ∅, ∅
-  simp_rw [subset_def]
-  aesop
+  simp [subset_def]
 
 /-- Exercise 3.5.7 -/
 theorem SetTheory.Set.direct_sum {X Y Z:Set} (f: Z → X) (g: Z → Y) :
