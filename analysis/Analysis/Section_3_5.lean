@@ -851,14 +851,27 @@ theorem SetTheory.Set.powerset_axiom' (X Y:Set) :
 /-- Exercise 3.5.12, with errata from web site incorporated -/
 theorem SetTheory.Set.recursion (X: Type) (f: nat → X → X) (c:X) :
     ∃! a: nat → X, a 0 = c ∧ ∀ n, a (n + 1:ℕ) = f n (a n) := by
-  sorry
+  apply existsUnique_of_exists_of_unique
+  · let a : ℕ → X := Nat.rec c fun n x ↦ f n x
+    use fun n ↦ a n
+    simp_all [a]
+  intro f1 f2 ⟨h1z, h1s⟩ ⟨h2z, h2s⟩
+  ext x
+  rw [show x = (x:ℕ) by simp]
+  induction' (x:ℕ) with n hn
+  · rw [show ((0:ℕ):nat) = 0 by rfl]
+    cc
+  rw [h1s, h2s, hn]
 
 /-- Exercise 3.5.13 -/
 theorem SetTheory.Set.nat_unique (nat':Set) (zero:nat') (succ:nat' → nat')
   (succ_ne: ∀ n:nat', succ n ≠ zero) (succ_of_ne: ∀ n m:nat', n ≠ m → succ n ≠ succ m)
   (ind: ∀ P: nat' → Prop, P zero → (∀ n, P n → P (succ n)) → ∀ n, P n) :
     ∃! f : nat → nat', Function.Bijective f ∧ f 0 = zero
-    ∧ ∀ (n:nat) (n':nat'), f n = n' ↔ f (n+1:ℕ) = succ n' := by sorry
+    ∧ ∀ (n:nat) (n':nat'), f n = n' ↔ f (n+1:ℕ) = succ n' := by
+  apply existsUnique_of_exists_of_unique
+  · sorry
+  sorry
 
 
 end Chapter3
