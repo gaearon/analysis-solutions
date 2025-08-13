@@ -593,23 +593,19 @@ noncomputable abbrev SetTheory.Set.iProd_equiv_tuples (n:ℕ) (X: Fin n → Set)
   trivial), and instead use `OrderedPair.eq` or `SetTheory.Set.tuple_inj`
 -/
 theorem OrderedPair.refl (p: OrderedPair) : p = p := by
+  cases p
   rw [OrderedPair.eq]
-  constructor <;> rfl
+  cc
 
 theorem OrderedPair.symm (p q: OrderedPair) : p = q ↔ q = p := by
-  constructor
-  all_goals {
-    rw [OrderedPair.eq]
-    intro ⟨h1, h2⟩
-    symm
-    rw [OrderedPair.eq]
-    use h1, h2
-  }
+  cases p
+  cases q
+  simp_rw [OrderedPair.eq]
+  cc
 
 theorem OrderedPair.trans {p q r: OrderedPair} (hpq: p=q) (hqr: q=r) : p=r := by
   rw [OrderedPair.eq] at *
-  rw [←hpq.1, ←hpq.2] at hqr
-  exact hqr
+  cc
 
 theorem SetTheory.Set.tuple_refl {I:Set} {X: I → Set} (a: ∀ i, X i) :
     tuple a = tuple a := by
@@ -617,13 +613,14 @@ theorem SetTheory.Set.tuple_refl {I:Set} {X: I → Set} (a: ∀ i, X i) :
 
 theorem SetTheory.Set.tuple_symm {I:Set} {X: I → Set} (a b: ∀ i, X i) :
     tuple a = tuple b ↔ tuple b = tuple a := by
-  rw [tuple_inj, tuple_inj]
-  constructor <;> intro <;> symm <;> assumption
+  simp_rw [tuple_inj]
+  cc
 
 theorem SetTheory.Set.tuple_trans {I:Set} {X: I → Set} {a b c: ∀ i, X i}
   (hab: tuple a = tuple b) (hbc : tuple b = tuple c) :
     tuple a = tuple c := by
-  simp_all [tuple_inj]
+  simp_rw [tuple_inj] at *
+  cc
 
 /-- Exercise 3.5.4 -/
 theorem SetTheory.Set.prod_union (A B C:Set) : A ×ˢ (B ∪ C) = (A ×ˢ B) ∪ (A ×ˢ C) := by
@@ -810,7 +807,8 @@ theorem SetTheory.Set.is_graph {X Y G:Set} (hG: G ⊆ X ×ˢ Y)
   exercise is to derive it from `SetTheory.Set.exists_powerset` instead.
 -/
 theorem SetTheory.Set.powerset_axiom' (X Y:Set) :
-    ∃! S:Set, ∀(F:Object), F ∈ S ↔ ∃ f: Y → X, f = F := sorry
+    ∃! S:Set, ∀(F:Object), F ∈ S ↔ ∃ f: Y → X, f = F :=
+  sorry
 
 /-- Exercise 3.5.12, with errata from web site incorporated -/
 theorem SetTheory.Set.recursion (X: Type) (f: nat → X → X) (c:X) :
