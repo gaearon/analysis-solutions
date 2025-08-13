@@ -870,7 +870,24 @@ theorem SetTheory.Set.nat_unique (nat':Set) (zero:nat') (succ:nat' → nat')
     ∃! f : nat → nat', Function.Bijective f ∧ f 0 = zero
     ∧ ∀ (n:nat) (n':nat'), f n = n' ↔ f (n+1:ℕ) = succ n' := by
   apply existsUnique_of_exists_of_unique
-  · sorry
+  · let f : nat → nat' := fun x ↦
+      sorry
+    use f
+    constructor
+    · constructor
+      · intro x1 x2 hf
+        sorry
+      intro x'
+      sorry
+    constructor
+    · sorry
+    intro x x'
+    constructor
+    · intro h
+      sorry
+    intro h
+    sorry
+  intro f1 f2 h1 h2
   sorry
 
 
