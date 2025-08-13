@@ -807,12 +807,51 @@ theorem SetTheory.Set.is_graph {X Y G:Set} (hG: G ⊆ X ×ˢ Y)
   exercise is to derive it from `SetTheory.Set.exists_powerset` instead.
 -/
 theorem SetTheory.Set.powerset_axiom' (X Y:Set) :
-    ∃! S:Set, ∀(F:Object), F ∈ S ↔ ∃ f: Y → X, f = F :=
-  sorry
+    ∃! S:Set, ∀(F:Object), F ∈ S ↔ ∃ f: Y → X, f = F := by
+  have ⟨PT, hPT⟩ := exists_powerset (Y ×ˢ X)
+  let SG := PT.specify (fun T ↦
+    let h := (hPT T).mp T.property
+    let G := h.choose
+    ∀ y:Y, ∃! x:X, ((⟨y, x⟩:OrderedPair):Object) ∈ G
+  )
+  let SF := SG.replace (P := fun oG of ↦
+     ∃! f: Y → X, of = f ∧ oG = ((graph f): Object)
+  ) (by
+    rintro G _ _ ⟨⟨f1, ⟨⟨_, h1⟩⟩⟩, ⟨f2, ⟨⟨_, h2⟩⟩⟩⟩
+    simp_all [graph_inj]
+  )
+  apply existsUnique_of_exists_of_unique
+  · use SF
+    intro fo
+    simp only [SF, replacement_axiom, Subtype.exists, exists_prop]
+    constructor
+    · rintro ⟨G, hG, f, ⟨⟨rfl, rfl⟩⟩⟩
+      use f
+    rintro ⟨f, rfl⟩
+    use graph f
+    constructor
+    · simp only [SG, specification_axiom'']
+      constructor
+      · intro y
+        use f y
+        generalize_proofs h
+        obtain ⟨hG⟩ := h.choose_spec
+        rw [EmbeddingLike.apply_eq_iff_eq] at hG
+        rw [←hG]
+        simp
+      rw [hPT]
+      simp only [EmbeddingLike.apply_eq_iff_eq, exists_eq_left', subset_def]
+      intro T hT
+      rw [specification_axiom''] at hT
+      exact hT.1
+    use f
+    simp
+  aesop
 
 /-- Exercise 3.5.12, with errata from web site incorporated -/
 theorem SetTheory.Set.recursion (X: Type) (f: nat → X → X) (c:X) :
-    ∃! a: nat → X, a 0 = c ∧ ∀ n, a (n + 1:ℕ) = f n (a n) := by sorry
+    ∃! a: nat → X, a 0 = c ∧ ∀ n, a (n + 1:ℕ) = f n (a n) := by
+  sorry
 
 /-- Exercise 3.5.13 -/
 theorem SetTheory.Set.nat_unique (nat':Set) (zero:nat') (succ:nat' → nat')
