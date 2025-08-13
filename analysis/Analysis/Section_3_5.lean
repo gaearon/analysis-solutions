@@ -775,7 +775,35 @@ theorem SetTheory.Set.graph_inj {X Y:Set} (f f': X → Y) :
 theorem SetTheory.Set.is_graph {X Y G:Set} (hG: G ⊆ X ×ˢ Y)
   (hvert: ∀ x:X, ∃! y:Y, ((⟨x,y⟩:OrderedPair):Object) ∈ G) :
     ∃! f: X → Y, G = graph f := by
-  sorry
+  apply existsUnique_of_exists_of_unique
+  · use fun x ↦ (hvert x).choose
+    ext po
+    constructor
+    · intro hpo
+      rw [subset_def] at hG
+      let p : X ×ˢ Y := ⟨po, hG po hpo⟩
+      have hpG : (p: Object) ∈ G := by simp [p, hpo]
+      let y := snd p
+      obtain ⟨y', hp, huniq⟩ := hvert (fst p)
+      obtain rfl := huniq y (by simp [p]; rwa [←pair_eq_fst_snd])
+      rw [specification_axiom'']
+      use p.property
+      simp only [Subtype.forall]
+      generalize_proofs _ h
+      obtain ⟨_, hy⟩ := h.choose_spec
+      specialize hy y y.property hp
+      rw [←hy]
+    intro h
+    rw [specification_axiom''] at h
+    obtain ⟨hpo, hy⟩ := h
+    simp only [Subtype.forall] at hy
+    generalize_proofs h at hy
+    obtain ⟨hy'⟩ := h.choose_spec
+    let p : X ×ˢ Y := ⟨po, hpo⟩
+    change (p: Object) ∈ G
+    rw [pair_eq_fst_snd, ←hy]
+    exact hy'
+  simp_all [graph_inj]
 
 /--
   Exercise 3.5.11. This trivially follows from `SetTheory.Set.powerset_axiom`, but the
