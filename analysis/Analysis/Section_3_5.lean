@@ -849,7 +849,7 @@ theorem SetTheory.Set.powerset_axiom' (X Y:Set) :
   aesop
 
 /-- Exercise 3.5.12, with errata from web site incorporated -/
-theorem SetTheory.Set.recursion (X: Type) (f: nat → X → X) (c:X) :
+theorem SetTheory.Set.recursion (X: Set) (f: nat → X → X) (c:X) :
     ∃! a: nat → X, a 0 = c ∧ ∀ n, a (n + 1:ℕ) = f n (a n) := by
   apply existsUnique_of_exists_of_unique
   · let a : ℕ → X := Nat.rec c fun n x ↦ f n x
@@ -861,6 +861,7 @@ theorem SetTheory.Set.recursion (X: Type) (f: nat → X → X) (c:X) :
   induction' (x:ℕ) with n hn
   · rw [show ((0:ℕ):nat) = 0 by rfl]
     cc
+  rw [←Subtype.eq_iff] at hn
   rw [h1s, h2s, hn]
 
 /-- Exercise 3.5.13 -/
@@ -869,26 +870,62 @@ theorem SetTheory.Set.nat_unique (nat':Set) (zero:nat') (succ:nat' → nat')
   (ind: ∀ P: nat' → Prop, P zero → (∀ n, P n → P (succ n)) → ∀ n, P n) :
     ∃! f : nat → nat', Function.Bijective f ∧ f 0 = zero
     ∧ ∀ (n:nat) (n':nat'), f n = n' ↔ f (n+1:ℕ) = succ n' := by
+  have nat_coe_eq {m:nat} {n} : (m:ℕ) = n → m = n := by aesop
+  have nat_coe_eq_zero {m:nat} : (m:ℕ) = 0 → m = 0 := nat_coe_eq
+  obtain ⟨f, ⟨⟨hz, hs⟩, hu⟩⟩ := recursion nat' (fun _ n' ↦ succ n') zero
   apply existsUnique_of_exists_of_unique
-  · let f : nat → nat' := fun x ↦
-      sorry
-    use f
+  · use f
     constructor
     · constructor
-      · intro x1 x2 hf
-        sorry
-      intro x'
-      sorry
+      · intro x1 x2 heq
+        induction' hx1: (x1:ℕ) with i ih generalizing x1 x2
+        · apply nat_coe_eq_zero at hx1
+          subst hx1
+          rcases hx2: (x2: ℕ) with _ | j
+          · apply nat_coe_eq at hx2
+            exact hx2.symm
+          apply nat_coe_eq at hx2
+          rw [hx2, hz, hs j] at heq
+          tauto
+        apply nat_coe_eq at hx1
+        subst hx1
+        rcases hx2: (x2: ℕ) with _ | j
+        · apply nat_coe_eq_zero at hx2
+          rw [hx2, hz, hs i] at heq
+          tauto
+        apply nat_coe_eq at hx2
+        subst hx2
+        rw [hs, hs j] at heq
+        specialize ih ((succ_of_ne _ _).mtr heq) (by simp)
+        rwa [nat_equiv_inj, ←Nat.add_right_cancel_iff, ←nat_equiv_inj] at ih
+      apply ind
+      · use 0
+      rintro y ⟨x, rfl⟩
+      use ((x:ℕ) + 1:ℕ)
+      rw [hs, nat_equiv_coe_of_coe']
     constructor
-    · sorry
+    · exact hz
     intro x x'
     constructor
     · intro h
-      sorry
+      rw [hs, nat_equiv_coe_of_coe', h]
     intro h
-    sorry
-  intro f1 f2 h1 h2
-  sorry
-
+    rw [hs] at h
+    contrapose! h
+    apply succ_of_ne
+    rwa [nat_equiv_coe_of_coe']
+  have hind : ∀ g : nat → nat',
+      g 0 = zero →
+      (∀ n n', g n = n' ↔ g (n+1:ℕ) = succ n') →
+      ∀ n, g ((n + 1): ℕ) = succ (g n) := by
+    intro g hz hs n
+    induction' n with i hi
+    · rw [show (0:nat) = (0:ℕ) by rfl] at hz
+      rwa [hz, ←nat_equiv_coe_of_coe 0, ←hs]
+    rw [←nat_equiv_coe_of_coe (i+1), ←hs]
+    simp
+  intro f1 f2 ⟨_, ⟨hz1, hs1⟩⟩ ⟨_, ⟨hz2, hs2⟩⟩
+  rw [hu f1 ⟨hz1, hind f1 hz1 hs1⟩]
+  rw [hu f2 ⟨hz2, hind f2 hz2 hs2⟩]
 
 end Chapter3
