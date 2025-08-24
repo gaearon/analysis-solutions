@@ -37,22 +37,58 @@ variable [SetTheory]
 abbrev SetTheory.Set.EqualCard (X Y:Set) : Prop := ∃ f : X → Y, Function.Bijective f
 
 /-- Example 3.6.2 -/
-theorem SetTheory.Set.Example_3_6_2 : EqualCard {0,1,2} {3,4,5} := by sorry
+theorem SetTheory.Set.Example_3_6_2 : EqualCard {0,1,2} {3,4,5} := by
+  use open Classical in fun x ↦
+    ⟨if x.val = 0 then 3 else if x.val = 1 then 4 else 5, by aesop⟩
+  constructor
+  · intro; aesop
+  intro y
+  have : y = (3: Object) ∨ y = (4: Object) ∨ y = (5: Object) := by
+    have := y.property
+    aesop
+  rcases this with (_ | _ | _)
+  · use ⟨0, by simp⟩; aesop
+  · use ⟨1, by simp⟩; aesop
+  · use ⟨2, by simp⟩; aesop
 
 /-- Example 3.6.3 -/
-theorem SetTheory.Set.Example_3_6_3 : EqualCard nat (nat.specify (fun x ↦ Even (x:ℕ))) := by sorry
+theorem SetTheory.Set.Example_3_6_3 : EqualCard nat (nat.specify (fun x ↦ Even (x:ℕ))) := by
+  use fun x ↦ ⟨((2:ℕ) * (x:ℕ)), by
+    rw [specification_axiom'']
+    constructor
+    · use x; rw [@Equiv.apply_eq_iff_eq_symm_apply]; congr; ring
+    · use ((2:ℕ) * (x:ℕ): nat).property⟩
+  constructor
+  · intro x y hf
+    aesop
+  intro ⟨y, hy⟩
+  rw [specification_axiom''] at hy
+  obtain ⟨_, ⟨x, hx⟩⟩ := hy
+  use x
+  rw [←Nat.two_mul] at hx
+  simp [←hx]
 
 @[refl]
 theorem SetTheory.Set.EqualCard.refl (X:Set) : EqualCard X X := by
-  sorry
+  use id
+  exact Function.bijective_id
 
 @[symm]
 theorem SetTheory.Set.EqualCard.symm {X Y:Set} (h: EqualCard X Y) : EqualCard Y X := by
-  sorry
+  obtain ⟨f, hf⟩ := h
+  use Function.surjInv hf.2
+  constructor
+  · apply Function.injective_surjInv
+  apply Function.RightInverse.surjective
+  apply Function.leftInverse_surjInv hf
 
 @[trans]
 theorem SetTheory.Set.EqualCard.trans {X Y Z:Set} (h1: EqualCard X Y) (h2: EqualCard Y Z) : EqualCard X Z := by
-  sorry
+  obtain ⟨f1, hf1⟩ := h1
+  obtain ⟨f2, hf2⟩ := h2
+  unfold EqualCard
+  use (f2 ∘ f1)
+  exact Function.Bijective.comp hf2 hf1
 
 /-- Proposition 3.6.4 / Exercise 3.6.1 -/
 instance SetTheory.Set.EqualCard.inst_setoid : Setoid SetTheory.Set := ⟨ EqualCard, {refl, symm, trans} ⟩
@@ -66,13 +102,57 @@ theorem SetTheory.Set.has_card_iff (X:Set) (n:ℕ) :
 
 /-- Remark 3.6.6 -/
 theorem SetTheory.Set.Remark_3_6_6 (n:ℕ) :
-    (nat.specify (fun x ↦ 1 ≤ (x:ℕ) ∧ (x:ℕ) ≤ n)).has_card n := by sorry
+    (nat.specify (fun x ↦ 1 ≤ (x:ℕ) ∧ (x:ℕ) ≤ n)).has_card n := by
+  rw [has_card_iff]
+  use fun x ↦ Fin_mk _ (((⟨x.val, by aesop⟩: nat): ℕ) - (1:ℕ)) (by
+    have := x.property
+    rw [specification_axiom''] at this
+    obtain ⟨_, ⟨h1, h2⟩⟩ := this
+    use Nat.sub_one_lt_of_le h1 h2)
+  constructor
+  · intro x y hf
+    simp only [Subtype.mk.injEq, Object.natCast_inj] at hf
+    have := x.property
+    have := y.property
+    have := Nat.sub_one_cancel (by aesop) (by aesop) hf
+    aesop
+  intro ⟨y, hy⟩
+  rw [mem_Fin] at hy
+  obtain ⟨y', hy', rfl⟩ := hy
+  use ⟨y' + (1:ℕ), by
+    rw [specification_axiom'']
+    use ((y' + (1:ℕ)): nat).property
+    aesop⟩
+  simp
 
 /-- Example 3.6.7 -/
-theorem SetTheory.Set.Example_3_6_7a (a:Object) : ({a}:Set).has_card 1 := by sorry
+theorem SetTheory.Set.Example_3_6_7a (a:Object) : ({a}:Set).has_card 1 := by
+  rw [has_card_iff]
+  use fun _ ↦ Fin_mk _ 0 (by simp)
+  constructor
+  · intro x1 x2 hf; aesop
+  intro y
+  use ⟨a, by simp⟩
+  have := Fin.toNat_lt y
+  simp_all
 
 theorem SetTheory.Set.Example_3_6_7b {a b c d:Object} (hab: a ≠ b) (hac: a ≠ c) (had: a ≠ d)
-  (hbc: b ≠ c) (hbd: b ≠ d) (hcd: c ≠ d) : ({a,b,c,d}:Set).has_card 4 := by sorry
+    (hbc: b ≠ c) (hbd: b ≠ d) (hcd: c ≠ d) : ({a,b,c,d}:Set).has_card 4 := by
+  rw [has_card_iff]
+  use open Classical in fun x ↦ Fin_mk _ (
+    if x.val = a then 0 else if x.val = b then 1 else if x.val = c then 2 else 3
+  ) (by aesop)
+  constructor
+  · intro x1 x2 hf; aesop
+  intro y
+  have : y = (0:ℕ) ∨ y = (1:ℕ) ∨ y = (2:ℕ) ∨ y = (3:ℕ) := by
+    have := Fin.toNat_lt y
+    omega
+  rcases this with (_ | _ | _ | _)
+  · use ⟨a, by aesop⟩; aesop
+  · use ⟨b, by aesop⟩; aesop
+  · use ⟨c, by aesop⟩; aesop
+  · use ⟨d, by aesop⟩; aesop
 
 /-- Lemma 3.6.9 -/
 theorem SetTheory.Set.pos_card_nonempty {n:ℕ} (h: n ≥ 1) {X:Set} (hX: X.has_card n) : X ≠ ∅ := by
@@ -82,12 +162,27 @@ theorem SetTheory.Set.pos_card_nonempty {n:ℕ} (h: n ≥ 1) {X:Set} (hX: X.has_
     apply nonempty_of_inhabited (x := 0); rw [mem_Fin]; use 0, (by omega); rfl
   rw [has_card_iff] at hX
   choose f hf using hX
-  sorry
   -- obtain a contradiction from the fact that `f` is a bijection from the empty set to a
   -- non-empty set.
+  subst this
+  let z := Fin_mk n 0 (by aesop)
+  choose e he using hf.2 z
+  have := e.property
+  simp_all
 
 /-- Exercise 3.6.2a -/
-theorem SetTheory.Set.has_card_zero {X:Set} : X.has_card 0 ↔ X = ∅ := by sorry
+theorem SetTheory.Set.has_card_zero {X:Set} : X.has_card 0 ↔ X = ∅ := by
+  rw [has_card_iff]
+  have : Fin 0 = ∅ := by aesop
+  rw [this]
+  constructor
+  · choose f hf
+    by_contra! h
+    have := (f (nonempty_choose h)).property
+    simp_all
+  rintro rfl
+  use id
+  exact Function.bijective_id
 
 /-- Lemma 3.6.9 -/
 theorem SetTheory.Set.card_erase {n:ℕ} (h: n ≥ 1) {X:Set} (hX: X.has_card n) (x:X) :
@@ -108,7 +203,57 @@ theorem SetTheory.Set.card_erase {n:ℕ} (h: n ≥ 1) {X:Set} (hX: X.has_card n)
     else Fin_mk _ (f (ι x') - 1) (by omega)
   have hg_def (x':X') : if (f (ι x'):ℕ) < m₀ then (g x':ℕ) = f (ι x') else (g x':ℕ) = f (ι x') - 1 := by
     split_ifs with h' <;> simp [g,h']
-  have hg : Function.Bijective g := by sorry
+  have hg : Function.Bijective g := by
+    constructor
+    · intro x1' x2' hgx
+      let x1 : X := ⟨x1', by have := x1'.property; simp_all [X']⟩
+      let x2 : X := ⟨x2', by have := x2'.property; simp_all [X']⟩
+      suffices : x1 = x2
+      · aesop
+      apply hf.1
+      have hgx1 := hg_def x1'
+      have hgx2 := hg_def x2'
+      set fx1 := (f (ι x1'):ℕ)
+      set fx2 := (f (ι x2'):ℕ)
+      let gx := ((g x1'):ℕ)
+      rw [show ((g x1'):ℕ) = gx by rfl] at hgx1
+      rw [show ((g x2'):ℕ) = gx by rw [←hgx]] at hgx2
+      suffices : fx1 = fx2
+      · simpa [fx1, fx2]
+      have hfx : ∀ (x': X'), (f (ι x'):ℕ) ≠ m₀ := by
+        intro x'
+        by_contra h
+        have hfeq : (f x) = f (ι x') := by simp [Subtype.eq_iff, ←h, hm₀f]
+        have heq : (x': Object) = x := by subst h; simp_all [hf.1 hfeq]
+        have hneq : (x': Object) ≠ x := by have := x'.property; simp_all [X']
+        tauto
+      have := hfx x1'
+      have := hfx x2'
+      by_cases gx < m₀ <;> by_cases fx1 < m₀ <;> grind
+    intro y
+    by_cases hy : y < m₀
+    · choose x2 hx2 using hf.2 (Fin_mk _ y (by omega))
+      have hneq : x2 ≠ x := by
+        by_contra hx2
+        subst hx2
+        have : y = m₀ := by simpa [hx2] using hm₀f
+        omega
+      let x' : X' := ⟨x2, by aesop⟩
+      use x'
+      specialize hg_def x'
+      aesop
+    choose x2 hx2 using hf.2 (Fin_mk _ (y + 1) (by have := Fin.toNat_lt y; omega))
+    have hneq : x2 ≠ x := by
+      by_contra hx2
+      subst hx2
+      have : m₀ = y + 1 := by simp_rw [hx2, Object.natCast_inj] at hm₀f; tauto
+      simp_all
+    let x' : X' := ⟨x2, by aesop⟩
+    use x'
+    specialize hg_def x'
+    have : ¬(f x2 < m₀) := by simp_rw [hx2, Fin.toNat_mk]; omega
+    rw [if_neg this, hx2] at hg_def
+    simp_all
   use g
 
 /-- Proposition 3.6.8 (Uniqueness of cardinality) -/
