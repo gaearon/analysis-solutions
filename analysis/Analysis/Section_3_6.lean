@@ -33,6 +33,8 @@ export SetTheory (Set Object nat)
 
 variable [SetTheory]
 
+open SetTheory.Set
+
 /-- Definition 3.6.1 (Equal cardinality) -/
 abbrev SetTheory.Set.EqualCard (X Y:Set) : Prop := ∃ f : X → Y, Function.Bijective f
 
@@ -268,11 +270,41 @@ theorem SetTheory.Set.card_uniq {X:Set} {n m:ℕ} (h1: X.has_card n) (h2: X.has_
   have : m ≠ 0 := by contrapose! this; simpa [has_card_zero, this] using h2
   specialize hn (card_erase ?_ h1 ⟨ _, hx ⟩) (card_erase ?_ h2 ⟨ _, hx ⟩) <;> omega
 
-example : ({0,1,2}:Set).has_card 3 := by sorry
+lemma SetTheory.Set.Example_3_6_8_a: ({0,1,2}:Set).has_card 3 := by
+  rw [has_card_iff]
+  have : ({0, 1, 2}: Set) = SetTheory.Set.Fin 3 := by
+    ext x
+    simp only [mem_insert, mem_singleton, mem_Fin]
+    constructor
+    · rintro (rfl | rfl | rfl)
+      · use 0; aesop
+      · use 1; aesop
+      · use 2; aesop
+    rintro ⟨x, ⟨_, rfl⟩⟩
+    simp [nat_coe_eq_iff]
+    omega
+  rw [this]
+  use id
+  exact Function.bijective_id
 
-example : ({3,4}:Set).has_card 2 := by sorry
+open Classical in
+lemma SetTheory.Set.Example_3_6_8_b : ({3,4}:Set).has_card 2 := by
+  rw [has_card_iff]
+  use fun x ↦ Fin_mk _ (if x = (3:Object) then 0 else 1) (by aesop)
+  constructor
+  · intro x1 x2
+    aesop
+  intro y
+  have := Fin.toNat_lt y
+  have : y = (0:ℕ) ∨ y = (1:ℕ) := by omega
+  aesop
 
-example : ¬({0,1,2}:Set) ≈ ({3,4}:Set) := by sorry
+example : ¬({0,1,2}:Set) ≈ ({3,4}:Set) := by
+  by_contra h
+  have h1 : (SetTheory.Set.Fin 3) ≈ (Fin 2) := (Example_3_6_8_a.symm.trans h).trans Example_3_6_8_b
+  have h2 : (SetTheory.Set.Fin 3) ≈ (Fin 3) := by rfl
+  have := card_uniq h1 h2
+  contradiction
 
 abbrev SetTheory.Set.finite (X:Set) : Prop := ∃ n:ℕ, X.has_card n
 
