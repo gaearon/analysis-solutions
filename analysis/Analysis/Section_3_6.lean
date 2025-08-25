@@ -311,7 +311,23 @@ abbrev SetTheory.Set.finite (X:Set) : Prop := ∃ n:ℕ, X.has_card n
 abbrev SetTheory.Set.infinite (X:Set) : Prop := ¬ finite X
 
 /-- Exercise 3.6.3, phrased using Mathlib natural numbers -/
-theorem SetTheory.Set.bounded_on_finite {n:ℕ} (f: Fin n → nat) : ∃ M, ∀ i, (f i:ℕ) ≤ M := by sorry
+theorem SetTheory.Set.bounded_on_finite {n:ℕ} (f: Fin n → nat) : ∃ M, ∀ i, (f i:ℕ) ≤ M := by
+  induction' n with n ih
+  · simp
+  let f' := fun (i: Fin n) ↦ f (Fin_embed _ _ (by omega) i)
+  choose M' hM' using ih f'
+  let M'' := f ⟨n, by rw [mem_Fin]; simp_all⟩
+  use Nat.max M' M''
+  intro i
+  simp only [le_sup_iff]
+  by_cases hi : (i:ℕ) = n
+  · right
+    apply le_of_eq
+    congr; simpa
+  left
+  have : i < n + 1 := by have := i.property; rw [mem_Fin] at this; simpa
+  have : i < n := by omega
+  exact hM' ⟨i, by rw [mem_Fin]; simpa⟩
 
 /-- Theorem 3.6.12 -/
 theorem SetTheory.Set.nat_infinite : infinite nat := by
