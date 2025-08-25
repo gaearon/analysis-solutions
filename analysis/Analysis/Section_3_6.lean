@@ -403,7 +403,7 @@ theorem SetTheory.Set.card_insert {X:Set} (hX: X.finite) {x:Object} (hx: x ∉ X
     (X ∪ {x}).finite ∧ (X ∪ {x}).card = X.card + 1 := by
   have : (X ∪ {x}).card = X.card + 1 := by
     choose n hXn using hX
-    have : (X ∪ {x}) ≈ Fin (n + 1) := by
+    have : X ∪ {x} ≈ Fin (n + 1) := by
       choose f hf using hXn
       use open Classical in fun a ↦
         if ha: a = x then
@@ -451,7 +451,34 @@ theorem SetTheory.Set.card_insert {X:Set} (hX: X.finite) {x:Object} (hx: x ∉ X
 
 /-- Proposition 3.6.14 (b) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_union {X Y:Set} (hX: X.finite) (hY: Y.finite) :
-    (X ∪ Y).finite ∧ (X ∪ Y).card ≤ X.card + Y.card := by sorry
+    (X ∪ Y).finite ∧ (X ∪ Y).card ≤ X.card + Y.card := by
+  obtain ⟨n, hXn⟩ := hX
+  obtain ⟨m, hXm⟩ := hY
+  induction' n with n ih generalizing X
+  · rw [has_card_zero] at hXn
+    aesop
+  have := pos_card_nonempty (by omega) hXn
+  let x := nonempty_choose this
+  have hX'n := card_erase (by omega) hXn x
+  simp only [add_tsub_cancel_right] at hX'n
+  obtain ⟨hX'Yf, hX'Yc⟩ := ih hX'n
+  set X' := X \ {↑x}
+  have hX : X = X' ∪ {↑x} := by
+    symm; rw [union_comm]
+    apply union_compl
+    simp [subset_def, x.property]
+  rw [hX, union_assoc, union_comm {↑x}, ←union_assoc, ←hX]
+  replace hX'n := has_card_to_card _ _ hX'n
+  replace hXn := has_card_to_card _ _ hXn
+  by_cases hxY: ↑x ∈ Y
+  · have : X' ∪ Y ∪ {↑x} = X' ∪ Y := by ext; grind [mem_union, mem_sdiff, mem_singleton]
+    rw [this]
+    use hX'Yf
+    omega
+  have hx : ↑x ∉ X' ∪ Y := by simpa [X']
+  obtain ⟨hf, _⟩ := card_insert hX'Yf hx
+  use hf
+  omega
 
 /-- Proposition 3.6.14 (b) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_union_disjoint {X Y:Set} (hX: X.finite) (hY: Y.finite)
