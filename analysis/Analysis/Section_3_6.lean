@@ -400,7 +400,54 @@ lemma SetTheory.Set.empty_card_eq_zero : (∅: Set).card = 0 := card_eq_zero_of_
 
 /-- Proposition 3.6.14 (a) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_insert {X:Set} (hX: X.finite) {x:Object} (hx: x ∉ X) :
-    (X ∪ {x}).finite ∧ (X ∪ {x}).card = X.card + 1 := by sorry
+    (X ∪ {x}).finite ∧ (X ∪ {x}).card = X.card + 1 := by
+  have : (X ∪ {x}).card = X.card + 1 := by
+    choose n hXn using hX
+    have : (X ∪ {x}) ≈ Fin (n + 1) := by
+      choose f hf using hXn
+      use open Classical in fun a ↦
+        if ha: a = x then
+          Fin_mk _ n (by omega)
+        else
+          Fin_embed _ _ (by omega) (f ⟨a, by have := a.property; simp_all⟩)
+      constructor
+      · intro x1 x2 heq
+        by_cases hx1 : x1 = x
+        · by_cases hx2 : x2 = x
+          · aesop
+          simp only [hx1, hx2, reduceDIte, Subtype.mk.injEq] at heq
+          symm at heq
+          rw [Fin.coe_eq_iff] at heq
+          generalize_proofs hx2' at heq
+          have := Fin.toNat_lt (f ⟨x2, hx2'⟩)
+          omega
+        by_cases hx2 : x2 = x
+        · simp only [hx1, hx2, reduceDIte, Subtype.mk.injEq] at heq
+          rw [Fin.coe_eq_iff] at heq
+          generalize_proofs hx1' at heq
+          have := Fin.toNat_lt (f ⟨x1, hx1'⟩)
+          omega
+        simp only [hx1, hx2, reduceDIte, Subtype.mk.injEq, SetCoe.ext_iff] at heq
+        ext; convert hf.1 heq; simp_all
+      intro y
+      by_cases hy : y = n
+      · use ⟨x, by aesop⟩; simp_all
+      let y' : Fin n := ⟨y, by
+        have := Fin.toNat_lt y
+        rw [mem_Fin]
+        use y, by omega
+        simp⟩
+      choose x' hx' using hf.2 y'
+      use ⟨x', by aesop⟩
+      grind
+    have : (X ∪ {x}).card = (Fin (n + 1)).card := EquivCard_to_card_eq this
+    have : (X ∪ {x}).card = n + 1 := by simpa [Fin_card]
+    have : X.card = n := has_card_to_card _ _ hXn
+    grind
+  constructor
+  · use X.card + 1
+    apply card_to_has_card _ (by simp) this
+  exact this
 
 /-- Proposition 3.6.14 (b) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_union {X Y:Set} (hX: X.finite) (hY: Y.finite) :
