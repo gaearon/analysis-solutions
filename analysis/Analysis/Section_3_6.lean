@@ -482,7 +482,53 @@ theorem SetTheory.Set.card_union {X Y:Set} (hX: X.finite) (hY: Y.finite) :
 
 /-- Proposition 3.6.14 (b) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_union_disjoint {X Y:Set} (hX: X.finite) (hY: Y.finite)
-  (hdisj: Disjoint X Y) : (X ∪ Y).card = X.card + Y.card := by sorry
+    (hdisj: Disjoint X Y) : (X ∪ Y).card = X.card + Y.card := by
+  obtain ⟨n, hXn⟩ := hX
+  obtain ⟨m, hXm⟩ := hY
+  induction' n with n ih generalizing X
+  · rw [has_card_to_card _ _ hXn]
+    rw [has_card_zero] at hXn
+    aesop
+  have hxne := pos_card_nonempty (by omega) hXn
+  let x := nonempty_choose hxne
+  have hX'n := card_erase (by omega) hXn x
+  simp only [add_tsub_cancel_right] at hX'n
+  set X' := X \ {↑x}
+  have : Disjoint X' Y := by
+    rw [disjoint_iff] at *; ext
+    simp_rw [eq_empty_iff_forall_notMem, mem_inter] at hdisj
+    simp_all [X']
+  specialize ih this hX'n
+  replace hX'n := has_card_to_card _ _ hX'n
+  replace hXn := has_card_to_card _ _ hXn
+  have : (X ∪ Y).card = (X' ∪ Y).card + 1 := by
+    have hf : (X' ∪ Y).finite := by
+      have hX'f : X'.finite := by
+        by_cases X = {↑x}
+        · have : X' = ∅ := by ext; grind [not_mem_empty, mem_sdiff]
+          rw [←has_card_zero] at this
+          tauto
+        have := card_to_has_card _ (by omega) hXn
+        have := card_erase (by omega) this x
+        tauto
+      have hYf : Y.finite := ⟨m, hXm⟩
+      have := card_union hX'f hYf
+      tauto
+    have hx : ↑x ∉ X' ∪ Y := by
+      simp only [mem_union, not_or, X']
+      constructor
+      · simp
+      have := x.property
+      simp only [disjoint_iff, eq_empty_iff_forall_notMem, mem_inter] at hdisj
+      tauto
+    have : X ∪ Y = X' ∪ Y ∪ {↑x} := by
+      rw [union_assoc, union_comm Y, ←union_assoc]
+      have := x.property
+      have : X \ {↑x} ∪ {↑x} = X := by ext; grind [mem_union, mem_sdiff, mem_singleton]
+      tauto
+    have := card_insert hf hx
+    simp_all
+  grind
 
 /-- Proposition 3.6.14 (c) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_subset {X Y:Set} (hX: X.finite) (hY: Y ⊆ X) :
