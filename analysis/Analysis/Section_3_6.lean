@@ -532,7 +532,41 @@ theorem SetTheory.Set.card_union_disjoint {X Y:Set} (hX: X.finite) (hY: Y.finite
 
 /-- Proposition 3.6.14 (c) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_subset {X Y:Set} (hX: X.finite) (hY: Y ⊆ X) :
-    Y.finite ∧ Y.card ≤ X.card := by sorry
+    Y.finite ∧ Y.card ≤ X.card := by
+  have finite_subset : ∀ {A B: Set}, A.finite → B ⊆ A → B.finite := by
+    intro A B hA hB
+    have ⟨n, hAn⟩ := hA
+    induction' n with n ih generalizing A B
+    · use 0
+      rw [has_card_zero] at *
+      rw [subset_def] at hB
+      aesop
+    by_cases hAB : A \ B = ∅
+    · have : A = B := by ext a; rw [eq_empty_iff_forall_notMem] at hAB; aesop
+      rwa [←this]
+    have := pos_card_nonempty (by omega) hAn
+    let a := nonempty_choose hAB
+    let A' := A \ {↑a}
+    have hA'n := card_erase (by omega) hAn ⟨a, by have := a.property; simp_all⟩
+    simp only [add_tsub_cancel_right] at hA'n
+    have ha : ↑a ∉ B := by have := a.property; simp_all
+    have hBA' : B ⊆ A' := by simp only [subset_def]; aesop
+    aesop
+  let X' := X \ Y
+  have hX' : X' ⊆ X := by simp only [subset_def]; aesop
+  have hX'f : X'.finite := finite_subset hX hX'
+  have hYf : Y.finite := finite_subset hX hY
+  use hYf
+  have hd : Disjoint X' Y := by
+    have := inter_compl hY
+    rwa [←disjoint_iff, disjoint_comm] at this
+  obtain hc := card_union_disjoint hX'f hYf hd
+  have hu : X' ∪ Y = X := by
+    ext a
+    simp only [X', mem_union, mem_sdiff]
+    constructor <;> tauto
+  rw [hu] at hc
+  omega
 
 /-- Proposition 3.6.14 (c) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_ssubset {X Y:Set} (hX: X.finite) (hY: Y ⊂ X) :
