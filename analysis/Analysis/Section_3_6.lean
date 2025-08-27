@@ -570,7 +570,30 @@ theorem SetTheory.Set.card_subset {X Y:Set} (hX: X.finite) (hY: Y ⊆ X) :
 
 /-- Proposition 3.6.14 (c) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_ssubset {X Y:Set} (hX: X.finite) (hY: Y ⊂ X) :
-    Y.card < X.card := by sorry
+    Y.card < X.card := by
+  have hY' : Y ⊆ X := by grind [subset_def, ssubset_def]
+  let X' := (X \ Y)
+  have hX'X : X' ⊆ X := by simp only [subset_def]; aesop
+  have hX'f : X'.finite := (card_subset hX hX'X).1
+  have hYf : Y.finite := (card_subset hX hY').1
+  have hd : Disjoint X' Y := by simp [disjoint_iff, Set.ext_iff, X']
+  have hc := card_union_disjoint hX'f hYf hd
+  have hu : X' ∪ Y = X := by
+    ext a
+    simp only [X', mem_union, mem_sdiff]
+    constructor <;> tauto
+  rw [hu] at hc
+  have : X' ≠ ∅ := by
+    simp only [ssubset_def, subset_def, ne_eq, Set.ext_iff] at hY
+    simp only [ne_eq, X', eq_empty_iff_forall_notMem, mem_sdiff]
+    grind
+  have : X'.card > 0 := by
+    apply Nat.zero_lt_of_ne_zero
+    intro h
+    have := has_card_card hX'f
+    rw [h, has_card_zero] at this
+    contradiction
+  omega
 
 /-- Proposition 3.6.14 (d) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_image {X Y:Set} (hX: X.finite) (f: X → Y) :
