@@ -597,7 +597,61 @@ theorem SetTheory.Set.card_ssubset {X Y:Set} (hX: X.finite) (hY: Y ⊂ X) :
 
 /-- Proposition 3.6.14 (d) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_image {X Y:Set} (hX: X.finite) (f: X → Y) :
-    (image f X).finite ∧ (image f X).card ≤ X.card := by sorry
+    (image f X).finite ∧ (image f X).card ≤ X.card := by
+  obtain ⟨n, hXn⟩ := hX
+  induction' n with n ih generalizing X
+  · rw [has_card_zero] at hXn
+    constructor
+    · use 0; rw [has_card_zero]; aesop
+    rw [←has_card_zero] at hXn
+    rw [has_card_to_card _ _ hXn]
+    apply le_of_eq
+    apply has_card_to_card
+    simp_all [has_card_zero, eq_empty_iff_forall_notMem]
+  have hxne := pos_card_nonempty (by omega) hXn
+  let x := nonempty_choose hxne
+  have hX'n := card_erase (by omega) hXn x
+  simp only [add_tsub_cancel_right] at hX'n
+  set X' := X \ {↑x}
+  have hX'Xs : X' ⊆ X := by simp only [subset_def]; aesop
+  have hX'Xn : X' ≠ X := by
+    intro h
+    simp only [X', Set.ext_iff, mem_sdiff, mem_singleton] at h
+    have := x.property
+    grind
+  have hX'c : X'.card < X.card := card_ssubset ⟨n + 1, hXn⟩ (by grind [ssubset_def])
+  let f' (x' : X') := f ⟨x', by have := x'.property; aesop⟩
+  obtain ⟨hif, hic⟩ := ih f' hX'n
+  have hs : finite {↑(f x)} ∧ card {↑(f x)} = 1 := by
+    have hef : finite ∅ := by use 0; rw [has_card_zero]
+    have hec : card ∅ = 0 := by apply has_card_to_card; rw [has_card_zero]
+    have := card_insert hef (not_mem_empty (f x))
+    simp_all
+  have hi : image f X = (image f' X') ∪ {↑(f x)} := by
+    simp only [f', X']
+    ext y
+    constructor
+    · intro hy
+      rw [mem_image] at hy
+      obtain ⟨x2, ⟨_, rfl⟩⟩ := hy
+      by_cases x = x2
+      · aesop
+      rw [mem_union, mem_image]
+      left
+      use ⟨x2, by grind [mem_sdiff, mem_singleton]⟩
+      grind
+    intro hy
+    rw [mem_union] at hy
+    rcases hy
+    · rw [mem_image] at *
+      grind
+    rw [mem_image]
+    use x, x.property
+    aesop
+  have hu := card_union hif hs.1
+  rw [←hi, hs.2] at hu
+  use hu.1
+  omega
 
 /-- Proposition 3.6.14 (d) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_image_inj {X Y:Set} (hX: X.finite) {f: X → Y}
