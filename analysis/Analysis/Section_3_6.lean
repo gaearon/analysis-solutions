@@ -687,7 +687,48 @@ theorem SetTheory.Set.card_image_inj {X Y:Set} (hX: X.finite) {f: X → Y}
 
 /-- Proposition 3.6.14 (e) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_prod {X Y:Set} (hX: X.finite) (hY: Y.finite) :
-    (X ×ˢ Y).finite ∧ (X ×ˢ Y).card = X.card * Y.card := by sorry
+    (X ×ˢ Y).finite ∧ (X ×ˢ Y).card = X.card * Y.card := by
+  induction' hXc: X.card with n ih generalizing X
+  · rw [zero_mul]
+    have := has_card_card hX
+    rw [hXc] at this
+    have : (X ×ˢ Y).has_card 0 := by rw [has_card_zero] at *; aesop
+    constructor
+    · use 0
+    apply has_card_to_card
+    exact this
+  have hXn := card_to_has_card X (by omega) hXc
+  have hxne := pos_card_nonempty (by omega) hXn
+  let x := nonempty_choose hxne
+  have hX'n := card_erase (by omega) hXn x
+  simp only [add_tsub_cancel_right] at hX'n
+  set X' := X \ {↑x}
+  have hX : X = X' ∪ {↑x} := by
+    symm; rw [union_comm]
+    apply union_compl
+    simp [subset_def, x.property]
+  have hX'f: X'.finite := ⟨n, hX'n⟩
+  have hX'c := has_card_to_card _ _ hX'n
+  obtain ⟨hpf, hpc⟩ := ih hX'f hX'c
+  simp only [hX, union_prod, add_mul, one_mul]
+  have h1 : (X' ×ˢ Y).finite := sorry
+  have h2 : (({↑x}: Set) ×ˢ Y).finite := sorry
+  have h3 : card (({↑x}: Set) ×ˢ Y) = Y.card := sorry
+  have hdisj : Disjoint (X' ×ˢ Y) (({↑x}: Set) ×ˢ Y) := sorry
+  have hc := card_union_disjoint h1 h2 hdisj
+  rw [hpc, h3] at hc
+  constructor
+  · by_cases hYz : Y = ∅
+    · use 0
+      simp_all [has_card_zero, Set.ext_iff]
+    have : Y.card ≠ 0 := by
+      rw [←has_card_zero] at hYz
+      contrapose! hYz
+      have := has_card_card hY
+      rwa [hYz] at this
+    have := card_to_has_card _ (by omega) hc
+    use n * Y.card + Y.card
+  exact hc
 
 /-- Proposition 3.6.14 (f) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_pow {X Y:Set} (hX: X.finite) (hY: Y.finite) :
