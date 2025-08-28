@@ -613,49 +613,77 @@ theorem SetTheory.Set.card_image {X Y:Set} (hX: X.finite) (f: X → Y) :
   have hX'n := card_erase (by omega) hXn x
   simp only [add_tsub_cancel_right] at hX'n
   set X' := X \ {↑x}
-  have hX'Xs : X' ⊆ X := by simp only [subset_def]; aesop
-  have hX'Xn : X' ≠ X := by
-    intro h
-    simp only [X', Set.ext_iff, mem_sdiff, mem_singleton] at h
-    have := x.property
-    grind
-  have hX'c : X'.card < X.card := card_ssubset ⟨n + 1, hXn⟩ (by grind [ssubset_def])
   let f' (x' : X') := f ⟨x', by have := x'.property; aesop⟩
   obtain ⟨hif, hic⟩ := ih f' hX'n
+  have hi : image f X = (image f' X') ∪ {↑(f x)} := by
+    simp only [f', X']
+    ext y
+    constructor
+    · intro hy; rw [mem_image] at hy; obtain ⟨x2, ⟨_, rfl⟩⟩ := hy
+      by_cases x = x2
+      · aesop
+      · rw [mem_union, mem_image]
+        left; use ⟨x2, by grind [mem_sdiff, mem_singleton]⟩; grind
+    intro hy; rw [mem_union] at hy; rcases hy
+    · rw [mem_image] at *; grind
+    · rw [mem_image]; use x, x.property; simp_all
   have hs : finite {↑(f x)} ∧ card {↑(f x)} = 1 := by
     have hef : finite ∅ := by use 0; rw [has_card_zero]
     have hec : card ∅ = 0 := by apply has_card_to_card; rw [has_card_zero]
     have := card_insert hef (not_mem_empty (f x))
     simp_all
-  have hi : image f X = (image f' X') ∪ {↑(f x)} := by
-    simp only [f', X']
-    ext y
-    constructor
-    · intro hy
-      rw [mem_image] at hy
-      obtain ⟨x2, ⟨_, rfl⟩⟩ := hy
-      by_cases x = x2
-      · aesop
-      rw [mem_union, mem_image]
-      left
-      use ⟨x2, by grind [mem_sdiff, mem_singleton]⟩
-      grind
-    intro hy
-    rw [mem_union] at hy
-    rcases hy
-    · rw [mem_image] at *
-      grind
-    rw [mem_image]
-    use x, x.property
-    aesop
   have hu := card_union hif hs.1
   rw [←hi, hs.2] at hu
   use hu.1
+  have := has_card_to_card _ _ hX'n
+  have := has_card_to_card _ _ hXn
   omega
 
 /-- Proposition 3.6.14 (d) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_image_inj {X Y:Set} (hX: X.finite) {f: X → Y}
-  (hf: Function.Injective f) : (image f X).card = X.card := by sorry
+    (hf: Function.Injective f) : (image f X).card = X.card := by
+  obtain ⟨n, hXn⟩ := hX
+  induction' n with n ih generalizing X
+  · rw [has_card_to_card _ _ hXn]
+    apply has_card_to_card
+    simp_all [has_card_zero, eq_empty_iff_forall_notMem]
+  have hxne := pos_card_nonempty (by omega) hXn
+  let x := nonempty_choose hxne
+  have hX'n := card_erase (by omega) hXn x
+  simp only [add_tsub_cancel_right] at hX'n
+  set X' := X \ {↑x}
+  let f' (x' : X') := f ⟨x', by have := x'.property; aesop⟩
+  have hf' : Function.Injective f' := by intro x1 x2 heq; have := hf heq; grind
+  obtain hc := ih hf' hX'n
+  have hi : (image f X) = (image f' X') ∪ {↑(f x)} := by
+    simp only [f', X']
+    ext y
+    constructor
+    · intro hy; rw [mem_image] at hy; obtain ⟨x2, ⟨_, rfl⟩⟩ := hy
+      by_cases x = x2
+      · aesop
+      · rw [mem_union, mem_image]
+        left; use ⟨x2, by grind [mem_sdiff, mem_singleton]⟩; grind
+    intro hy; rw [mem_union] at hy; rcases hy
+    · rw [mem_image] at *; grind
+    · rw [mem_image]; use x, x.property; simp_all
+  have hif : (image f' X').finite := by
+    use n
+    by_cases hn : n = 0
+    · simp_all [has_card_zero, eq_empty_iff_forall_notMem]
+    · apply card_to_has_card _ hn (by simp_all [has_card_to_card _ _ hX'n])
+  have hfx : ↑(f x) ∉ (image f' X') := by
+    intro h; simp only [mem_image, f', X'] at h
+    obtain ⟨x2, ⟨hx2, hx2'⟩⟩ := h
+    have : f ⟨x2, by aesop⟩ = f x := by grind
+    have : x2.val = x := by have := hf this; grind
+    have : x2.val ≠ x := by rw [mem_sdiff] at hx2; simp_all
+    grind
+  have hic := card_insert hif hfx
+  rw [hi]
+  have := has_card_to_card _ _ hX'n
+  have := has_card_to_card _ _ hXn
+  omega
 
 /-- Proposition 3.6.14 (e) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_prod {X Y:Set} (hX: X.finite) (hY: Y.finite) :
