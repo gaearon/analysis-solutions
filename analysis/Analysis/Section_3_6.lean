@@ -375,7 +375,16 @@ theorem SetTheory.Set.EquivCard_to_card_eq {X Y:Set} (h: X ≈ Y): X.card = Y.ca
 
 /-- Exercise 3.6.2 -/
 theorem SetTheory.Set.empty_iff_card_eq_zero {X:Set} : X = ∅ ↔ X.finite ∧ X.card = 0 := by
-  sorry
+  constructor
+  · intro h
+    rw [←has_card_zero] at h
+    constructor
+    · use 0
+    exact has_card_to_card _ _ h
+  intro ⟨h1, h2⟩
+  rw [←has_card_zero]
+  have := has_card_card h1
+  rwa [h2] at this
 
 lemma SetTheory.Set.empty_of_card_eq_zero {X:Set} (hX : X.finite) : X.card = 0 → X = ∅ := by
   intro h
@@ -707,26 +716,43 @@ theorem SetTheory.Set.card_prod {X Y:Set} (hX: X.finite) (hY: Y.finite) :
     symm; rw [union_comm]
     apply union_compl
     simp [subset_def, x.property]
+  by_cases hYz : Y = ∅
+  · constructor
+    · use 0; simp_all [has_card_zero, Set.ext_iff]
+    have : Y.card = 0 := by
+      apply has_card_to_card
+      rw [hYz, has_card_zero]
+    rw [this, mul_zero]
+    apply has_card_to_card
+    simp_all [has_card_zero, Set.ext_iff]
+  have hYc : Y.card ≠ 0 := by
+    rw [←has_card_zero] at hYz
+    contrapose! hYz
+    have := has_card_card hY
+    rwa [hYz] at this
   have hX'f: X'.finite := ⟨n, hX'n⟩
   have hX'c := has_card_to_card _ _ hX'n
   obtain ⟨hpf, hpc⟩ := ih hX'f hX'c
   simp only [hX, union_prod, add_mul, one_mul]
-  have h1 : (X' ×ˢ Y).finite := sorry
-  have h2 : (({↑x}: Set) ×ˢ Y).finite := sorry
-  have h3 : card (({↑x}: Set) ×ˢ Y) = Y.card := sorry
-  have hdisj : Disjoint (X' ×ˢ Y) (({↑x}: Set) ×ˢ Y) := sorry
-  have hc := card_union_disjoint h1 h2 hdisj
-  rw [hpc, h3] at hc
+  have hspc : card (({↑x}: Set) ×ˢ Y) = Y.card := by
+    apply EquivCard_to_card_eq
+    use fun z ↦ snd z
+    constructor
+    · intro z1 z2 heq; ext
+      rw [pair_eq_fst_snd, pair_eq_fst_snd]
+      grind [mem_singleton]
+    intro y
+    use mk_cartesian ⟨x, by simp⟩ y
+    simp
+  have hspf : (({↑x}: Set) ×ˢ Y).finite := by
+    use Y.card
+    exact card_to_has_card _ hYc hspc
+  have hdisj : Disjoint (X' ×ˢ Y) (({↑x}: Set) ×ˢ Y) := by
+    simp [disjoint_iff, inter_of_prod, Set.ext_iff, X']
+  have hc := card_union_disjoint hpf hspf hdisj
+  rw [hpc, hspc] at hc
   constructor
-  · by_cases hYz : Y = ∅
-    · use 0
-      simp_all [has_card_zero, Set.ext_iff]
-    have : Y.card ≠ 0 := by
-      rw [←has_card_zero] at hYz
-      contrapose! hYz
-      have := has_card_card hY
-      rwa [hYz] at this
-    have := card_to_has_card _ (by omega) hc
+  · have := card_to_has_card _ (by omega) hc
     use n * Y.card + Y.card
   exact hc
 
