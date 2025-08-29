@@ -380,7 +380,7 @@ theorem SetTheory.Set.empty_iff_card_eq_zero {X:Set} : X = ∅ ↔ X.finite ∧ 
     rw [←has_card_zero] at h
     constructor
     · use 0
-    exact has_card_to_card _ _ h
+    exact has_card_to_card h
   intro ⟨h1, h2⟩
   rw [←has_card_zero]
   have := has_card_card h1
@@ -451,11 +451,11 @@ theorem SetTheory.Set.card_insert {X:Set} (hX: X.finite) {x:Object} (hx: x ∉ X
       grind
     have : (X ∪ {x}).card = (Fin (n + 1)).card := EquivCard_to_card_eq this
     have : (X ∪ {x}).card = n + 1 := by simpa [Fin_card]
-    have : X.card = n := has_card_to_card _ _ hXn
+    have : X.card = n := has_card_to_card hXn
     grind
   constructor
   · use X.card + 1
-    apply card_to_has_card _ (by simp) this
+    apply card_to_has_card (by simp) this
   exact this
 
 /-- Proposition 3.6.14 (b) / Exercise 3.6.4 -/
@@ -477,8 +477,8 @@ theorem SetTheory.Set.card_union {X Y:Set} (hX: X.finite) (hY: Y.finite) :
     apply union_compl
     simp [subset_def, x.property]
   rw [hX, union_assoc, union_comm {↑x}, ←union_assoc, ←hX]
-  replace hX'n := has_card_to_card _ _ hX'n
-  replace hXn := has_card_to_card _ _ hXn
+  replace hX'n := has_card_to_card hX'n
+  replace hXn := has_card_to_card hXn
   by_cases hxY: ↑x ∈ Y
   · have : X' ∪ Y ∪ {↑x} = X' ∪ Y := by ext; grind [mem_union, mem_sdiff, mem_singleton]
     rw [this]
@@ -507,15 +507,15 @@ theorem SetTheory.Set.card_union_disjoint {X Y:Set} (hX: X.finite) (hY: Y.finite
     simp_rw [eq_empty_iff_forall_notMem, mem_inter] at hdisj
     simp_all [X']
   specialize ih this hX'n
-  replace hX'n := has_card_to_card _ _ hX'n
-  replace hXn := has_card_to_card _ _ hXn
+  replace hX'n := has_card_to_card hX'n
+  replace hXn := has_card_to_card hXn
   have : (X ∪ Y).card = (X' ∪ Y).card + 1 := by
     have hf : (X' ∪ Y).finite := by
       have hX'f : X'.finite := by
         by_cases X = {↑x}
         · have : X' = ∅ := by ext; grind [not_mem_empty, mem_sdiff]
           simp_all
-        have := card_to_has_card _ (by omega) hXn
+        have := card_to_has_card (by omega) hXn
         have := card_erase (by omega) this x
         tauto
       have hYf : Y.finite := ⟨m, hXm⟩
@@ -638,8 +638,8 @@ theorem SetTheory.Set.card_image {X Y:Set} (hX: X.finite) (f: X → Y) :
   have hu := card_union hif hs.1
   rw [←hi, hs.2] at hu
   use hu.1
-  have := has_card_to_card _ _ hX'n
-  have := has_card_to_card _ _ hXn
+  have := has_card_to_card hX'n
+  have := has_card_to_card hXn
   omega
 
 /-- Proposition 3.6.14 (d) / Exercise 3.6.4 -/
@@ -647,7 +647,7 @@ theorem SetTheory.Set.card_image_inj {X Y:Set} (hX: X.finite) {f: X → Y}
     (hf: Function.Injective f) : (image f X).card = X.card := by
   obtain ⟨n, hXn⟩ := hX
   induction' n with n ih generalizing X
-  · rw [has_card_to_card _ _ hXn]
+  · rw [has_card_to_card hXn]
     rw [has_card_zero] at hXn
     apply card_eq_zero_of_empty
     simp_all [eq_empty_iff_forall_notMem]
@@ -675,7 +675,7 @@ theorem SetTheory.Set.card_image_inj {X Y:Set} (hX: X.finite) {f: X → Y}
     use n
     by_cases hn : n = 0
     · simp_all [has_card_zero, eq_empty_iff_forall_notMem]
-    · apply card_to_has_card _ hn (by simp_all [has_card_to_card _ _ hX'n])
+    · apply card_to_has_card hn (by simp_all [has_card_to_card hX'n])
   have hfx : ↑(f x) ∉ (image f' X') := by
     intro h; simp only [mem_image, f', X'] at h
     obtain ⟨x2, ⟨hx2, hx2'⟩⟩ := h
@@ -685,8 +685,8 @@ theorem SetTheory.Set.card_image_inj {X Y:Set} (hX: X.finite) {f: X → Y}
     grind
   have hic := card_insert hif hfx
   rw [hi]
-  have := has_card_to_card _ _ hX'n
-  have := has_card_to_card _ _ hXn
+  have := has_card_to_card hX'n
+  have := has_card_to_card hXn
   omega
 
 /-- Proposition 3.6.14 (e) / Exercise 3.6.4 -/
@@ -701,7 +701,7 @@ theorem SetTheory.Set.card_prod {X Y:Set} (hX: X.finite) (hY: Y.finite) :
     · use 0
     apply has_card_to_card
     exact this
-  have hXn := card_to_has_card X (by omega) hXc
+  have hXn := card_to_has_card (by omega) hXc
   have hxne := pos_card_nonempty (by omega) hXn
   let x := nonempty_choose hxne
   have hX'n := card_erase (by omega) hXn x
@@ -724,7 +724,7 @@ theorem SetTheory.Set.card_prod {X Y:Set} (hX: X.finite) (hY: Y.finite) :
     rw [has_card_zero]
     exact empty_of_card_eq_zero hY hYz
   have hX'f: X'.finite := ⟨n, hX'n⟩
-  have hX'c := has_card_to_card _ _ hX'n
+  have hX'c := has_card_to_card hX'n
   obtain ⟨hpf, hpc⟩ := ih hX'f hX'c
   simp only [hX, union_prod, add_mul, one_mul]
   have hspc : card (({↑x}: Set) ×ˢ Y) = Y.card := by
@@ -739,13 +739,13 @@ theorem SetTheory.Set.card_prod {X Y:Set} (hX: X.finite) (hY: Y.finite) :
     simp
   have hspf : (({↑x}: Set) ×ˢ Y).finite := by
     use Y.card
-    exact card_to_has_card _ hYc hspc
+    exact card_to_has_card hYc hspc
   have hdisj : Disjoint (X' ×ˢ Y) (({↑x}: Set) ×ˢ Y) := by
     simp [disjoint_iff, inter_of_prod, Set.ext_iff, X']
   have hc := card_union_disjoint hpf hspf hdisj
   rw [hpc, hspc] at hc
   constructor
-  · have := card_to_has_card _ (by omega) hc
+  · have := card_to_has_card (by omega) hc
     use n * Y.card + Y.card
   exact hc
 
