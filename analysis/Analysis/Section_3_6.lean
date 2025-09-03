@@ -768,16 +768,13 @@ theorem SetTheory.Set.card_pow {X Y:Set} (hX: X.finite) (hY: Y.finite) :
         have := not_mem_empty
         grind
       intro y
-      let f : (∅: Set) → Y := fun e ↦ by
-        have := e.property
-        simp_all
+      let f : (∅: Set) → Y := fun e ↦ by have := e.property; simp_all
       use ⟨f, by rw [powerset_axiom]; use f⟩
       have := y.property
       rw [mem_Fin] at this
       simp_all
-    have : (Y ^ (∅: Set)).finite := by use 1
     constructor
-    · exact this
+    · use 1
     rw [EquivCard_to_card_eq heq, Fin_card]
   have hXn := card_to_has_card (by omega) hXc
   have hxne := pos_card_nonempty (by omega) hXn
@@ -852,7 +849,10 @@ theorem SetTheory.Set.card_pow {X Y:Set} (hX: X.finite) (hY: Y.finite) :
 
 /-- Exercise 3.6.5. You might find `SetTheory.Set.prod_commutator` useful. -/
 theorem SetTheory.Set.prod_EqualCard_prod (A B:Set) :
-    EqualCard (A ×ˢ B) (B ×ˢ A) := by sorry
+    EqualCard (A ×ˢ B) (B ×ˢ A) := by
+  have := prod_commutator A B
+  use this
+  exact this.bijective
 
 /-- Exercise 3.6.6 -/
 theorem SetTheory.Set.pow_pow_EqualCard_pow_prod (A B C:Set) :
