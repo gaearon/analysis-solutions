@@ -751,7 +751,104 @@ theorem SetTheory.Set.card_prod {X Y:Set} (hX: X.finite) (hY: Y.finite) :
 
 /-- Proposition 3.6.14 (f) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_pow {X Y:Set} (hX: X.finite) (hY: Y.finite) :
-    (Y ^ X).finite ∧ (Y ^ X).card = Y.card ^ X.card := by sorry
+    (Y ^ X).finite ∧ (Y ^ X).card = Y.card ^ X.card := by
+  induction' hXc: X.card with n ih generalizing X
+  · rw [pow_zero, empty_of_card_eq_zero hX hXc]
+    have heq : Y ^ (∅: Set) ≈ Fin 1 := by
+      use fun _ ↦ ⟨0, by rw [mem_Fin]; aesop⟩
+      constructor
+      · intro z1 z2
+        have hz1 := z1.property
+        have hz2 := z2.property
+        rw [powerset_axiom] at hz1 hz2
+        choose f1 _ using hz1
+        choose f2 _ using hz2
+        suffices : f1 = f2
+        · simp_all [Subtype.ext_iff_val]
+        have := not_mem_empty
+        grind
+      intro y
+      let f : (∅: Set) → Y := fun e ↦ by
+        have := e.property
+        simp_all
+      use ⟨f, by rw [powerset_axiom]; use f⟩
+      have := y.property
+      rw [mem_Fin] at this
+      simp_all
+    have : (Y ^ (∅: Set)).finite := by use 1
+    constructor
+    · exact this
+    rw [EquivCard_to_card_eq heq, Fin_card]
+  have hXn := card_to_has_card (by omega) hXc
+  have hxne := pos_card_nonempty (by omega) hXn
+  let x := nonempty_choose hxne
+  have hX'n := card_erase (by omega) hXn x
+  simp only [add_tsub_cancel_right] at hX'n
+  set X' := X \ {↑x}
+  have hX : X = X' ∪ {↑x} := by
+    symm; rw [union_comm]
+    apply union_compl
+    simp [subset_def, x.property]
+  have hX'f: X'.finite := ⟨n, hX'n⟩
+  have hX'c := has_card_to_card hX'n
+  obtain ⟨hpowf, hpowc⟩ := ih hX'f hX'c
+  rw [pow_succ, ←hpowc]
+  have ⟨hprodf, hprodc⟩ := card_prod hpowf hY
+  have heq : Y ^ X ≈ (Y ^ X') ×ˢ Y := by
+    use fun z ↦
+      let f := ((powerset_axiom _).mp z.property).choose
+      let f' : X' → Y := fun x' ↦ f ⟨x', by have := x'.property; simp [X'] at this; grind⟩
+      mk_cartesian ⟨f', by rw [powerset_axiom]; use f'⟩ (f x)
+    constructor
+    · intro z1 z2 heq
+      simp only [mk_cartesian, Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq,
+        OrderedPair.mk.injEq, coe_of_fun_inj] at heq
+      generalize_proofs hz1 _ hz2 _ at heq
+      suffices : (z1: Object) = (z2: Object)
+      · apply (coe_inj _ _ _).mp this
+      rw [←hz1.choose_spec, ←hz2.choose_spec]
+      simp only [coe_of_fun_inj]
+      ext x2; congr
+      by_cases hx : x = x2
+      · grind
+      let x2' : X' := ⟨x2, by simp only [mem_sdiff, mem_singleton, X', x2.property]; grind⟩
+      exact congrArg (· x2') heq.1
+    intro z'
+    let f' := ((powerset_axiom _).mp (fst z').property).choose
+    simp only [Subtype.exists, powerset_axiom]
+    let f : X → Y := open Classical in fun x2 ↦
+      if hx2 : x2 = x then
+        (snd z')
+      else
+        f' ⟨x2, by have := x2.property; simp [X']; grind⟩
+    use f, by use f
+    rw [←mk_cartesian_fst_snd_eq z']
+    simp only [mk_cartesian, Subtype.mk.injEq,
+      EmbeddingLike.apply_eq_iff_eq, OrderedPair.mk.injEq]
+    constructor
+    · generalize_proofs hf
+      have := hf.choose_spec
+      rw [coe_of_fun_inj] at this
+      rw [this]
+      have hx' : ∀ (x' : X') hx'', ⟨x', hx''⟩ ≠ x := by
+        intro x'
+        have := x'.property
+        simp only [mem_sdiff, mem_singleton, X'] at this
+        grind
+      simp only [hx', ↓reduceDIte, Subtype.coe_eta, f]
+      generalize_proofs hf' at f'
+      rw [hf'.choose_spec]
+    generalize_proofs hf
+    have := hf.choose_spec
+    rw [coe_of_fun_inj] at this
+    simp [this, f]
+  have heqc := EquivCard_to_card_eq heq
+  constructor
+  · use ((Y ^ X') ×ˢ Y).card
+    rw [EquivCard_to_has_card_eq heq]
+    exact has_card_card hprodf
+  rw [heqc]
+  exact hprodc
 
 /-- Exercise 3.6.5. You might find `SetTheory.Set.prod_commutator` useful. -/
 theorem SetTheory.Set.prod_EqualCard_prod (A B:Set) :
