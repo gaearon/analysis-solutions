@@ -856,7 +856,35 @@ theorem SetTheory.Set.prod_EqualCard_prod (A B:Set) :
 
 /-- Exercise 3.6.6 -/
 theorem SetTheory.Set.pow_pow_EqualCard_pow_prod (A B C:Set) :
-    EqualCard ((A ^ B) ^ C) (A ^ (B ×ˢ C)) := by sorry
+    EqualCard ((A ^ B) ^ C) (A ^ (B ×ˢ C)) := by
+  use fun a_pow_b_pow_c ↦
+    let c_to_a_pow_b := ((powerset_axiom _).mp a_pow_b_pow_c.property).choose
+    let c_to_b_to_a := fun c ↦ ((powerset_axiom _).mp (c_to_a_pow_b c).property).choose
+    let bc_to_a := fun bc ↦ curry_equiv c_to_b_to_a (prod_commutator B C bc)
+    ⟨bc_to_a, (powerset_axiom _).mpr (by simp)⟩
+  simp_all only [Equiv.coe_fn_mk, snd_of_mk_cartesian]
+  constructor
+  · intro z1 z2 heq
+    suffices : (z1: Object) = (z2: Object)
+    · apply (coe_inj _ _ _).mp this
+    have hz1 := z1.property
+    have hz2 := z2.property
+    rw [powerset_axiom] at hz1 hz2
+    rw [←hz1.choose_spec, ←hz2.choose_spec, coe_of_fun_inj]
+    ext c; congr
+    have hab1 := (hz1.choose c).property
+    have hab2 := (hz2.choose c).property
+    rw [powerset_axiom] at hab1 hab2
+    rw [Subtype.ext_iff_val, ←hab1.choose_spec, ←hab2.choose_spec, coe_of_fun_inj]
+    ext b; congr
+    let bc := mk_cartesian b c
+    simp only [Subtype.mk.injEq, coe_of_fun_inj] at heq
+    have heq' := congrArg (· bc) heq
+    simp only [fst_of_mk_cartesian] at heq'
+    have : c = fst (mk_cartesian (snd bc) (fst bc)) := by simp
+    grind
+  intro z'
+  sorry
 
 example (a b c:ℕ): (a^b)^c = a^(b*c) := by sorry
 
