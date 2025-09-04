@@ -770,7 +770,7 @@ theorem SetTheory.Set.card_pow {X Y:Set} (hX: X.finite) (hY: Y.finite) :
         grind
       intro y
       let f : (∅: Set) → Y := fun e ↦ by have := e.property; simp_all
-      use ⟨f, by rw [powerset_axiom]; use f⟩
+      use pow_fun_equiv.symm f
       have := y.property
       rw [mem_Fin] at this
       simp_all
@@ -861,16 +861,13 @@ noncomputable def SetTheory.Set.pow_fun_equiv' (X Y : Set) : ↑(Y ^ X) ≃ (X �
 /-- Exercise 3.6.6. You may find `SetTheory.Set.curry_equiv` useful. -/
 theorem SetTheory.Set.pow_pow_EqualCard_pow_prod (A B C:Set) :
     EqualCard ((A ^ B) ^ C) (A ^ (B ×ˢ C)) := by
-  have abc_to_cab := pow_fun_equiv' C ↑(A ^ B)
-  have cab_to_cba := Equiv.arrowCongr (Equiv.refl C) (pow_fun_equiv' B A)
-  have cxba_to_bxca := Equiv.arrowCongr (prod_commutator C B) (Equiv.refl A)
-  have cba_to_bxca := curry_equiv.trans cxba_to_bxca
-  have bxca_to_abxc := (pow_fun_equiv' (B ×ˢ C) A).symm
-  have abc_to_cba := abc_to_cab.trans cab_to_cba
-  have abc_to_bxca := abc_to_cba.trans cba_to_bxca
-  have abc_to_abxc := abc_to_bxca.trans bxca_to_abxc
-  use abc_to_abxc
-  exact abc_to_abxc.bijective
+  have e1 := pow_fun_equiv' C (A ^ B)
+  have e2 := Equiv.arrowCongr (Equiv.refl C) (pow_fun_equiv' B A)
+  have e3 : (C → (B → A)) ≃ (C ×ˢ B → A) := curry_equiv
+  have e4 := Equiv.arrowCongr (prod_commutator C B) (Equiv.refl A)
+  have e5 := (pow_fun_equiv' (B ×ˢ C) A).symm
+  use e1.trans <| e2.trans <| e3.trans <| e4.trans <| e5
+  apply Equiv.bijective
 
 example (a b c:ℕ): (a^b)^c = a^(b*c) := by sorry
 
