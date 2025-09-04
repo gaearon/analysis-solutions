@@ -858,7 +858,7 @@ theorem SetTheory.Set.prod_EqualCard_prod (A B:Set) :
 noncomputable def SetTheory.Set.pow_fun_equiv' (X Y : Set) : ↑(Y ^ X) ≃ (X → Y) :=
   pow_fun_equiv (X:=X) (Y:=Y)
 
-/-- Exercise 3.6.6 -/
+/-- Exercise 3.6.6. You may find `SetTheory.Set.curry_equiv` useful. -/
 theorem SetTheory.Set.pow_pow_EqualCard_pow_prod (A B C:Set) :
     EqualCard ((A ^ B) ^ C) (A ^ (B ×ˢ C)) := by
   have abc_to_cab := pow_fun_equiv' C ↑(A ^ B)
