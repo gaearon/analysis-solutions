@@ -869,7 +869,7 @@ theorem SetTheory.Set.pow_pow_EqualCard_pow_prod (A B C:Set) :
   use e1.trans <| e2.trans <| e3.trans <| e4.trans <| e5
   apply Equiv.bijective
 
-example (a b c:ℕ): (a^b)^c = a^(b*c) := by
+theorem SetTheory.Set.pow_pow_eq_pow_mul (a b c:ℕ): (a^b)^c = a^(b*c) := by
   have := EquivCard_to_card_eq (pow_pow_EqualCard_pow_prod (Fin a) (Fin b) (Fin c))
   have := Fin_card a
   have := Fin_card b
@@ -883,7 +883,7 @@ example (a b c:ℕ): (a^b)^c = a^(b*c) := by
 theorem SetTheory.Set.pow_prod_pow_EqualCard_pow_union (A B C:Set) (hd: Disjoint B C) :
     EqualCard ((A ^ B) ×ˢ (A ^ C)) (A ^ (B ∪ C)) := by sorry
 
-example (a b c:ℕ): (a^b) * a^c = a^(b+c) := by sorry
+theorem SetTheory.Set.pow_mul_pow_eq_pow_add (a b c:ℕ): (a^b) * a^c = a^(b+c) := by sorry
 
 /-- Exercise 3.6.7 -/
 theorem SetTheory.Set.injection_iff_card_le {A B:Set} (hA: A.finite) (hB: B.finite) :
