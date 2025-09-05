@@ -354,9 +354,9 @@ theorem SetTheory.Set.card_to_has_card {X:Set} {n: ℕ} (hn: n ≠ 0): X.card = 
 
 theorem SetTheory.Set.card_fin_eq (n:ℕ): (Fin n).has_card n := (has_card_iff _ _).mp ⟨ id, Function.bijective_id ⟩
 
-theorem SetTheory.Set.Fin_card {n:ℕ}: (Fin n).card = n := has_card_to_card (card_fin_eq n)
+theorem SetTheory.Set.Fin_card (n:ℕ): (Fin n).card = n := has_card_to_card (card_fin_eq n)
 
-theorem SetTheory.Set.Fin_finite {n:ℕ}: (Fin n).finite := ⟨n, card_fin_eq n⟩
+theorem SetTheory.Set.Fin_finite (n:ℕ): (Fin n).finite := ⟨n, card_fin_eq n⟩
 
 theorem SetTheory.Set.EquivCard_to_has_card_eq {X Y:Set} {n: ℕ} (h: X ≈ Y): X.has_card n ↔ Y.has_card n := by
   choose f hf using h; let e := Equiv.ofBijective f hf
@@ -756,7 +756,7 @@ noncomputable def SetTheory.Set.pow_fun_equiv {X Y : Set} : ↑(Y ^ X) ≃ (X �
   right_inv f := by simp
 
 /-- Proposition 3.6.14 (f) / Exercise 3.6.4 -/
-theorem SetTheory.Set.card_pow {X Y:Set} (hX: X.finite) (hY: Y.finite) :
+theorem SetTheory.Set.card_pow {X Y:Set} (hY: Y.finite) (hX: X.finite) :
     (Y ^ X).finite ∧ (Y ^ X).card = Y.card ^ X.card := by
   induction' hXc: X.card with n ih generalizing X
   · rw [pow_zero, empty_of_card_eq_zero hX hXc]
@@ -869,7 +869,16 @@ theorem SetTheory.Set.pow_pow_EqualCard_pow_prod (A B C:Set) :
   use e1.trans <| e2.trans <| e3.trans <| e4.trans <| e5
   apply Equiv.bijective
 
-example (a b c:ℕ): (a^b)^c = a^(b*c) := by sorry
+example (a b c:ℕ): (a^b)^c = a^(b*c) := by
+  have := EquivCard_to_card_eq (pow_pow_EqualCard_pow_prod (Fin a) (Fin b) (Fin c))
+  have := Fin_card a
+  have := Fin_card b
+  have := Fin_card c
+  have h1 := card_pow (Fin_finite a) (Fin_finite b)
+  have := card_pow h1.1 (Fin_finite c)
+  have h2 := card_prod (Fin_finite b) (Fin_finite c)
+  have := card_pow (Fin_finite a) h2.1
+  grind
 
 theorem SetTheory.Set.pow_prod_pow_EqualCard_pow_union (A B C:Set) (hd: Disjoint B C) :
     EqualCard ((A ^ B) ×ˢ (A ^ C)) (A ^ (B ∪ C)) := by sorry
