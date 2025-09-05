@@ -899,13 +899,13 @@ theorem SetTheory.Set.pow_prod_pow_EqualCard_pow_union (A B C:Set) (hd: Disjoint
     · rw [Subtype.val_inj, ←pow_fun_equiv.apply_eq_iff_eq]
       ext b
       let bc : ↑(B ∪ C) := ⟨b, by have := b.property; simp_all⟩
-      have := congrArg (fun f => f bc) heq
+      have := congrFun heq bc
       grind
     rw [Subtype.val_inj, ←pow_fun_equiv.apply_eq_iff_eq]
     ext c
     let bc : ↑(B ∪ C) := ⟨c, by have := c.property; simp_all⟩
     simp_rw [disjoint_iff, eq_empty_iff_forall_notMem, mem_inter] at hd
-    have := congrArg (fun f => f bc) heq
+    have := congrFun heq bc
     grind
   intro z'
   let f := pow_fun_equiv z'
