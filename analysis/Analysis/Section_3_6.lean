@@ -928,18 +928,15 @@ theorem SetTheory.Set.injection_iff_card_le {A B:Set} (hA: A.finite) (hB: B.fini
     have hi := image_in_codomain f A
     exact (card_subset hB hi).2
   intro hAB
-  let f : A → Fin (A.card) := sorry
-  have hf : Function.Injective f := by sorry
-  let g : Fin (B.card) → B := sorry
-  have hg : Function.Injective g := by sorry
-  have e : Fin A.card → Fin B.card := Fin_embed _ _ hAB
-  have he : Function.Injective e := by sorry
+  have ⟨f, hf⟩ := has_card_card hA
+  have ⟨g, hg⟩ := (has_card_card hB).symm
+  let e : Fin A.card → Fin B.card := Fin_embed _ _ hAB
+  have he : Function.Injective e := by intro a1 a2 heq; aesop
   use fun a ↦ g (e (f a))
   intro a1 a2 heq
-  dsimp only [] at heq
-  apply hf
+  apply hf.1
   apply he
-  apply hg
+  apply hg.1
   exact heq
 
 /-- Exercise 3.6.8 -/
