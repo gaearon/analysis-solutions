@@ -941,7 +941,19 @@ theorem SetTheory.Set.injection_iff_card_le {A B:Set} (hA: A.finite) (hB: B.fini
 
 /-- Exercise 3.6.8 -/
 theorem SetTheory.Set.surjection_from_injection {A B:Set} (hA: A ≠ ∅) (f: A → B)
-  (hf: Function.Injective f) : ∃ g:B → A, Function.Surjective g := by sorry
+    (hf: Function.Injective f) : ∃ g:B → A, Function.Surjective g := by
+  use open Classical in fun b ↦
+    if h: ∃ a : A, f a = b then
+      h.choose
+    else
+      nonempty_choose hA
+  intro a
+  use f a
+  apply hf
+  simp only [exists_apply_eq_apply, reduceDIte]
+  generalize_proofs h
+  have := h.choose_spec
+  grind
 
 /-- Exercise 3.6.9 -/
 theorem SetTheory.Set.card_union_add_card_inter {A B:Set} (hA: A.finite) (hB: B.finite) :
