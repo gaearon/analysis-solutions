@@ -921,7 +921,26 @@ theorem SetTheory.Set.pow_mul_pow_eq_pow_add (a b c:ℕ): (a^b) * a^c = a^(b+c) 
 
 /-- Exercise 3.6.7 -/
 theorem SetTheory.Set.injection_iff_card_le {A B:Set} (hA: A.finite) (hB: B.finite) :
-    (∃ f:A → B, Function.Injective f) ↔ A.card ≤ B.card := sorry
+    (∃ f:A → B, Function.Injective f) ↔ A.card ≤ B.card := by
+  constructor
+  · rintro ⟨f, hf⟩
+    rw [←card_image_inj hA hf]
+    have hi := image_in_codomain f A
+    exact (card_subset hB hi).2
+  intro hAB
+  let f : A → Fin (A.card) := sorry
+  have hf : Function.Injective f := by sorry
+  let g : Fin (B.card) → B := sorry
+  have hg : Function.Injective g := by sorry
+  have e : Fin A.card → Fin B.card := Fin_embed _ _ hAB
+  have he : Function.Injective e := by sorry
+  use fun a ↦ g (e (f a))
+  intro a1 a2 heq
+  dsimp only [] at heq
+  apply hf
+  apply he
+  apply hg
+  exact heq
 
 /-- Exercise 3.6.8 -/
 theorem SetTheory.Set.surjection_from_injection {A B:Set} (hA: A ≠ ∅) (f: A → B)
