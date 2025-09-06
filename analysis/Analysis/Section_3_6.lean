@@ -857,15 +857,14 @@ theorem SetTheory.Set.pow_pow_EqualCard_pow_prod (A B C:Set) :
   apply Equiv.bijective
 
 theorem SetTheory.Set.pow_pow_eq_pow_mul (a b c:ℕ): (a^b)^c = a^(b*c) := by
-  have := EquivCard_to_card_eq (pow_pow_EqualCard_pow_prod (Fin a) (Fin b) (Fin c))
-  have := Fin_card a
-  have := Fin_card b
-  have := Fin_card c
   have h1 := card_pow (Fin_finite a) (Fin_finite b)
-  have := card_pow h1.1 (Fin_finite c)
-  have h2 := card_prod (Fin_finite b) (Fin_finite c)
-  have := card_pow (Fin_finite a) h2.1
-  grind
+  have h2 := card_pow h1.1 (Fin_finite c)
+  have h3 := card_prod (Fin_finite b) (Fin_finite c)
+  have h4 := card_pow (Fin_finite a) h3.1
+  rw [←Fin_card a, ←Fin_card b, ←Fin_card c]
+  rw [←h1.2, ←h2.2, ←h3.2, ←h4.2]
+  have := pow_pow_EqualCard_pow_prod (Fin a) (Fin b) (Fin c)
+  rw [EquivCard_to_card_eq this]
 
 theorem SetTheory.Set.pow_prod_pow_EqualCard_pow_union (A B C:Set) (hd: Disjoint B C) :
     EqualCard ((A ^ B) ×ˢ (A ^ C)) (A ^ (B ∪ C)) := by
@@ -902,7 +901,23 @@ theorem SetTheory.Set.pow_prod_pow_EqualCard_pow_union (A B C:Set) (hd: Disjoint
   use mk_cartesian (pow_fun_equiv.symm ba) (pow_fun_equiv.symm ca)
   simp [f, ba, ca]
 
-theorem SetTheory.Set.pow_mul_pow_eq_pow_add (a b c:ℕ): (a^b) * a^c = a^(b+c) := by sorry
+theorem SetTheory.Set.pow_mul_pow_eq_pow_add (a b c:ℕ): (a^b) * a^c = a^(b+c) := by
+  let fc (c: Fin c): Nat := ↑(c + b)
+  have hfc : Function.Injective fc := by intro x1 x2; aesop
+  have ⟨hCf, _⟩ := card_image (Fin_finite c) fc
+  set C := image fc (Fin c)
+  have hCd : Disjoint (Fin b) C := by rw [disjoint_iff]; aesop
+  have h1 := card_image_inj (Fin_finite c) hfc
+  have h2 := card_pow (Fin_finite a) (Fin_finite b)
+  have h3 := card_pow (Fin_finite a) hCf
+  have h4 := card_prod h2.1 h3.1
+  have h5 := card_union_disjoint (Fin_finite b) hCf hCd
+  have h6 := card_union (Fin_finite b) hCf
+  have h7 := card_pow (Fin_finite a) h6.1
+  rw [←Fin_card a, ←Fin_card b, ←Fin_card c]
+  rw [←h1, ←h2.2, ←h3.2, ←h4.2, ←h5, ←h7.2]
+  have := pow_prod_pow_EqualCard_pow_union (Fin a) (Fin b) C hCd
+  rw [EquivCard_to_card_eq this]
 
 /-- Exercise 3.6.7 -/
 theorem SetTheory.Set.injection_iff_card_le {A B:Set} (hA: A.finite) (hB: B.finite) :
