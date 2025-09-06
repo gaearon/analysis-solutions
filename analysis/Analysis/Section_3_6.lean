@@ -749,11 +749,14 @@ theorem SetTheory.Set.card_prod {X Y:Set} (hX: X.finite) (hY: Y.finite) :
     use n * Y.card + Y.card
   exact hc
 
-noncomputable abbrev SetTheory.Set.pow_fun_equiv {A B : Set} : ↑(A ^ B) ≃ (B → A) where
+noncomputable def SetTheory.Set.pow_fun_equiv {A B : Set} : ↑(A ^ B) ≃ (B → A) where
   toFun F := ((powerset_axiom _).mp F.property).choose
   invFun f := ⟨f, (powerset_axiom _).mpr ⟨f, by simp⟩⟩
   left_inv F := by ext; exact ((powerset_axiom _).mp F.property).choose_spec
   right_inv f := by simp
+
+lemma SetTheory.Set.pow_fun_eq_iff {A B : Set} (x y : ↑(A ^ B)) : x = y ↔ pow_fun_equiv x = pow_fun_equiv y := by
+  rw [←pow_fun_equiv.apply_eq_iff_eq]
 
 /-- Proposition 3.6.14 (f) / Exercise 3.6.4 -/
 theorem SetTheory.Set.card_pow {X Y:Set} (hY: Y.finite) (hX: X.finite) :
@@ -764,10 +767,8 @@ theorem SetTheory.Set.card_pow {X Y:Set} (hY: Y.finite) (hX: X.finite) :
       use fun _ ↦ ⟨0, by rw [mem_Fin]; aesop⟩
       constructor
       · intro z1 z2
-        simp only [forall_const]
-        rw [←pow_fun_equiv.apply_eq_iff_eq]
-        have := not_mem_empty
-        grind
+        rw [pow_fun_eq_iff]
+        grind [not_mem_empty]
       intro y
       let f : (∅: Set) → Y := fun e ↦ by have := e.property; simp_all
       use pow_fun_equiv.symm f
@@ -799,7 +800,7 @@ theorem SetTheory.Set.card_pow {X Y:Set} (hY: Y.finite) (hX: X.finite) :
       mk_cartesian (pow_fun_equiv.symm f') (f x)
     constructor
     · intro z1 z2 heq
-      rw [←pow_fun_equiv.apply_eq_iff_eq]
+      rw [pow_fun_eq_iff]
       ext x2; congr
       simp only [mk_cartesian, Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq,
         OrderedPair.mk.injEq, SetCoe.ext_iff] at heq
@@ -809,37 +810,24 @@ theorem SetTheory.Set.card_pow {X Y:Set} (hY: Y.finite) (hX: X.finite) :
       have := congrArg (pow_fun_equiv · x2') heq.1
       grind
     intro z'
-    let f' := ((powerset_axiom _).mp (fst z').property).choose
-    simp only [Subtype.exists, powerset_axiom]
+    let f' := pow_fun_equiv (fst z')
     let f : X → Y := open Classical in fun x2 ↦
       if hx2 : x2 = x then
         (snd z')
       else
         f' ⟨x2, by have := x2.property; simp [X']; grind⟩
-    use f, by use f
+    use pow_fun_equiv.symm f
     rw [←mk_cartesian_fst_snd_eq z']
     simp only [mk_cartesian, Subtype.mk.injEq,
       EmbeddingLike.apply_eq_iff_eq, OrderedPair.mk.injEq]
     constructor
-    · simp only [Equiv.coe_fn_mk, Equiv.coe_fn_symm_mk]
-      generalize_proofs hf
-      have := hf.choose_spec
-      rw [coe_of_fun_inj] at this
-      rw [this]
-      have hx' : ∀ (x' : X') hx'', ⟨x', hx''⟩ ≠ x := by
-        intro x'
-        have := x'.property
-        simp only [mem_sdiff, mem_singleton, X'] at this
-        grind
-      simp only [hx', ↓reduceDIte, Subtype.coe_eta, f]
-      generalize_proofs hf' at f'
-      rw [hf'.choose_spec]
-    congr
-    simp only [Equiv.coe_fn_mk]
-    generalize_proofs hf
-    have := hf.choose_spec
-    rw [coe_of_fun_inj] at this
-    simp [this, f]
+    · simp only [f, f']
+      congr
+      rw [pow_fun_eq_iff]
+      ext x'
+      have : x'.val ≠ x := by have := x'.property; simp [X'] at this; grind
+      grind
+    simp [f]
   have heqc := EquivCard_to_card_eq heq
   constructor
   · use ((Y ^ X') ×ˢ Y).card
@@ -894,14 +882,14 @@ theorem SetTheory.Set.pow_prod_pow_EqualCard_pow_union (A B C:Set) (hd: Disjoint
   · intro z1 z2 heq
     ext
     simp only [pair_eq_fst_snd, pair_eq_fst_snd, EmbeddingLike.apply_eq_iff_eq, OrderedPair.mk.injEq]
-    simp only [Equiv.coe_fn_mk, Equiv.coe_fn_symm_mk, Subtype.mk.injEq, coe_of_fun_inj] at heq
+    simp only [EmbeddingLike.apply_eq_iff_eq] at heq
     constructor
-    · rw [Subtype.val_inj, ←pow_fun_equiv.apply_eq_iff_eq]
+    · rw [Subtype.val_inj, pow_fun_eq_iff]
       ext b
       let bc : ↑(B ∪ C) := ⟨b, by have := b.property; simp_all⟩
       have := congrFun heq bc
       grind
-    rw [Subtype.val_inj, ←pow_fun_equiv.apply_eq_iff_eq]
+    rw [Subtype.val_inj, pow_fun_eq_iff]
     ext c
     let bc : ↑(B ∪ C) := ⟨c, by have := c.property; simp_all⟩
     simp_rw [disjoint_iff, eq_empty_iff_forall_notMem, mem_inter] at hd
@@ -912,16 +900,7 @@ theorem SetTheory.Set.pow_prod_pow_EqualCard_pow_union (A B C:Set) (hd: Disjoint
   let ba (b : B) := f ⟨b, by have := b.property; simp_all⟩
   let ca (c : C) := f ⟨c, by have := c.property; simp_all⟩
   use mk_cartesian (pow_fun_equiv.symm ba) (pow_fun_equiv.symm ca)
-  rw [←pow_fun_equiv.apply_eq_iff_eq]
-  simp only [Equiv.coe_fn_symm_mk, fst_of_mk_cartesian, Equiv.coe_fn_mk, snd_of_mk_cartesian,
-    coe_of_fun_inj, Classical.choose_eq]
-  ext bc
-  generalize_proofs h1 h2
-  have := h1.choose_spec
-  rw [Set.coe_of_fun_inj] at this
-  have := h2.choose_spec
-  rw [Set.coe_of_fun_inj] at this
-  grind
+  simp [f, ba, ca]
 
 theorem SetTheory.Set.pow_mul_pow_eq_pow_add (a b c:ℕ): (a^b) * a^c = a^(b+c) := by sorry
 
