@@ -942,22 +942,38 @@ theorem SetTheory.Set.injection_iff_card_le {A B:Set} (hA: A.finite) (hB: B.fini
 /-- Exercise 3.6.8 -/
 theorem SetTheory.Set.surjection_from_injection {A B:Set} (hA: A ≠ ∅) (f: A → B)
     (hf: Function.Injective f) : ∃ g:B → A, Function.Surjective g := by
-  use open Classical in fun b ↦
-    if h: ∃ a : A, f a = b then
-      h.choose
-    else
-      nonempty_choose hA
+  let g := open Classical in fun b ↦
+    if h: ∃! a, f a = b then h.exists.choose else nonempty_choose hA
+  use g
   intro a
   use f a
-  apply hf
-  simp only [exists_apply_eq_apply, reduceDIte]
+  have hu : ∃! a', f a' = f a := by
+    apply existsUnique_of_exists_of_unique
+    · use a
+    · intros; apply hf; grind
+  simp only [g, hu, reduceDIte]
   generalize_proofs h
-  have := h.choose_spec
-  grind
+  exact hf h.choose_spec
 
 /-- Exercise 3.6.9 -/
 theorem SetTheory.Set.card_union_add_card_inter {A B:Set} (hA: A.finite) (hB: B.finite) :
-    A.card + B.card = (A ∪ B).card + (A ∩ B).card := by  sorry
+    A.card + B.card = (A ∪ B).card + (A ∩ B).card := by
+  have : A = (A \ B) ∪ (A ∩ B) := by ext; grind [mem_union, mem_sdiff, mem_inter]
+  have : B = (B \ A) ∪ (A ∩ B) := by ext; grind [mem_union, mem_sdiff, mem_inter]
+  have hAdf : (A \ B).finite := (card_subset hA (by simp [subset_def]; grind)).1
+  have hBdf : (B \ A).finite := (card_subset hB (by simp [subset_def]; grind)).1
+  have hif : (A ∩ B).finite := (card_subset hA (by apply inter_subset_left)).1
+  have huf : (A \ B ∪ A ∩ B).finite := (card_union hAdf hif).1
+  have hAd : Disjoint (A \ B) (A ∩ B) := by
+    simp only [disjoint_iff, eq_empty_iff_forall_notMem, mem_inter, mem_sdiff]; grind
+  have hBd : Disjoint (B \ A) (A ∩ B) := by
+    simp only [disjoint_iff, eq_empty_iff_forall_notMem, mem_inter, mem_sdiff]; grind
+  have hud : Disjoint (A \ B ∪ A ∩ B) (B \ A) := by
+    simp only [disjoint_iff, eq_empty_iff_forall_notMem, mem_inter, mem_sdiff]; grind
+  have := card_union_disjoint hAdf hif hAd
+  have := card_union_disjoint hBdf hif hBd
+  have := card_union_disjoint huf hBdf hud
+  grind [union_eq_partition]
 
 /-- Exercise 3.6.10 -/
 theorem SetTheory.Set.pigeonhole_principle {n:ℕ} {A: Fin n → Set}
