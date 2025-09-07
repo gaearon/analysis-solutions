@@ -1022,7 +1022,53 @@ theorem SetTheory.Set.pigeonhole_principle {n:ℕ} {A: Fin n → Set}
 
 /-- Exercise 3.6.11 -/
 theorem SetTheory.Set.two_to_two_iff {X Y:Set} (f: X → Y): Function.Injective f ↔
-    ∀ S ⊆ X, S.card = 2 → (image f S).card = 2 := by sorry
+    ∀ S ⊆ X, S.card = 2 → (image f S).card = 2 := by
+  constructor
+  · intro hf S hS hSc
+    rw [←hSc]
+    have hSf : S.finite := by use 2; exact card_to_has_card (by simp) hSc
+    let f' : S → Y := fun s ↦ f ⟨s, by aesop⟩
+    have hf' : Function.Injective f' := by intro s1 s2 heq; have := hf heq; aesop
+    have heq : image f S = image f' S := by simp only [f']; aesop
+    rw [heq]
+    exact card_image_inj hSf hf'
+  intro hS x1 x2 heq
+  let S : Set := {(x1: Object), (x2: Object)}
+  have hSs : S ⊆ X := by simp only [S, subset_def]; aesop
+  by_cases hxeq: x1 = x2
+  · tauto
+  have hSc : S.card = 2 := by
+    apply has_card_to_card
+    use open Classical in fun s ↦
+      if s.val = x1 then
+        Fin_mk _ 0 (by omega)
+      else
+        Fin_mk _ 1 (by omega)
+    constructor
+    · intro s1 s2 heq
+      simp only [Fin.coe_inj] at heq
+      by_cases s1.val = x1 <;> aesop
+    intro y
+    by_cases (y:ℕ) = 0
+    · use ⟨x1, by aesop⟩; aesop
+    use ⟨x2, by aesop⟩
+    have : ((x2: Object) ≠ x1) := by aesop
+    simp only [this, reduceIte, Fin.coe_inj, Fin.toNat_mk]
+    have := Fin.toNat_lt y
+    omega
+  specialize hS S hSs hSc
+  have : (image f S).card = 1 := by
+    apply has_card_to_card
+    use fun s ↦ Fin_mk _ 0 (by omega)
+    constructor
+    · intro y1 y2 hyeq; aesop
+    · intro n
+      use ⟨f x1, by aesop⟩
+      simp only [Fin.coe_inj, Fin.toNat_mk]
+      have := Fin.toNat_lt n
+      omega
+  rw [this] at hS
+  tauto
 
 /-- Exercise 3.6.12 -/
 def SetTheory.Set.Permutations (n: ℕ): Set := (Fin n ^ Fin n).specify (fun F ↦
