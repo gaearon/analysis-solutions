@@ -977,7 +977,48 @@ theorem SetTheory.Set.card_union_add_card_inter {A B:Set} (hA: A.finite) (hB: B.
 
 /-- Exercise 3.6.10 -/
 theorem SetTheory.Set.pigeonhole_principle {n:ℕ} {A: Fin n → Set}
-  (hA: ∀ i, (A i).finite) (hAcard: (iUnion _ A).card > n) : ∃ i, (A i).card ≥ 2 := by sorry
+    (hA: ∀ i, (A i).finite) (hAcard: (iUnion _ A).card > n) : ∃ i, (A i).card ≥ 2 := by
+  induction' n with n ih
+  · contrapose! hAcard
+    apply Nat.le_zero.mpr
+    apply card_eq_zero_of_empty
+    simp [eq_empty_iff_forall_notMem, mem_iUnion]
+  let A' : Fin n → Set := fun i' ↦ A (Fin_embed _ _ (by simp) i')
+  have hA' : ∀ i', (A' i').finite := by
+    intro i'
+    specialize hA (Fin_embed _ _ (by simp) i')
+    simpa [A']
+  specialize ih hA'
+  by_cases h: ((Fin n).iUnion A').card > n
+  · specialize ih h
+    have ⟨i, hi⟩ := ih
+    let i' : Fin (n + 1) := Fin_embed _ _ (by simp) i
+    have hi' : i'.val = i := by simp [i']
+    use i'
+  let n': Fin (n+1) := Fin_mk _ n (by simp)
+  use n'
+  suffices : ((Fin (n + 1)).iUnion A).card ≤ ((Fin n).iUnion A').card + (A n').card
+  · omega
+  have hu : (Fin (n + 1)).iUnion A = (Fin n).iUnion A' ∪ A n' := by
+    ext x
+    simp only [mem_union, mem_iUnion]
+    constructor
+    · intro ⟨a, ha⟩
+      by_cases a = n
+      · right; convert ha; simp_all
+      left
+      use Fin_mk _ a (by have := Fin.toNat_lt a; omega)
+      simpa [A', Fin_embed]
+    rintro ⟨a, _⟩
+    use Fin_embed _ _ (by simp) a
+    use n'
+  rw [hu]
+  refine (card_union ?_ (hA n')).2
+  have hs := subset_union_left ((Fin n).iUnion A') (A n')
+  refine (card_subset ?_ hs).1
+  have : ((Fin (n + 1)).iUnion A).card ≠ 0 := by omega
+  have := card_to_has_card this rfl
+  aesop
 
 /-- Exercise 3.6.11 -/
 theorem SetTheory.Set.two_to_two_iff {X Y:Set} (f: X → Y): Function.Injective f ↔
