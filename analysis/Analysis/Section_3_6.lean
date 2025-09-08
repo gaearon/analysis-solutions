@@ -1087,6 +1087,10 @@ noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) 
   simp only [Permutations, specification_axiom'', powerset_axiom] at this
   exact this.choose.choose
 
+theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) :
+    Function.Bijective (Permutations_toFun p) := by
+  sorry
+
 noncomputable def SetTheory.Set.Permutations_mk
     {n : ℕ} {f : Fin n → Fin n} (hf : Function.Bijective f)
       : Permutations n :=
@@ -1100,9 +1104,47 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have eq : Permutations (n + 1) ≃ Fin (n + 1) ×ˢ Permutations n := {
     toFun p := by
       let f := Permutations_toFun p
+      have hf := Permutations_bijective p
       let fn := f n'
-      let f' : Fin n → Fin n := sorry
-      have hf' : Function.Bijective f' := sorry
+      by_cases hfn : f n' = n
+      · let f' : Fin n → Fin n := fun i ↦
+          let i' : Fin (n + 1) := Fin_embed _ _ (by omega) i
+          have : f i' ≠ n := by
+            intro h
+            have := Fin.toNat_lt i
+            have : i' = n' := by apply hf.injective; simp_all
+            have : (i:ℕ) = n := by aesop
+            omega
+          have : f i' < n := by
+            have := Fin.toNat_lt (f i')
+            omega
+          ⟨f i', by rw [mem_Fin]; simp_all⟩
+        have hf' : Function.Bijective f' := by
+          constructor
+          · intro x1 x2 heq
+            rw [Subtype.mk.injEq, SetCoe.ext_iff] at heq
+            apply hf.injective at heq
+            rwa [Subtype.mk_eq_mk, SetCoe.ext_iff] at heq
+          intro y
+          have ⟨x, hx⟩ := hf.surjective (Fin_mk _ y (by have := Fin.toNat_lt y; omega))
+          use ⟨x, by
+            have : x ≠ n := by
+              intro h
+              have : f x = n := by simp_rw [←hfn]; congr; simp [h]
+              have : y ≠ n := by have := Fin.toNat_lt y; omega
+              aesop
+            rw [mem_Fin]
+            have := Fin.toNat_lt x
+            use x, by omega, by simp⟩
+          aesop
+        exact mk_cartesian fn (Permutations_mk hf')
+      let f' : Fin n → Fin n := fun i ↦
+        if f n' = n then
+           sorry
+        else
+          sorry
+      have hf' : Function.Bijective f' :=
+        sorry
       exact mk_cartesian fn (Permutations_mk hf')
     invFun := sorry
     left_inv := sorry
