@@ -1096,43 +1096,19 @@ noncomputable def SetTheory.Set.Permutations_mk
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
   let n' : Fin (n + 1) := Fin_mk _ n (by omega)
-
-  let P (i : Fin (n + 1)) := (Permutations (n + 1)).specify fun p ↦
-    Permutations_toFun p n' = i
-
-  let toPerm {p i} (hp : p ∈ P i) : Permutations (n + 1) := by
-    simp only [specification_axiom'', P] at hp
-    exact ⟨p, hp.1⟩
-
-  let cutoff
-    (f : Fin (n + 1) → Fin (n + 1))
-    (hf : Function.Bijective f)
-    -- (hf' : )
-    : Fin n → Fin n :=
-      sorry
-
-  -- have hP' : ∀ i, ∀ p ∈ P i,
-
-  --    := by sorry
-
-  have ieq : Permutations (n + 1) ≈ Fin (n + 1) ×ˢ (Permutations n) := by
-    use fun p ↦
-      let fp := Permutations_toFun p
-      let bf : Fin n → Fin n := fun i ↦
-        -- let i': Fin (n + 1) := Fin_embed _ _ (by omega) i
-        sorry
-      let hbf : Function.Bijective bf :=
-        sorry
-      mk_cartesian (fp n') (Permutations_mk hbf)
-    constructor
-    · intro p1 p2
-      simp
-      intro h
-
-      sorry
-    sorry
   have ⟨_, hpc⟩ := card_prod (Fin_finite (n + 1)) (Permutations_finite n)
-  rw [EquivCard_to_card_eq ieq, hpc, Fin_card (n + 1)]
+  have eq : Permutations (n + 1) ≃ Fin (n + 1) ×ˢ Permutations n := {
+    toFun p := by
+      let f := Permutations_toFun p
+      let fn := f n'
+      let f' : Fin n → Fin n := sorry
+      have hf' : Function.Bijective f' := sorry
+      exact mk_cartesian fn (Permutations_mk hf')
+    invFun := sorry
+    left_inv := sorry
+    right_inv := sorry
+  }
+  rw [EquivCard_to_card_eq ⟨eq, Equiv.bijective _⟩, hpc, Fin_card (n + 1)]
 
 /-- Exercise 3.6.12 (ii) -/
 theorem SetTheory.Set.Permutations_card (n: ℕ):
