@@ -1114,42 +1114,6 @@ theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S :
   rw [add_mul, one_mul, ←ih, ←hSnc]
   sorry
 
-set_option maxHeartbeats 200000000 in
-lemma SetTheory.Set.card_union_sets (m n: ℕ) (U: Set)
-    (hUc : U.has_card n)
-    (hUc : ∀ s ∈ U, ∃ S:Set, s = S ∧ S.has_card m)
-    (hUD : ∀ (S T: Set), (S:Object) ∈ U ∧ (T:Object) ∈ U → Disjoint S T) :
-    (union U).has_card (n * m) := by
-  induction' n with n ih generalizing U
-  · sorry
-  rw [add_mul, one_mul]
-  let U' : Set := sorry
-  have hU's : U' ⊆ U := by sorry
-  have hU'c : U'.has_card n := sorry
-  specialize ih U' hU'c (by
-    intro s hs
-    have : s ∈ U := by aesop
-    grind)
-  have hbla : ∀ (S T : Set), set_to_object S ∈ U' ∧ set_to_object T ∈ U' → Disjoint S T := by
-    intro S T ⟨hS, hT⟩
-    have : (S: Object) ∈ U := by aesop
-    have : (T: Object) ∈ U := by aesop
-    aesop
-  let huU' : (union U').has_card (n * m) := ih hbla
-  let huU'f : (union U').finite := by use n*m
-  let X : Set := sorry
-  let hXc : X.card = m := by sorry
-  let hXf : X.finite := by sorry
-  let hd : Disjoint (union U') X := by sorry
-  have hf : (union U).finite := by sorry
-  have hc : (union U').card = n*m := sorry
-  have hu : union U = (union U') ∪ X := sorry
-  have huF : ((union U') ∪ X).finite := sorry
-  have huc := card_union_disjoint huU'f hXf hd
-  rw [←hc, ←hXc, hu]
-  have := has_card_card huF
-  rwa [huc] at this
-
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
