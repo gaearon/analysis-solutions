@@ -1096,6 +1096,11 @@ noncomputable def SetTheory.Set.Permutations_mk
       : Permutations n :=
   ⟨f, by simp [Permutations, pow_fun_equiv, hf]⟩
 
+noncomputable def SetTheory.Set.bla' {n : ℕ} {f : Fin (n+1) → Fin (n+1)} (hf : Function.Bijective f)
+    : { f' : Fin n → Fin n // Function.Bijective f' } :=
+  sorry
+
+
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
@@ -1139,16 +1144,39 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
           aesop
         exact mk_cartesian fn (Permutations_mk hf')
       let f' : Fin n → Fin n := fun i ↦
-        if f n' = n then
-           sorry
+        let i' : Fin (n + 1) := Fin_embed _ _ (by omega) i
+        if f i' = n then
+           ⟨f n', by sorry⟩
         else
-          sorry
+          ⟨f i', by sorry⟩
       have hf' : Function.Bijective f' :=
         sorry
       exact mk_cartesian fn (Permutations_mk hf')
-    invFun := sorry
-    left_inv := sorry
-    right_inv := sorry
+    invFun p :=
+      let fn := fst p
+      let f' := Permutations_toFun (snd p)
+      let f : Fin (n + 1) → Fin (n + 1) := fun i ↦
+        if i = n then
+          (fst p)
+        else
+          let i' : Fin n := ⟨i, by sorry⟩
+          let y := f' i'
+          ⟨y, by sorry⟩
+      have hf : Function.Bijective f := sorry
+      Permutations_mk hf
+    left_inv := by
+      intro x
+      simp [Permutations_mk, Permutations_toFun]
+      sorry
+    right_inv := by
+      intro x
+      simp [Permutations_mk, Permutations_toFun]
+      by_cases h : fst x = n
+      · simp [h]
+        have := mk_cartesian_fst_snd_eq x
+        generalize_proofs
+        sorry
+      sorry
   }
   rw [EquivCard_to_card_eq ⟨eq, Equiv.bijective _⟩, hpc, Fin_card (n + 1)]
 
