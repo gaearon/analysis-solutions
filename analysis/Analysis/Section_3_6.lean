@@ -1118,7 +1118,7 @@ theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S :
     exact h_disj
   specialize ih S' h_card' h_disj'
   let n': Fin (n+1) := Fin_mk _ n (by omega)
-  have hSnf : (S n').finite := by sorry
+  have hSnf : (S n').finite := by use m; apply h_card
   have hSnc := has_card_to_card (h_card n')
   rw [add_mul, one_mul, ←ih, ←hSnc]
   have hU : (Fin (n + 1)).iUnion S = (Fin n).iUnion S' ∪ S n' := by
