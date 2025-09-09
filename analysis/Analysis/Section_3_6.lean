@@ -1087,28 +1087,130 @@ noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) 
   simp only [Permutations, specification_axiom'', powerset_axiom] at this
   exact this.choose.choose
 
-theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) :
-    Function.Bijective (Permutations_toFun p) := by
+-- lemma SetTheory.Set.card_iUnion (n : ℕ) (m: ℕ) (i : Fin n) (P : Fin n → Set) (hP : ∀ i, (P i).card = m) :
+--     (iUnion (Fin i) fun j ↦ P (Fin_embed _ _ (by
+--       have := Fin.toNat_lt j
+--       have := Fin.toNat_lt i
+--       omega
+--     ) j)).card = i * m := by
+
+--   sorry
+
+
+-- lemma SetTheory.Set.card_union_sets (m: ℕ) (U: Set)
+--     (hUf : U.finite)
+--     (hUc : ∀ s ∈ U, ∃ S:Set, s = S ∧ S.card = m)
+--     (hUD : ∀ (S T: Set), (S:Object) ∈ U ∧ (T:Object) ∈ U → Disjoint S T) :
+--     (union U).has_card (U.card * m) := by
+--   induction' hi : U.card with n ih generalizing U
+--   · rw [zero_mul]
+--     have := empty_of_card_eq_zero hUf hi
+--     rw [has_card_zero]
+--     ext x
+--     rw [union_axiom]
+--     aesop
+
+--   sorry
+
+theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint {m: ℕ} {X I: Set} (S : I → Set)
+    -- (h_i_card : I.card = n
+    (h_card : ∀ i, (S i).has_card m)
+    (h_disj : ∀ i, ∀ j, i ≠ j → Disjoint (S i) (S j)) :
+    (I.iUnion S).card = I.card * m := by
+  induction' I.card with n ih generalizing I
+  · sorry
   sorry
 
-noncomputable def SetTheory.Set.Permutations_mk
-    {n : ℕ} {f : Fin n → Fin n} (hf : Function.Bijective f)
-      : Permutations n :=
-  ⟨f, by simp [Permutations, pow_fun_equiv, hf]⟩
+--   sorry
 
-noncomputable def SetTheory.Set.bla' {n : ℕ} {f : Fin (n+1) → Fin (n+1)} (hf : Function.Bijective f)
-    : { f' : Fin n → Fin n // Function.Bijective f' } :=
+theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S : Fin n → Set)
+    -- (h_i_card : I.card = n
+    (h_card : ∀ i, (S i).has_card m)
+    (h_disj : ∀ i, ∀ j, i ≠ j → Disjoint (S i) (S j)) :
+    ((Fin n).iUnion S).card = n * m := by
+  induction' n with n ih
+  · sorry
+
+  let S' : (Fin n).toSubtype → Set := fun i ↦ S (Fin_embed _ _ (by omega) i)
+  have hS' : ∀ i, S (Fin_embed _ _ (by omega) i) = S' i := by simp [S']
+  have h_card' : ∀ (i : (Fin n).toSubtype), (S' i).has_card m := by
+    intro i
+    let i': Fin (n+1) := (Fin_embed _ _ (by omega) i)
+    specialize h_card i'
+    exact h_card
+  have h_disj' : ∀ (i j : (Fin n).toSubtype), i ≠ j → Disjoint (S' i) (S' j) := by
+    intro i j hij
+    let i': Fin (n+1) := (Fin_embed _ _ (by omega) i)
+    let j': Fin (n+1) := (Fin_embed _ _ (by omega) j)
+    have hij' : i' ≠ j' := by simp [i', j']; by_contra h; rw [←Subtype.eq_iff] at h; tauto
+    specialize h_disj i' j' hij'
+    rw [←hS', ←hS']
+    exact h_disj
+  specialize ih S' h_card' h_disj'
+  have hSnc : (S (Fin_mk _ n (by omega))).card
+  rw [add_mul, one_mul, ←ih]
+
+
   sorry
 
+set_option maxHeartbeats 200000000 in
+lemma SetTheory.Set.card_union_sets (m n: ℕ) (U: Set)
+    (hUc : U.has_card n)
+    (hUc : ∀ s ∈ U, ∃ S:Set, s = S ∧ S.has_card m)
+    (hUD : ∀ (S T: Set), (S:Object) ∈ U ∧ (T:Object) ∈ U → Disjoint S T) :
+    (union U).has_card (n * m) := by
+  induction' n with n ih generalizing U
+  · sorry
+  rw [add_mul, one_mul]
+  let U' : Set := sorry
+  have hU's : U' ⊆ U := by sorry
+  have hU'c : U'.has_card n := sorry
+  specialize ih U' hU'c (by
+    intro s hs
+    have : s ∈ U := by aesop
+    grind)
+  have hbla : ∀ (S T : Set), set_to_object S ∈ U' ∧ set_to_object T ∈ U' → Disjoint S T := by
+    intro S T ⟨hS, hT⟩
+    have : (S: Object) ∈ U := by aesop
+    have : (T: Object) ∈ U := by aesop
+    aesop
+  let huU' : (union U').has_card (n * m) := ih hbla
+  let huU'f : (union U').finite := by use n*m
+  let X : Set := sorry
+  let hXc : X.card = m := by sorry
+  let hXf : X.finite := by sorry
+  let hd : Disjoint (union U') X := by sorry
+  have hf : (union U).finite := by sorry
+  have hc : (union U').card = n*m := sorry
+  have hu : union U = (union U') ∪ X := sorry
+  have huF : ((union U') ∪ X).finite := sorry
+  have huc := card_union_disjoint huU'f hXf hd
+  rw [←hc, ←hXc, hu]
+  have := has_card_card huF
+  rwa [huc] at this
 
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
   let n' : Fin (n + 1) := Fin_mk _ n (by omega)
-  have ⟨_, hpc⟩ := card_prod (Fin_finite (n + 1)) (Permutations_finite n)
-  have eq : Permutations (n + 1) ≈ Fin (n + 1) ×ˢ Permutations n := by
+  let P (i : Fin (n+1)) := (Permutations (n + 1)).specify (fun p ↦ Permutations_toFun p n' = i)
+
+  have hP : ∀ i, P i ≈ Permutations n := by
     sorry
-  rw [EquivCard_to_card_eq eq, hpc, Fin_card (n + 1)]
+
+  have hPd : ∀ i j, Disjoint (P i) (P j) := by
+    sorry
+
+  have hPu : Permutations (n + 1) = iUnion (Fin (n + 1)) P := by
+    sorry
+
+  rw [hPu]
+
+  induction' n with i ih
+  · simp
+
+    sorry
+  sorry
 
 /-- Exercise 3.6.12 (ii) -/
 theorem SetTheory.Set.Permutations_card (n: ℕ):
