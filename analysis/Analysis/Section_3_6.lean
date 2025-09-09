@@ -1092,7 +1092,15 @@ theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S :
     (h_disj : ∀ i, ∀ j, i ≠ j → Disjoint (S i) (S j)) :
     ((Fin n).iUnion S).card = n * m := by
   induction' n with n ih
-  · sorry
+  · rw [zero_mul]
+    apply card_eq_zero_of_empty
+    ext x
+    simp only [not_mem_empty, iff_false]
+    intro h
+    rw [mem_iUnion] at h
+    obtain ⟨a, ha⟩ := h
+    have := Fin.toNat_lt a
+    omega
   let S' : (Fin n).toSubtype → Set := fun i ↦ S (Fin_embed _ _ (by omega) i)
   have hS' : ∀ i, S (Fin_embed _ _ (by omega) i) = S' i := by simp [S']
   have h_card' : ∀ (i : (Fin n).toSubtype), (S' i).has_card m := by
@@ -1110,9 +1118,35 @@ theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S :
     exact h_disj
   specialize ih S' h_card' h_disj'
   let n': Fin (n+1) := Fin_mk _ n (by omega)
+  have hSnf : (S n').finite := by sorry
   have hSnc := has_card_to_card (h_card n')
   rw [add_mul, one_mul, ←ih, ←hSnc]
-  sorry
+  have hU : (Fin (n + 1)).iUnion S = (Fin n).iUnion S' ∪ S n' := by
+    sorry
+  have hUf : ((Fin n).iUnion S').finite := by
+    sorry
+  rw [hU]
+  set X := (Fin n).iUnion S'
+  set Y := S n'
+  have hd : Disjoint X Y := by
+    rw [disjoint_iff, eq_empty_iff_forall_notMem]
+    intro x
+    rw [mem_inter]
+    simp only [X, Y, mem_iUnion]
+    intro ⟨⟨i, hi⟩, hx⟩
+    let i' : Fin (n+1) := Fin_embed _ _ (by omega) i
+    have : i' ≠ n' := by
+      intro h
+      have := Fin.toNat_lt i
+      have : i = n := by aesop
+      omega
+    specialize h_disj i' n' this
+    rw [disjoint_iff] at h_disj
+    rw [hS', eq_empty_iff_forall_notMem] at h_disj
+    specialize h_disj x
+    rw [mem_inter] at h_disj
+    tauto
+  exact card_union_disjoint hUf hSnf hd
 
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
