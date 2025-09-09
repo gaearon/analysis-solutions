@@ -1087,50 +1087,12 @@ noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) 
   simp only [Permutations, specification_axiom'', powerset_axiom] at this
   exact this.choose.choose
 
--- lemma SetTheory.Set.card_iUnion (n : ℕ) (m: ℕ) (i : Fin n) (P : Fin n → Set) (hP : ∀ i, (P i).card = m) :
---     (iUnion (Fin i) fun j ↦ P (Fin_embed _ _ (by
---       have := Fin.toNat_lt j
---       have := Fin.toNat_lt i
---       omega
---     ) j)).card = i * m := by
-
---   sorry
-
-
--- lemma SetTheory.Set.card_union_sets (m: ℕ) (U: Set)
---     (hUf : U.finite)
---     (hUc : ∀ s ∈ U, ∃ S:Set, s = S ∧ S.card = m)
---     (hUD : ∀ (S T: Set), (S:Object) ∈ U ∧ (T:Object) ∈ U → Disjoint S T) :
---     (union U).has_card (U.card * m) := by
---   induction' hi : U.card with n ih generalizing U
---   · rw [zero_mul]
---     have := empty_of_card_eq_zero hUf hi
---     rw [has_card_zero]
---     ext x
---     rw [union_axiom]
---     aesop
-
---   sorry
-
-theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint {m: ℕ} {X I: Set} (S : I → Set)
-    -- (h_i_card : I.card = n
-    (h_card : ∀ i, (S i).has_card m)
-    (h_disj : ∀ i, ∀ j, i ≠ j → Disjoint (S i) (S j)) :
-    (I.iUnion S).card = I.card * m := by
-  induction' I.card with n ih generalizing I
-  · sorry
-  sorry
-
---   sorry
-
 theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S : Fin n → Set)
-    -- (h_i_card : I.card = n
     (h_card : ∀ i, (S i).has_card m)
     (h_disj : ∀ i, ∀ j, i ≠ j → Disjoint (S i) (S j)) :
     ((Fin n).iUnion S).card = n * m := by
   induction' n with n ih
   · sorry
-
   let S' : (Fin n).toSubtype → Set := fun i ↦ S (Fin_embed _ _ (by omega) i)
   have hS' : ∀ i, S (Fin_embed _ _ (by omega) i) = S' i := by simp [S']
   have h_card' : ∀ (i : (Fin n).toSubtype), (S' i).has_card m := by
@@ -1147,10 +1109,9 @@ theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S :
     rw [←hS', ←hS']
     exact h_disj
   specialize ih S' h_card' h_disj'
-  have hSnc : (S (Fin_mk _ n (by omega))).card
-  rw [add_mul, one_mul, ←ih]
-
-
+  let n': Fin (n+1) := Fin_mk _ n (by omega)
+  have hSnc := has_card_to_card (h_card n')
+  rw [add_mul, one_mul, ←ih, ←hSnc]
   sorry
 
 set_option maxHeartbeats 200000000 in
