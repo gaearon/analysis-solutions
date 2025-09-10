@@ -1244,14 +1244,24 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         simp_rw [hin, reduceDIte, ←Fin.coe_inj] at heq
         let x1' : Fin (n + 1) := Fin_embed _ _ (by omega) x1
         let x2' : Fin (n + 1) := Fin_embed _ _ (by omega) x2
+        have : x1 = (x1':ℕ) := by simp [x1', ←Fin.coe_eq_iff]
+        have : x2 = (x2':ℕ) := by simp [x2', ←Fin.coe_eq_iff]
         suffices : x1' = x2'
         · grind
         by_cases hx1 : f x1' = n <;> by_cases hx2 : f x2' = n
         · simp_rw [←hx1, ←Fin.coe_inj] at hx2
           have := hf.injective hx2
           grind
-        · sorry
-        · sorry
+        · simp [hx1, hx2] at heq
+          have : x2' = n' := hf.injective (by grind)
+          have : x2' = n := by rw [this]; aesop
+          have : x2 < n := by have := Fin.toNat_lt x2; omega
+          omega
+        · simp [hx1, hx2] at heq
+          have : x1' = n' := hf.injective (by grind)
+          have : x1' = n := by rw [this]; aesop
+          have : x1 < n := by have := Fin.toNat_lt x1; omega
+          omega
         simp only [hx1, hx2] at heq
         apply hf.injective
         grind
