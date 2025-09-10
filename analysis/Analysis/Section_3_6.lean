@@ -1192,7 +1192,9 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     sorry
 
   have hPu : Permutations (n + 1) = iUnion (Fin (n + 1)) S := by
-    sorry
+    ext x
+    simp only [mem_iUnion, S, specification_axiom'']
+    grind
 
   have ⟨huf, huc⟩ := card_iUnion_card_disjoint hSc hSd
   rw [hPu, huc]
