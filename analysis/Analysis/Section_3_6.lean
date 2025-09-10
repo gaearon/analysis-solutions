@@ -1208,7 +1208,10 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
   let n' : Fin (n + 1) := Fin_mk _ n (by omega)
   let S (i : Fin (n+1)) := (Permutations (n + 1)).specify (fun p ↦ toFun p n' = i)
-  have hSn : ∀ i, ∀ f : S i, ∀ hf, toFun ⟨f, hf⟩ ⟨n, by rw [mem_Fin]; simp⟩ = i := by sorry
+  have hSn : ∀ i, ∀ f : S i, ∀ hf, toFun ⟨f, hf⟩ ⟨n, by rw [mem_Fin]; simp⟩ = i := by
+    intro i f hf
+    have := f.property
+    simp_all [S]
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
     use fun p' ↦ by
@@ -1307,6 +1310,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       have hx := congrFun heq x'
       -- Let's think a bit here.
       simp [Fin_embed] at hx
+
       sorry
     · sorry
 
