@@ -1087,9 +1087,9 @@ noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) 
   simp only [Permutations, specification_axiom'', powerset_axiom] at this
   exact this.choose.choose
 
-theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S : Fin n → Set)
-    (h_card : ∀ i, (S i).has_card m)
-    (h_disj : ∀ i, ∀ j, i ≠ j → Disjoint (S i) (S j)) :
+theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} (S : Fin n → Set)
+    (hSc : ∀ i, (S i).has_card m)
+    (hScd : Pairwise fun i j => Disjoint (S i) (S j)) :
     ((Fin n).iUnion S).finite ∧ ((Fin n).iUnion S).card = n * m := by
   induction' n with n ih
   · rw [zero_mul]
@@ -1106,23 +1106,23 @@ theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S :
     omega
   let S' : (Fin n).toSubtype → Set := fun i ↦ S (Fin_embed _ _ (by omega) i)
   have hS' : ∀ i, S (Fin_embed _ _ (by omega) i) = S' i := by simp [S']
-  have h_card' : ∀ (i : (Fin n).toSubtype), (S' i).has_card m := by
+  have hSc' : ∀ (i : (Fin n).toSubtype), (S' i).has_card m := by
     intro i
     let i': Fin (n+1) := (Fin_embed _ _ (by omega) i)
-    specialize h_card i'
-    exact h_card
-  have h_disj' : ∀ (i j : (Fin n).toSubtype), i ≠ j → Disjoint (S' i) (S' j) := by
+    specialize hSc i'
+    exact hSc
+  have hScd' : ∀ (i j : (Fin n).toSubtype), i ≠ j → Disjoint (S' i) (S' j) := by
     intro i j hij
     let i': Fin (n+1) := (Fin_embed _ _ (by omega) i)
     let j': Fin (n+1) := (Fin_embed _ _ (by omega) j)
     have hij' : i' ≠ j' := by simp [i', j']; by_contra h; rw [←Subtype.eq_iff] at h; tauto
-    specialize h_disj i' j' hij'
+    specialize hScd hij'
     rw [←hS', ←hS']
-    exact h_disj
-  specialize ih S' h_card' h_disj'
+    exact hScd
+  specialize ih S' hSc' hScd'
   let n': Fin (n+1) := Fin_mk _ n (by omega)
-  have hSnf : (S n').finite := by use m; apply h_card
-  have hSnc := has_card_to_card (h_card n')
+  have hSnf : (S n').finite := by use m; apply hSc
+  have hSnc := has_card_to_card (hSc n')
   rw [add_mul, one_mul, ←ih.2, ←hSnc]
   have hU : (Fin (n + 1)).iUnion S = (Fin n).iUnion S' ∪ S n' := by
     ext x
@@ -1162,11 +1162,11 @@ theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S :
       have := Fin.toNat_lt i
       have : i = n := by aesop
       omega
-    specialize h_disj i' n' this
-    rw [disjoint_iff] at h_disj
-    rw [hS', eq_empty_iff_forall_notMem] at h_disj
-    specialize h_disj x
-    rw [mem_inter] at h_disj
+    specialize hScd this
+    rw [disjoint_iff] at hScd
+    rw [hS', eq_empty_iff_forall_notMem] at hScd
+    specialize hScd x
+    rw [mem_inter] at hScd
     tauto
   have := card_union hUf hSnf
   use this.1
