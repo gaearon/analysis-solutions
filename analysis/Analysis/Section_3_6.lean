@@ -1167,13 +1167,16 @@ theorem SetTheory.Set.Permutations_finite (n: ℕ): (Permutations n).finite := b
   have ⟨hpf, hpc⟩ := card_pow (Fin_finite n) (Fin_finite n)
   exact (card_subset hpf hs).1
 
-noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) : (Fin n) → (Fin n) := by
+noncomputable def SetTheory.Set.toFun {n: ℕ} (p: Permutations n) : (Fin n) → (Fin n) := by
   have := p.property
   simp only [Permutations, specification_axiom'', powerset_axiom] at this
   exact this.choose.choose
 
 theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) :
-    Function.Bijective (Permutations_toFun p) := by sorry
+    Function.Bijective (toFun p) := by sorry
+
+theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) :
+    p1 = p2 ↔ toFun p1 = toFun p2 := by sorry
 
 theorem SetTheory.Set.bijective_of_injective {n: ℕ} {f : Fin n → Fin n}
   (hf : Function.Injective f) : (Function.Bijective f) := by
@@ -1199,19 +1202,20 @@ noncomputable def SetTheory.Set.Permutations_mk
       : Permutations n :=
   ⟨f, by simp [Permutations, pow_fun_equiv, hf]⟩
 
+set_option maxHeartbeats 2000000000 in
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
   let n' : Fin (n + 1) := Fin_mk _ n (by omega)
-  let S (i : Fin (n+1)) := (Permutations (n + 1)).specify (fun p ↦ Permutations_toFun p n' = i)
-
+  let S (i : Fin (n+1)) := (Permutations (n + 1)).specify (fun p ↦ toFun p n' = i)
+  have hSn : ∀ i, ∀ f : S i, ∀ hf, toFun ⟨f, hf⟩ ⟨n, by rw [mem_Fin]; simp⟩ = i := by sorry
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
     use fun p' ↦ by
       have := p'.property
       simp only [S, specification_axiom''] at this
       let p : Permutations (n + 1) := ⟨p', this.choose⟩
-      let f := Permutations_toFun p
+      let f := toFun p
       have hfn : f n' = i := by have := this.choose_spec; simp only [f, n']; simpa
       have hf := Permutations_bijective p
       let f' : Fin n → Fin n := fun x ↦
@@ -1267,8 +1271,42 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       exact Permutations_mk (bijective_of_injective hf')
     constructor
     · intro s1 s2 heq
-      simp at heq
-      generalize_proofs h1 h2 at heq
+      simp only [Permutations_mk, Subtype.mk.injEq, coe_of_fun_inj] at heq
+      generalize_proofs hs1 hn _ _ _ hs2 _ _ at heq
+      suffices : toFun ⟨s1, hs1⟩ = toFun ⟨s2, hs2⟩
+      · rw [←Permutations_inj] at this
+        ext
+        grind
+      ext x
+      by_cases hin : i = n
+      · simp only [hin, reduceDIte] at heq
+        by_cases hxn : x = n
+        · have := hSn i s1 hs1
+          simp_rw [←hxn] at this
+          simp only [Fin.coe_toNat, Subtype.coe_eta] at this
+          rw [this]
+          have := hSn i s2 hs2
+          simp_rw [←hxn] at this
+          simp only [Fin.coe_toNat, Subtype.coe_eta] at this
+          rw [this]
+        let x': Fin n := ⟨x, by
+          rw [mem_Fin]
+          have : x ≠ n := by aesop
+          have := Fin.toNat_lt x
+          use x, by omega, by simp⟩
+        have hx := congrFun heq x'
+        aesop
+      simp only [hin, reduceDIte] at heq
+      by_cases hin : x = n
+      · sorry
+      let x': Fin n := ⟨x, by
+        rw [mem_Fin]
+        have : x ≠ n := by aesop
+        have := Fin.toNat_lt x
+        use x, by omega, by simp⟩
+      have hx := congrFun heq x'
+      -- Let's think a bit here.
+      simp [Fin_embed] at hx
       sorry
     · sorry
 
