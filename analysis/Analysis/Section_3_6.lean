@@ -1301,7 +1301,18 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         aesop
       simp only [hin, reduceDIte] at heq
       by_cases hin : x = n
-      · sorry
+      · suffices : ↑(toFun ⟨↑s1, hs1⟩ n') = ↑(toFun ⟨↑s2, hs2⟩ n')
+        · have := hSn i s1 hs1
+          simp_rw [←hin] at this
+          simp only [Fin.coe_toNat, Subtype.coe_eta] at this
+          rw [this]
+          have := hSn i s2 hs2
+          simp_rw [←hin] at this
+          simp only [Fin.coe_toNat, Subtype.coe_eta] at this
+          rw [this]
+        have := hSn i s1 hs1
+        have := hSn i s2 hs2
+        simp_all
       let x': Fin n := ⟨x, by
         rw [mem_Fin]
         have : x ≠ n := by aesop
@@ -1310,7 +1321,25 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       have hx := congrFun heq x'
       -- Let's think a bit here.
       simp [Fin_embed] at hx
-
+      -- hx says
+      -- ↑(if (f1 x = n) then i else (f1 x) =
+      -- ↑(if (f2 x = n) then i else (f2 x)
+      -- We need to derive f1 x = f2 x.
+      -- Cases:
+      -- Suppose f1 x = n and f2 x = n
+      --   Then f1 x = f2 x
+      -- Suppose f1 x = n and f2 x ≠ n
+      --   Then we have
+      --   i = f2 x
+      --   But that's impossible because only f2 n = i
+      -- Suppose f1 x ≠ n and f2 x = n
+      --   Then we have
+      --   i = f1 x
+      --   But that's impossible because only f1 n = i
+      -- Suppose f1 x ≠ n and f2 x ≠ n
+      --   Then we have
+      --   f1 x = f2 x
+      --   That's what we want anyway.
       sorry
     · sorry
 
