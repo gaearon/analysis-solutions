@@ -1208,12 +1208,12 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
           ⟨f x', by rw [mem_Fin]; simpa⟩
         else
           let x' : Fin (n + 1) := Fin_embed _ _ (by omega) x
-          if f x' = n then
+          if hfx : f x' = n then
             have : i ≠ n := by aesop
             have : i < n := by have := Fin.toNat_lt i; omega
             ⟨i, by rw [mem_Fin]; simpa⟩
           else
-            have : f x' ≠ n := by sorry
+            have : f x' ≠ n := by tauto
             have : f x' < n := by have := Fin.toNat_lt (f x'); omega
             ⟨f x', by rw [mem_Fin]; simpa⟩
       let hf' : Function.Bijective f' := by
