@@ -1209,11 +1209,16 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         else
           let x' : Fin (n + 1) := Fin_embed _ _ (by omega) x
           if f x' = n then
-            i
+            have : i ≠ n := by
+              sorry
+            have : i < n := by have := Fin.toNat_lt i; omega
+            ⟨i, by rw [mem_Fin]; simpa⟩
           else
-            ⟨f x, sorry⟩
-          sorry
-      let hf' : Function.Bijective f' := sorry
+            ⟨f x', by sorry⟩
+      let hf' : Function.Bijective f' := by
+        constructor
+        · sorry
+        sorry
       exact Permutations_mk hf'
     sorry
 
