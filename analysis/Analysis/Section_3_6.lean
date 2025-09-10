@@ -1172,6 +1172,14 @@ noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) 
   simp only [Permutations, specification_axiom'', powerset_axiom] at this
   exact this.choose.choose
 
+theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) :
+    Function.Bijective (Permutations_toFun p) := by sorry
+
+noncomputable def SetTheory.Set.Permutations_mk
+    {n : ℕ} {f : Fin n → Fin n} (hf : Function.Bijective f)
+      : Permutations n :=
+  ⟨f, by simp [Permutations, pow_fun_equiv, hf]⟩
+
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
@@ -1180,6 +1188,33 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
 
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
+    use fun p' ↦ by
+      have := p'.property
+      simp only [S, specification_axiom''] at this
+      let p : Permutations (n + 1) := ⟨p', this.choose⟩
+      let f := Permutations_toFun p
+      have hfn : f n' = i := by have := this.choose_spec; simp only [f, n']; aesop
+      have hf := Permutations_bijective p
+      let f' : Fin n → Fin n := fun x ↦
+        if hin : i = n then
+          let x' : Fin (n + 1) := Fin_embed _ _ (by omega) x
+          have : f x' ≠ n := by
+            intro h
+            simp_rw [←hin, ←hfn, ←Fin.coe_inj] at h
+            have := hf.injective h
+            have := Fin.toNat_lt x
+            aesop
+          have : f x' < n := by have := Fin.toNat_lt (f x'); omega
+          ⟨f x', by rw [mem_Fin]; simpa⟩
+        else
+          let x' : Fin (n + 1) := Fin_embed _ _ (by omega) x
+          if f x' = n then
+            i
+          else
+            ⟨f x, sorry⟩
+          sorry
+      let hf' : Function.Bijective f' := sorry
+      exact Permutations_mk hf'
     sorry
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
@@ -1189,14 +1224,16 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     apply Permutations_finite
 
   have hSd : Pairwise fun i j => Disjoint (S i) (S j) := by
-    sorry
+    intro i h hij
+    rw [disjoint_iff, eq_empty_iff_forall_notMem]
+    aesop
 
   have hPu : Permutations (n + 1) = iUnion (Fin (n + 1)) S := by
     ext x
     simp only [mem_iUnion, S, specification_axiom'']
     grind
 
-  have ⟨huf, huc⟩ := card_iUnion_card_disjoint hSc hSd
+  have ⟨_, huc⟩ := card_iUnion_card_disjoint hSc hSd
   rw [hPu, huc]
 
 /-- Exercise 3.6.12 (ii) -/
