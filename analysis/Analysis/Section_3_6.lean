@@ -1195,10 +1195,9 @@ theorem SetTheory.Set.bijective_of_injective {n: ℕ} {f : Fin n → Fin n}
     omega
 
 noncomputable def SetTheory.Set.Permutations_mk
-    {n : ℕ} {f : Fin n → Fin n} (hf : Function.Injective f)
+    {n : ℕ} {f : Fin n → Fin n} (hf : Function.Bijective f)
       : Permutations n :=
-  let hfb := bijective_of_injective hf
-  ⟨f, by simp [Permutations, pow_fun_equiv, hfb]⟩
+  ⟨f, by simp [Permutations, pow_fun_equiv, hf]⟩
 
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
@@ -1265,8 +1264,13 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         simp only [hx1, hx2] at heq
         apply hf.injective
         grind
-      exact Permutations_mk hf'
-    sorry
+      exact Permutations_mk (bijective_of_injective hf')
+    constructor
+    · intro s1 s2 heq
+      simp at heq
+      generalize_proofs h1 h2 at heq
+      sorry
+    · sorry
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
     intro i
