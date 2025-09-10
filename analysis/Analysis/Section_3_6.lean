@@ -1175,10 +1175,30 @@ noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) 
 theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) :
     Function.Bijective (Permutations_toFun p) := by sorry
 
+theorem SetTheory.Set.bijective_of_injective {n: ℕ} {f : Fin n → Fin n}
+  (hf : Function.Injective f) : (Function.Bijective f) := by
+    constructor
+    · exact hf
+    intro y
+    by_contra! h
+    have hs : (image f (Fin n)) ⊂ Fin n := by
+      simp_rw [ssubset_def, subset_def, mem_image]
+      have : ↑y ∉ image f (Fin n) := by aesop
+      grind
+    have hic := card_ssubset (Fin_finite n) hs
+    have heq : image f (Fin n) ≈ Fin n := by
+      have := card_image_inj (Fin_finite n) hf
+      rw [Fin_card n] at this
+      have := card_to_has_card (by aesop) this
+      rwa [has_card_iff] at this
+    have := EquivCard_to_card_eq heq
+    omega
+
 noncomputable def SetTheory.Set.Permutations_mk
-    {n : ℕ} {f : Fin n → Fin n} (hf : Function.Bijective f)
+    {n : ℕ} {f : Fin n → Fin n} (hf : Function.Injective f)
       : Permutations n :=
-  ⟨f, by simp [Permutations, pow_fun_equiv, hf]⟩
+  let hfb := bijective_of_injective hf
+  ⟨f, by simp [Permutations, pow_fun_equiv, hfb]⟩
 
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
@@ -1214,10 +1234,27 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
           else
             have : f x' < n := by have := Fin.toNat_lt (f x'); omega
             ⟨f x', by rw [mem_Fin]; simpa⟩
-      let hf' : Function.Bijective f' := by
-        constructor
+      let hf' : Function.Injective f' := by
+        intro x1 x2 heq
+        simp only [Fin.coe_inj, f'] at heq
+        by_cases hin : i = n
+        · simp_rw [hin, reduceDIte, ←Fin.coe_inj, ←Subtype.val_inj, Subtype.coe_inj] at heq
+          have := hf.injective heq
+          grind
+        simp_rw [hin, reduceDIte, ←Fin.coe_inj] at heq
+        let x1' : Fin (n + 1) := Fin_embed _ _ (by omega) x1
+        let x2' : Fin (n + 1) := Fin_embed _ _ (by omega) x2
+        suffices : x1' = x2'
+        · grind
+        by_cases hx1 : f x1' = n <;> by_cases hx2 : f x2' = n
+        · simp_rw [←hx1, ←Fin.coe_inj] at hx2
+          have := hf.injective hx2
+          grind
         · sorry
-        sorry
+        · sorry
+        simp only [hx1, hx2] at heq
+        apply hf.injective
+        grind
       exact Permutations_mk hf'
     sorry
 
