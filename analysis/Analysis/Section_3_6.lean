@@ -1070,23 +1070,6 @@ theorem SetTheory.Set.two_to_two_iff {X Y:Set} (f: X → Y): Function.Injective 
   rw [this] at hS
   tauto
 
-/-- Exercise 3.6.12 -/
-def SetTheory.Set.Permutations (n: ℕ): Set := (Fin n ^ Fin n).specify (fun F ↦
-    Function.Bijective (pow_fun_equiv F))
-
-/-- Exercise 3.6.12 (i) -/
-theorem SetTheory.Set.Permutations_finite (n: ℕ): (Permutations n).finite := by
-  have hs : Permutations n ⊆ (Fin n ^ Fin n) := by
-    simp only [Permutations]
-    apply specify_subset
-  have ⟨hpf, hpc⟩ := card_pow (Fin_finite n) (Fin_finite n)
-  exact (card_subset hpf hs).1
-
-noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) : (Fin n) → (Fin n) := by
-  have := p.property
-  simp only [Permutations, specification_axiom'', powerset_axiom] at this
-  exact this.choose.choose
-
 theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
     (hSc : ∀ i, (S i).has_card m)
     (hSd : Pairwise fun i j => Disjoint (S i) (S j)) :
@@ -1172,6 +1155,23 @@ theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
   use this.1
   exact card_union_disjoint hUf hSnf hd
 
+/-- Exercise 3.6.12 -/
+def SetTheory.Set.Permutations (n: ℕ): Set := (Fin n ^ Fin n).specify (fun F ↦
+    Function.Bijective (pow_fun_equiv F))
+
+/-- Exercise 3.6.12 (i) -/
+theorem SetTheory.Set.Permutations_finite (n: ℕ): (Permutations n).finite := by
+  have hs : Permutations n ⊆ (Fin n ^ Fin n) := by
+    simp only [Permutations]
+    apply specify_subset
+  have ⟨hpf, hpc⟩ := card_pow (Fin_finite n) (Fin_finite n)
+  exact (card_subset hpf hs).1
+
+noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) : (Fin n) → (Fin n) := by
+  have := p.property
+  simp only [Permutations, specification_axiom'', powerset_axiom] at this
+  exact this.choose.choose
+
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
@@ -1179,13 +1179,14 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   let S (i : Fin (n+1)) := (Permutations (n + 1)).specify (fun p ↦ Permutations_toFun p n' = i)
 
   have hSe : ∀ i, S i ≈ Permutations n := by
+    intro i
     sorry
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
     intro i
     rw [EquivCard_to_has_card_eq (hSe i)]
     apply has_card_card
-    sorry
+    apply Permutations_finite
 
   have hSd : Pairwise fun i j => Disjoint (S i) (S j) := by
     sorry
