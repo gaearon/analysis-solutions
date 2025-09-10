@@ -1090,10 +1090,13 @@ noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) 
 theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S : Fin n → Set)
     (h_card : ∀ i, (S i).has_card m)
     (h_disj : ∀ i, ∀ j, i ≠ j → Disjoint (S i) (S j)) :
-    ((Fin n).iUnion S).card = n * m := by
+    ((Fin n).iUnion S).finite ∧ ((Fin n).iUnion S).card = n * m := by
   induction' n with n ih
   · rw [zero_mul]
-    apply card_eq_zero_of_empty
+    suffices : (Fin 0).iUnion S = ∅
+    · constructor
+      · apply finite_of_empty this
+      · apply card_eq_zero_of_empty this
     ext x
     simp only [not_mem_empty, iff_false]
     intro h
@@ -1120,11 +1123,30 @@ theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S :
   let n': Fin (n+1) := Fin_mk _ n (by omega)
   have hSnf : (S n').finite := by use m; apply h_card
   have hSnc := has_card_to_card (h_card n')
-  rw [add_mul, one_mul, ←ih, ←hSnc]
+  rw [add_mul, one_mul, ←ih.2, ←hSnc]
   have hU : (Fin (n + 1)).iUnion S = (Fin n).iUnion S' ∪ S n' := by
-    sorry
-  have hUf : ((Fin n).iUnion S').finite := by
-    sorry
+    ext x
+    constructor
+    · intro hx
+      rw [mem_iUnion] at hx
+      rw [mem_union, mem_iUnion]
+      obtain ⟨a, ha⟩ := hx
+      by_cases ha' : a < n
+      · left
+        use ⟨a, by rw [mem_Fin]; use a; aesop⟩
+      right
+      have : a = n := by have := Fin.toNat_lt a; omega
+      have : a = n' := by simpa
+      rwa [←this]
+    intro hx
+    rw [mem_iUnion]
+    rw [mem_union, mem_iUnion] at hx
+    rcases hx with (hx | hx)
+    · simp only [S'] at hx
+      obtain ⟨a, ha⟩ := hx
+      use Fin_embed n (n + 1) (by omega) a
+    use n'
+  have hUf : ((Fin n).iUnion S').finite := ih.1
   rw [hU]
   set X := (Fin n).iUnion S'
   set Y := S n'
@@ -1146,6 +1168,8 @@ theorem SetTheory.Set.card_iUnion_of_pairwise_disjoint' {n m: ℕ} {X: Set} (S :
     specialize h_disj x
     rw [mem_inter] at h_disj
     tauto
+  have := card_union hUf hSnf
+  use this.1
   exact card_union_disjoint hUf hSnf hd
 
 /-- Exercise 3.6.12 (i) -/
