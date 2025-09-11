@@ -1207,6 +1207,8 @@ set_option maxHeartbeats 2000000000 in
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
   let n' : Fin (n + 1) := Fin_mk _ n (by omega)
+  let up (x: Fin n) : Fin (n + 1) := Fin_embed _ _ (by omega) x
+  let down (x: Fin (n + 1)) (hx : x ≠ n) : Fin n := Fin_mk _ x (by have := Fin.toNat_lt x; omega)
 
   let S i := (Permutations (n + 1)).specify (fun p ↦ toFun p n' = i)
 
@@ -1221,11 +1223,29 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     let p : Permutations (n + 1) := ⟨s, this.choose⟩
     exact toFun p
 
-  have hfn : ∀ i, ∀ s : S i, f s n' = i := by
-    intro i s
+  have hfb {i} (s : S i) : Function.Bijective (f s) := by
+    simp [f]
+    apply Permutations_bijective
+
+  have hfn_eq_i {i} (s : S i) : f s n' = i := by
     have := s.property
     simp only [S, specification_axiom''] at this
     grind
+
+  have hfx_le_n {i} (s : S i) : i = n' → ∀ (x: Fin n), f s (up x) < n := by
+    intro hi x
+    have := Fin.toNat_lt (f s (up x))
+    have : f s (up x) ≠ n' := by
+      intro hfs
+      have := hfn_eq_i s
+      nth_rw 2 [hi] at this
+      rw [←this] at hfs
+      have := (hfb s).injective hfs
+      have := Fin.toNat_lt x
+      have : (x:ℕ) = n := by aesop
+      omega
+    have : f s (up x) ≠ n := by aesop
+    omega
 
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
