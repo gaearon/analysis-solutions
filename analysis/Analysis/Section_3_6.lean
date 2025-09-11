@@ -1207,152 +1207,36 @@ set_option maxHeartbeats 2000000000 in
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
   let n' : Fin (n + 1) := Fin_mk _ n (by omega)
-  let S (i : Fin (n+1)) := (Permutations (n + 1)).specify (fun p ↦ toFun p n' = i)
-  have hSn : ∀ i, ∀ f : S i, ∀ hf, toFun ⟨f, hf⟩ ⟨n, by rw [mem_Fin]; simp⟩ = i := by
-    intro i f hf
-    have := f.property
-    simp_all [S]
+
+  let S i := (Permutations (n + 1)).specify (fun p ↦ toFun p n' = i)
+
+  have hSd : Pairwise fun i j => Disjoint (S i) (S j) := by
+    intro i h hij
+    rw [disjoint_iff, eq_empty_iff_forall_notMem]
+    aesop
+
+  let f {i} (s : S i) : Fin (n + 1) → Fin (n + 1) := by
+    have := s.property
+    simp only [S, specification_axiom''] at this
+    let p : Permutations (n + 1) := ⟨s, this.choose⟩
+    exact toFun p
+
+  have hfn : ∀ i, ∀ s : S i, f s n' = i := by
+    intro i s
+    have := s.property
+    simp only [S, specification_axiom''] at this
+    grind
+
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
-    use fun p' ↦ by
-      have := p'.property
-      simp only [S, specification_axiom''] at this
-      let p : Permutations (n + 1) := ⟨p', this.choose⟩
-      let f := toFun p
-      have hfn : f n' = i := by have := this.choose_spec; simp only [f, n']; simpa
-      have hf := Permutations_bijective p
-      let f' : Fin n → Fin n := fun x ↦
-        if hin : i = n then
-          let x' : Fin (n + 1) := Fin_embed _ _ (by omega) x
-          have : f x' ≠ n := by
-            intro h
-            simp_rw [←hin, ←hfn, ←Fin.coe_inj] at h
-            have := hf.injective h
-            have := Fin.toNat_lt x
-            aesop
-          have : f x' < n := by have := Fin.toNat_lt (f x'); omega
-          ⟨f x', by rw [mem_Fin]; simpa⟩
-        else
-          let x' : Fin (n + 1) := Fin_embed _ _ (by omega) x
-          if hfx : f x' = n then
-            have : i < n := by have := Fin.toNat_lt i; omega
-            ⟨i, by rw [mem_Fin]; simpa⟩
-          else
-            have : f x' < n := by have := Fin.toNat_lt (f x'); omega
-            ⟨f x', by rw [mem_Fin]; simpa⟩
-      let hf' : Function.Injective f' := by
-        intro x1 x2 heq
-        simp only [Fin.coe_inj, f'] at heq
-        by_cases hin : i = n
-        · simp_rw [hin, reduceDIte, ←Fin.coe_inj, ←Subtype.val_inj, Subtype.coe_inj] at heq
-          have := hf.injective heq
-          grind
-        simp_rw [hin, reduceDIte, ←Fin.coe_inj] at heq
-        let x1' : Fin (n + 1) := Fin_embed _ _ (by omega) x1
-        let x2' : Fin (n + 1) := Fin_embed _ _ (by omega) x2
-        have : x1 = (x1':ℕ) := by simp [x1', ←Fin.coe_eq_iff]
-        have : x2 = (x2':ℕ) := by simp [x2', ←Fin.coe_eq_iff]
-        suffices : x1' = x2'
-        · grind
-        by_cases hx1 : f x1' = n <;> by_cases hx2 : f x2' = n
-        · simp_rw [←hx1, ←Fin.coe_inj] at hx2
-          have := hf.injective hx2
-          grind
-        · simp [hx1, hx2] at heq
-          have : x2' = n' := hf.injective (by grind)
-          have : x2' = n := by rw [this]; aesop
-          have : x2 < n := by have := Fin.toNat_lt x2; omega
-          omega
-        · simp [hx1, hx2] at heq
-          have : x1' = n' := hf.injective (by grind)
-          have : x1' = n := by rw [this]; aesop
-          have : x1 < n := by have := Fin.toNat_lt x1; omega
-          omega
-        simp only [hx1, hx2] at heq
-        apply hf.injective
-        grind
-      exact Permutations_mk (bijective_of_injective hf')
-    constructor
-    · intro s1 s2 heq
-      simp only [Permutations_mk, Subtype.mk.injEq, coe_of_fun_inj] at heq
-      generalize_proofs hs1 hn _ _ _ hs2 _ _ at heq
-      suffices : toFun ⟨s1, hs1⟩ = toFun ⟨s2, hs2⟩
-      · rw [←Permutations_inj] at this
-        ext
-        grind
-      ext x
-      by_cases hin : i = n
-      · simp only [hin, reduceDIte] at heq
-        by_cases hxn : x = n
-        · have := hSn i s1 hs1
-          simp_rw [←hxn] at this
-          simp only [Fin.coe_toNat, Subtype.coe_eta] at this
-          rw [this]
-          have := hSn i s2 hs2
-          simp_rw [←hxn] at this
-          simp only [Fin.coe_toNat, Subtype.coe_eta] at this
-          rw [this]
-        let x': Fin n := ⟨x, by
-          rw [mem_Fin]
-          have : x ≠ n := by aesop
-          have := Fin.toNat_lt x
-          use x, by omega, by simp⟩
-        have hx := congrFun heq x'
-        aesop
-      simp only [hin, reduceDIte] at heq
-      by_cases hin : x = n
-      · suffices : ↑(toFun ⟨↑s1, hs1⟩ n') = ↑(toFun ⟨↑s2, hs2⟩ n')
-        · have := hSn i s1 hs1
-          simp_rw [←hin] at this
-          simp only [Fin.coe_toNat, Subtype.coe_eta] at this
-          rw [this]
-          have := hSn i s2 hs2
-          simp_rw [←hin] at this
-          simp only [Fin.coe_toNat, Subtype.coe_eta] at this
-          rw [this]
-        have := hSn i s1 hs1
-        have := hSn i s2 hs2
-        simp_all
-      let x': Fin n := ⟨x, by
-        rw [mem_Fin]
-        have : x ≠ n := by aesop
-        have := Fin.toNat_lt x
-        use x, by omega, by simp⟩
-      have hx := congrFun heq x'
-      -- Let's think a bit here.
-      simp [Fin_embed] at hx
-      -- hx says
-      -- ↑(if (f1 x = n) then i else (f1 x) =
-      -- ↑(if (f2 x = n) then i else (f2 x)
-      -- We need to derive f1 x = f2 x.
-      -- Cases:
-      -- Suppose f1 x = n and f2 x = n
-      --   Then f1 x = f2 x
-      -- Suppose f1 x = n and f2 x ≠ n
-      --   Then we have
-      --   i = f2 x
-      --   But that's impossible because only f2 n = i
-      -- Suppose f1 x ≠ n and f2 x = n
-      --   Then we have
-      --   i = f1 x
-      --   But that's impossible because only f1 n = i
-      -- Suppose f1 x ≠ n and f2 x ≠ n
-      --   Then we have
-      --   f1 x = f2 x
-      --   That's what we want anyway.
-      sorry
-    · sorry
+    use fun p' ↦ by sorry
+    sorry
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
     intro i
     rw [EquivCard_to_has_card_eq (hSe i)]
     apply has_card_card
     apply Permutations_finite
-
-  have hSd : Pairwise fun i j => Disjoint (S i) (S j) := by
-    intro i h hij
-    rw [disjoint_iff, eq_empty_iff_forall_notMem]
-    aesop
 
   have hPu : Permutations (n + 1) = iUnion (Fin (n + 1)) S := by
     ext x
