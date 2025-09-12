@@ -1223,7 +1223,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     let p : Permutations (n + 1) := ⟨s, this.choose⟩
     exact toFun p
 
-  have hfb {i} (s : S i) : Function.Bijective (f s) := by
+  have hf_bijective {i} (s : S i) : Function.Bijective (f s) := by
     simp [f]
     apply Permutations_bijective
 
@@ -1243,7 +1243,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         intro hfs
         nth_rw 2 [hi] at hfn_eq_i
         rw [←hfn_eq_i] at hfs
-        have := (hfb s).injective hfs
+        have := (hf_bijective s).injective hfs
         have := Fin.toNat_lt x
         have : (x:ℕ) = n := by aesop
         omega
@@ -1277,9 +1277,12 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have hg_d {i} (s : S i) : f s n' = i := by
     sorry
 
+  have hg_bijective {i} (s : S i) : Function.Bijective (g s) := by
+    sorry
+
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
-    use fun p' ↦ by sorry
+    use fun s ↦ Permutations_mk (hg_bijective s)
     sorry
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
