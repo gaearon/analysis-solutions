@@ -1209,6 +1209,8 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   let n' : Fin (n + 1) := Fin_mk _ n (by omega)
   let up (x: Fin n) : Fin (n + 1) := Fin_embed _ _ (by omega) x
   let down (x: Fin (n + 1)) (hx : x ≠ n) : Fin n := Fin_mk _ x (by have := Fin.toNat_lt x; omega)
+  have up_inj {x y} : up x = up y ↔ x = y := by simp only [up]; grind
+  have down_inj {x y hx hy} : (down x hx) = (down y hy) ↔ x = y := by simp
 
   let S i := (Permutations (n + 1)).specify (fun p ↦ toFun p n' = i)
 
@@ -1279,6 +1281,12 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
 
   have hg_bijective {i} (s : S i) : Function.Bijective (g s) := by
     apply bijective_of_injective
+    intro x1 x2 heq
+    simp only [g, g'] at heq
+    by_cases hi : i = n'
+    · simp only [hi, ne_eq, true_or, reduceDIte, down_inj] at heq
+      have := (hf_bijective s).injective heq
+      rwa [up_inj] at this
     sorry
 
   have hSe : ∀ i, S i ≈ Permutations n := by
