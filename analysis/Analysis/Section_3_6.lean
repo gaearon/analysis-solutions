@@ -1259,6 +1259,12 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   let f'' {i} (s : S i) : Fin n → Fin n := fun x ↦
     down (f' s x) (by apply hf'_ne_n)
 
+  -- TODO:
+  -- i = n → ∀ x, f' x = f x
+  -- i ≠ n → ∀ x, f' x = f x ↔  f x ≠ n
+  -- i ≠ n → ∀ x, f x = n ↔ f'x = f n
+  -- f'1 = f'2 → f'1 n = f'2 n
+
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
     use fun p' ↦ by sorry
