@@ -1230,7 +1230,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   let f' {i} (s : S i) : Fin n → Fin (n + 1) := open Classical in fun x ↦
     if hi : i = n' ∨ f s (up x) ≠ n then f s (up x) else f s n'
 
-  let hf'_ne_n {i} (s : S i) : ∀ x, f' s x ≠ n := by
+  have hf'_ne_n {i} (s : S i) : ∀ x, f' s x ≠ n := by
     intro x
     simp only [f']
     have hfn_eq_i : f s n' = i := by
@@ -1239,7 +1239,6 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       grind
     by_cases hi : i = n'
     · simp only [hi, ne_eq, true_or, reduceDIte]
-      have := Fin.toNat_lt (f s (up x))
       have : f s (up x) ≠ n' := by
         intro hfs
         nth_rw 2 [hi] at hfn_eq_i
