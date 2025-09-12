@@ -1232,8 +1232,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     simp only [S, specification_axiom''] at this
     grind
 
-  have hfx_le_n {i} (s : S i) : i = n' → ∀ (x: Fin n), f s (up x) < n := by
-    intro hi x
+  have hfx_ne_n {i} (s : S i) (x: Fin n) (hi : i = n') : f s (up x) ≠ n := by
     have := Fin.toNat_lt (f s (up x))
     have : f s (up x) ≠ n' := by
       intro hfs
@@ -1245,7 +1244,20 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       have : (x:ℕ) = n := by aesop
       omega
     have : f s (up x) ≠ n := by aesop
-    omega
+    grind
+
+  have hfn_ne_n {i} (s : S i) (x: Fin n) (hi : i ≠ n') : f s n' ≠ n := by
+    have := hfn_eq_i s
+    rw [this]
+    simp_all
+
+  let f' {i} (s : S i) : Fin n → Fin n := open Classical in fun x ↦
+    if hi : i = n' then
+      down (f s (up x)) (hfx_ne_n s x hi)
+    else if hfx : f s (up x) ≠ n then
+      down (f s (up x)) hfx
+    else
+      down (f s n') (hfn_ne_n s x hi)
 
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
