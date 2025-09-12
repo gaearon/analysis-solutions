@@ -1241,7 +1241,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     · simp only [hi, ne_eq, true_or, reduceDIte]
       have : f s (up x) ≠ n' := by
         intro hfs
-        nth_rw 2 [hi] at hfn_eq_i
+        simp_rw [hi] at hfn_eq_i
         rw [←hfn_eq_i] at hfs
         have := (hf_bijective s).injective hfs
         have := Fin.toNat_lt x
@@ -1278,6 +1278,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     sorry
 
   have hg_bijective {i} (s : S i) : Function.Bijective (g s) := by
+    apply bijective_of_injective
     sorry
 
   have hSe : ∀ i, S i ≈ Permutations n := by
