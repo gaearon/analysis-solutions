@@ -1227,37 +1227,38 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     simp [f]
     apply Permutations_bijective
 
-  have hfn_eq_i {i} (s : S i) : f s n' = i := by
-    have := s.property
-    simp only [S, specification_axiom''] at this
-    grind
+  let f' {i} (s : S i) : Fin n → Fin (n + 1) := open Classical in fun x ↦
+    if hi : i = n' ∨ f s (up x) ≠ n then f s (up x) else f s n'
 
-  have hfx_ne_n {i} (s : S i) (x: Fin n) (hi : i = n') : f s (up x) ≠ n := by
-    have := Fin.toNat_lt (f s (up x))
-    have : f s (up x) ≠ n' := by
-      intro hfs
-      have := hfn_eq_i s
-      nth_rw 2 [hi] at this
-      rw [←this] at hfs
-      have := (hfb s).injective hfs
-      have := Fin.toNat_lt x
-      have : (x:ℕ) = n := by aesop
-      omega
-    have : f s (up x) ≠ n := by aesop
-    grind
+  let hf'_ne_n {i} (s : S i) : ∀ x, f' s x ≠ n := by
+    intro x
+    simp only [f']
+    have hfn_eq_i : f s n' = i := by
+      have := s.property
+      simp only [S, specification_axiom''] at this
+      grind
+    by_cases hi : i = n'
+    · simp only [hi, ne_eq, true_or, reduceDIte]
+      have := Fin.toNat_lt (f s (up x))
+      have : f s (up x) ≠ n' := by
+        intro hfs
+        nth_rw 2 [hi] at hfn_eq_i
+        rw [←hfn_eq_i] at hfs
+        have := (hfb s).injective hfs
+        have := Fin.toNat_lt x
+        have : (x:ℕ) = n := by aesop
+        omega
+      have : f s (up x) ≠ n := by aesop
+      grind
+    simp only [hi, ne_eq, false_or, dite_eq_ite, ite_not]
+    by_cases hfx : f s (up x) = n
+    · simp [hfx]
+      rw [hfn_eq_i]
+      simp_all
+    simp [hfx]
 
-  have hfn_ne_n {i} (s : S i) (x: Fin n) (hi : i ≠ n') : f s n' ≠ n := by
-    have := hfn_eq_i s
-    rw [this]
-    simp_all
-
-  let f' {i} (s : S i) : Fin n → Fin n := open Classical in fun x ↦
-    if hi : i = n' then
-      down (f s (up x)) (hfx_ne_n s x hi)
-    else if hfx : f s (up x) ≠ n then
-      down (f s (up x)) hfx
-    else
-      down (f s n') (hfn_ne_n s x hi)
+  let f'' {i} (s : S i) : Fin n → Fin n := fun x ↦
+    down (f' s x) (by apply hf'_ne_n)
 
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
