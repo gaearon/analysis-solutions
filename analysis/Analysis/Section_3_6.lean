@@ -1227,12 +1227,12 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     simp [f]
     apply Permutations_bijective
 
-  let f' {i} (s : S i) : Fin n → Fin (n + 1) := open Classical in fun x ↦
+  let g' {i} (s : S i) : Fin n → Fin (n + 1) := open Classical in fun x ↦
     if hi : i = n' ∨ f s (up x) ≠ n then f s (up x) else f s n'
 
-  have hf'_ne_n {i} (s : S i) : ∀ x, f' s x ≠ n := by
+  have hg'_ne_n {i} (s : S i) : ∀ x, g' s x ≠ n := by
     intro x
-    simp only [f']
+    simp only [g']
     have hfn_eq_i : f s n' = i := by
       have := s.property
       simp only [S, specification_axiom''] at this
@@ -1256,14 +1256,26 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       simp_all
     simp [hfx]
 
-  let f'' {i} (s : S i) : Fin n → Fin n := fun x ↦
-    down (f' s x) (by apply hf'_ne_n)
+  let g {i} (s : S i) : Fin n → Fin n := fun x ↦
+    down (g' s x) (by apply hg'_ne_n)
 
-  -- TODO:
   -- i = n → ∀ x, f' x = f x
+  have hg_a {i} (s : S i) (hin : i = n) :
+      ∀ x, up (g s x) = f s (up x) := by
+    sorry
+
   -- i ≠ n → ∀ x, f' x = f x ↔  f x ≠ n
-  -- i ≠ n → ∀ x, f x = n ↔ f'x = f n
-  -- f'1 = f'2 → f'1 n = f'2 n
+  have hg_b {i} (s : S i) (hin : i ≠ n) :
+      ∀ x, up (g s x) = f s (up x) ↔ f s (up x) ≠ n := by
+    sorry
+
+  -- i ≠ n → ∀ x, f x = n ↔ f'x = i
+  have hg_c {i} (s : S i) (hin : i ≠ n) :
+      ∀ x, f s (up x) = n ↔ up (g s x) = i := by
+    sorry
+
+  have hg_d {i} (s : S i) : f s n' = i := by
+    sorry
 
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
