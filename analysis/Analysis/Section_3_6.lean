@@ -1355,15 +1355,26 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
           else
             n'
         have hpf : Function.Bijective pf := by
-          constructor
-          · intro x1 x2 heq
-            simp [pf] at heq
+          apply bijective_of_injective
+          intro x1 x2 heq
+          simp [pf] at heq
+          by_cases hx1n : x1 = n <;>
+          by_cases hx2n : x2 = n
+          · simp_rw [←hx2n, ←Fin.coe_inj] at hx1n
+            exact hx1n
+          · simp [hx1n, hx2n] at heq
+            by_cases hin : i = n
+            · simp [hin] at heq
+
+              sorry
             sorry
-          sorry
+          · sorry
+          · sorry
         Permutations_mk hpf
 
       let hpf : Permutations_toFun p' n' = i := by
         simp [p']
+        generalize_proofs h1 h2
         sorry
 
       have : ↑p' ∈ S i := by
