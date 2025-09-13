@@ -1212,6 +1212,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   let down (x: Fin (n + 1)) (hx : x ≠ n) : Fin n := Fin_mk _ x (by have := Fin.toNat_lt x; omega)
   have up_inj {x y} : up x = up y ↔ x = y := by simp only [up]; grind
   have down_inj {x y hx hy} : (down x hx) = (down y hy) ↔ x = y := by simp
+  have up_down {x hx} : up (down x hx) = x := by simp only [up, down, Fin_embed]; aesop
 
   let S i := (Permutations (n + 1)).specify (fun p ↦ toFun p n' = i)
 
@@ -1288,8 +1289,25 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       rw [←hf_inj]
       ext x
       rw [SetCoe.ext_iff]
-
-      sorry
+      by_cases hxn : x = n
+      · have hxn' : x = n' := by simpa [n']
+        grind
+      let x' : Fin n := down x (by simp_all [n'])
+      have hx' : up x' = x := by rwa [up_down]
+      have hgx := congrFun heq x'
+      by_cases hin : i = n
+      · rwa [←hx', ←hg_a _ hin, ←hg_a _ hin, up_inj]
+      by_cases hfn1 : f s1 x = n <;>
+      by_cases hfn2 : f s2 x = n
+      · rw [hn'] at hfn1 hfn2
+        grind
+      · rw [←hx', hg_c _ hin] at hfn1 hfn2
+        grind
+      · rw [←hx', hg_c _ hin] at hfn1 hfn2
+        grind
+      · rw [←hx', hg_b _ hin] at hfn1
+        rw [←hx', hg_b _ hin] at hfn2
+        grind
 
     have hgs_bijective s : Function.Bijective (g s) := by
       apply bijective_of_injective
