@@ -1345,9 +1345,20 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     let S_mk (p: Permutations n) : S i :=
       let pg := Permutations_toFun p
       let p' : Permutations (n + 1) :=
-        let pf : Fin (n + 1) → Fin (n + 1) :=
-          sorry
-        let hpf : Function.Bijective pf :=
+        let pf : Fin (n + 1) → Fin (n + 1) := open Classical in fun x ↦
+          if hxn : x = n then
+            i
+          else if hin : i = n then
+            up (pg (down x hxn))
+          else if pg (down x hxn) ≠ (down i hin) then
+            up (pg (down x hxn))
+          else
+            n'
+        have hpf : Function.Bijective pf := by
+          constructor
+          · intro x1 x2 heq
+            simp [pf] at heq
+            sorry
           sorry
         Permutations_mk hpf
 
