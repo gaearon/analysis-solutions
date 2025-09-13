@@ -1230,12 +1230,15 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
 
     let f s : Fin (n + 1) → Fin (n + 1) := toFun (p s)
 
-    have hp_inj (s1 s2 : S i) : p s1 = p s2 ↔ s1 = s2 := by grind
     have hfs_bijective s : Function.Bijective (f s) := by apply Permutations_bijective
+    have hp_inj (s1 s2 : S i) : p s1 = p s2 ↔ s1 = s2 := by grind
     have hf_inj s1 s2 : f s1 = f s2 ↔ s1 = s2 := by grind [Permutations_inj]
 
     let g' s : Fin n → Fin (n + 1) := open Classical in fun x ↦
-      if hi : i = n' ∨ f s (up x) ≠ n then f s (up x) else f s n'
+      if hi : i = n' ∨ f s (up x) ≠ n then
+        f s (up x)
+      else
+        f s n'
 
     have hg'_ne_n s : ∀ x, g' s x ≠ n := by
       intro x
