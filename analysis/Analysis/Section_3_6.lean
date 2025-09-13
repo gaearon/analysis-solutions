@@ -1264,10 +1264,9 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         grind
       simp only [hi, ne_eq, false_or, dite_eq_ite, ite_not]
       by_cases hfx : f s (up x) = n
-      · simp [hfx]
-        rw [hfn]
+      · simp only [hfx, reduceIte, hfn]
         simp_all
-      simp [hfx]
+      simp only [hfx, reduceIte, not_false_eq_true]
 
     let g (s : S i) : Fin n → Fin n := fun x ↦
       down (g' s x) (by apply hg'_ne_n)
