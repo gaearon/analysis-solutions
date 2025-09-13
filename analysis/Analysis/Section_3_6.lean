@@ -1286,6 +1286,9 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
 
     have hg_e s1 s2 (heq : g s1 = g s2) : s1 = s2 := by
       rw [←hf_inj]
+      ext x
+      rw [SetCoe.ext_iff]
+
       sorry
 
     have hgs_bijective s : Function.Bijective (g s) := by
