@@ -1167,16 +1167,16 @@ theorem SetTheory.Set.Permutations_finite (n: ℕ): (Permutations n).finite := b
   have ⟨hpf, hpc⟩ := card_pow (Fin_finite n) (Fin_finite n)
   exact (card_subset hpf hs).1
 
-noncomputable def SetTheory.Set.toFun {n: ℕ} (p: Permutations n) : (Fin n) → (Fin n) := by
+noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) : (Fin n) → (Fin n) := by
   have := p.property
   simp only [Permutations, specification_axiom'', powerset_axiom] at this
   exact this.choose.choose
 
 theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) :
-    Function.Bijective (toFun p) := by sorry
+    Function.Bijective (Permutations_toFun p) := by sorry
 
 theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) :
-    toFun p1 = toFun p2 ↔ p1 = p2 := by sorry
+    Permutations_toFun p1 = Permutations_toFun p2 ↔ p1 = p2 := by sorry
 
 theorem SetTheory.Set.bijective_of_injective {n: ℕ} {f : Fin n → Fin n}
   (hf : Function.Injective f) : (Function.Bijective f) := by
@@ -1214,7 +1214,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have down_inj {x y hx hy} : (down x hx) = (down y hy) ↔ x = y := by simp
   have up_down {x hx} : up (down x hx) = x := by simp only [up, down, Fin_embed]; aesop
 
-  let S i := (Permutations (n + 1)).specify (fun p ↦ toFun p n' = i)
+  let S i := (Permutations (n + 1)).specify (fun p ↦ Permutations_toFun p n' = i)
 
   have hSd : Pairwise fun i j => Disjoint (S i) (S j) := by
     intro i h hij
@@ -1224,14 +1224,14 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
 
-    let p (s : S i) : Permutations (n + 1) := by
+    let ps (s : S i) : Permutations (n + 1) := by
       have := s.property
       simp only [S, specification_axiom''] at this
       exact ⟨s, this.choose⟩
 
-    have hp_inj (s1 s2 : S i) : p s1 = p s2 ↔ s1 = s2 := by grind
+    have hps_inj (s1 s2 : S i) : ps s1 = ps s2 ↔ s1 = s2 := by grind
 
-    let f s : Fin (n + 1) → Fin (n + 1) := toFun (p s)
+    let f s : Fin (n + 1) → Fin (n + 1) := Permutations_toFun (ps s)
 
     have hfs_bijective s : Function.Bijective (f s) := by apply Permutations_bijective
     have hf_inj s1 s2 : f s1 = f s2 ↔ s1 = s2 := by grind [Permutations_inj]
@@ -1317,8 +1317,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         grind
       · rw [←hx', hg_c _ hin] at hfn1 hfn2
         grind
-      · rw [←hx', hg_b _ hin] at hfn1
-        rw [←hx', hg_b _ hin] at hfn2
+      · rw [←hx', hg_b _ hin] at hfn1 hfn2
         grind
 
     have hgs_bijective s : Function.Bijective (g s) := by
@@ -1343,13 +1342,38 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         have := (hfs_bijective s).injective this
         rwa [up_inj] at this
 
+    let S_mk (p: Permutations n) : S i :=
+      let pg := Permutations_toFun p
+      let p' : Permutations (n + 1) :=
+        let pf : Fin (n + 1) → Fin (n + 1) :=
+          sorry
+        let hpf : Function.Bijective pf :=
+          sorry
+        Permutations_mk hpf
+
+      let hpf : Permutations_toFun p' n' = i := by
+        simp [p']
+        sorry
+
+      have : ↑p' ∈ S i := by
+        simp only [specification_axiom'', Subtype.coe_eta, exists_prop, S]
+        constructor
+        · exact p'.property
+        · exact hpf
+      ⟨p', this⟩
+
+    let hS_mk p : Permutations_mk (hgs_bijective (S_mk p)) = p := by
+      sorry
+
     use fun s ↦ Permutations_mk (hgs_bijective s)
     constructor
     · intro s1 s2 heq
       simp only [Permutations_mk, Subtype.mk.injEq, coe_of_fun_inj] at heq
       apply hg_e
       exact heq
-    sorry
+    intro p
+    use S_mk p
+    apply hS_mk
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
     intro i
