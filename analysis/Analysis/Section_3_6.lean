@@ -1207,6 +1207,7 @@ set_option maxHeartbeats 2000000000 in
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
   let n' : Fin (n + 1) := Fin_mk _ n (by omega)
+  have hn' {x : Fin (n + 1)} : (x = n) ↔ (x = n') := by simp [n']
   let up (x: Fin n) : Fin (n + 1) := Fin_embed _ _ (by omega) x
   let down (x: Fin (n + 1)) (hx : x ≠ n) : Fin n := Fin_mk _ x (by have := Fin.toNat_lt x; omega)
   have up_inj {x y} : up x = up y ↔ x = y := by simp only [up]; grind
@@ -1266,9 +1267,9 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       ∀ x, up (g s x) = f s (up x) := by
     sorry
 
-  -- i ≠ n → ∀ x, f' x = f x ↔  f x ≠ n
+  -- i ≠ n → ∀ x, f x = n ↔ f' x ≠ f x
   have hg_b {i} (s : S i) (hin : i ≠ n) :
-      ∀ x, up (g s x) = f s (up x) ↔ f s (up x) ≠ n := by
+      ∀ x, f s (up x) = n ↔ up (g s x) ≠ f s (up x) := by
     sorry
 
   -- i ≠ n → ∀ x, f x = n ↔ f'x = i
@@ -1282,12 +1283,26 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have hg_bijective {i} (s : S i) : Function.Bijective (g s) := by
     apply bijective_of_injective
     intro x1 x2 heq
-    simp only [g, g'] at heq
-    by_cases hi : i = n'
-    · simp only [hi, ne_eq, true_or, reduceDIte, down_inj] at heq
+    by_cases hin : i = n
+    · rw [←up_inj , hg_a _ hin, hg_a _ hin] at heq
       have := (hf_bijective s).injective heq
       rwa [up_inj] at this
-    sorry
+    by_cases hfx1 : f s (up x1) = n <;>
+    by_cases hfx2 : f s (up x2) = n
+    · have := hg_d s
+      rw [hn'] at hfx1 hfx2
+      rw [←hfx2] at hfx1
+      have := (hf_bijective s).injective hfx1
+      rwa [up_inj] at this
+    · rw [hg_c _ hin] at hfx1 hfx2
+      grind
+    · rw [hg_c _ hin] at hfx1 hfx2
+      grind
+    · rw [hg_b _ hin] at hfx1 hfx2
+      push_neg at hfx1 hfx2
+      have : f s (up x1) = f s (up x2) := by grind
+      have := (hf_bijective s).injective this
+      rwa [up_inj] at this
 
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
