@@ -1289,8 +1289,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       rwa [up_inj] at this
     by_cases hfx1 : f s (up x1) = n <;>
     by_cases hfx2 : f s (up x2) = n
-    · have := hg_d s
-      rw [hn'] at hfx1 hfx2
+    · rw [hn'] at hfx1 hfx2
       rw [←hfx2] at hfx1
       have := (hf_bijective s).injective hfx1
       rwa [up_inj] at this
@@ -1299,7 +1298,6 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     · rw [hg_c _ hin] at hfx1 hfx2
       grind
     · rw [hg_b _ hin] at hfx1 hfx2
-      push_neg at hfx1 hfx2
       have : f s (up x1) = f s (up x2) := by grind
       have := (hf_bijective s).injective this
       rwa [up_inj] at this
