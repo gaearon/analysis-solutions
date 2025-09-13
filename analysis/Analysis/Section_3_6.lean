@@ -1280,6 +1280,9 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have hg_d {i} (s : S i) : f s n' = i := by
     sorry
 
+  have hg_e {i} (s1 s2 : S i) : g s1 = g s2 → s1 = s2 := by
+    sorry
+
   have hg_bijective {i} (s : S i) : Function.Bijective (g s) := by
     apply bijective_of_injective
     intro x1 x2 heq
@@ -1305,6 +1308,11 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
     use fun s ↦ Permutations_mk (hg_bijective s)
+    constructor
+    · intro s1 s2 heq
+      simp only [Permutations_mk, Subtype.mk.injEq, coe_of_fun_inj] at heq
+      apply hg_e
+      exact heq
     sorry
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
