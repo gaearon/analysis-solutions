@@ -1202,6 +1202,7 @@ noncomputable def SetTheory.Set.Permutations_mk
       : Permutations n :=
   ⟨f, by simp [Permutations, pow_fun_equiv, hf]⟩
 
+set_option maxHeartbeats 1000000 in
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
@@ -1255,11 +1256,11 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
           intro hfs
           simp_rw [hi] at hfn
           rw [←hfn] at hfs
-          have := (hfs_bijective s).injective hfs
           have := Fin.toNat_lt x
-          have : (x:ℕ) = n := by aesop
+          have := (hfs_bijective s).injective hfs
+          have : (x:ℕ) = n := by simpa [up, n']
           omega
-        have : f s (up x) ≠ n := by aesop
+        have : f s (up x) ≠ n := by simpa [n']
         grind
       simp only [hi, ne_eq, false_or, dite_eq_ite, ite_not]
       by_cases hfx : f s (up x) = n
