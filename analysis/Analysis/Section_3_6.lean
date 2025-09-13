@@ -1176,7 +1176,7 @@ theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) :
     Function.Bijective (toFun p) := by sorry
 
 theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) :
-    p1 = p2 ↔ toFun p1 = toFun p2 := by sorry
+    toFun p1 = toFun p2 ↔ p1 = p2 := by sorry
 
 theorem SetTheory.Set.bijective_of_injective {n: ℕ} {f : Fin n → Fin n}
   (hf : Function.Injective f) : (Function.Bijective f) := by
@@ -1220,13 +1220,21 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     rw [disjoint_iff, eq_empty_iff_forall_notMem]
     aesop
 
-  let f {i} (s : S i) : Fin (n + 1) → Fin (n + 1) := by
+  let p {i} (s : S i) : Permutations (n + 1) := by
     have := s.property
     simp only [S, specification_axiom''] at this
-    let p : Permutations (n + 1) := ⟨s, this.choose⟩
-    exact toFun p
+    exact ⟨s, this.choose⟩
 
-  have hf_bijective {i} (s : S i) : Function.Bijective (f s) := by
+  have hp_inj {i} (s1 s2 : S i) : p s1 = p s2 ↔ s1 = s2 := by
+    grind
+
+  let f {i} (s : S i) : Fin (n + 1) → Fin (n + 1) :=
+    toFun (p s)
+
+  have hf_inj {i} (s1 s2 : S i) : f s1 = f s2 ↔ s1 = s2 := by
+    grind [Permutations_inj]
+
+  have hfs_bijective {i} (s : S i) : Function.Bijective (f s) := by
     simp [f]
     apply Permutations_bijective
 
@@ -1246,7 +1254,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         intro hfs
         simp_rw [hi] at hfn_eq_i
         rw [←hfn_eq_i] at hfs
-        have := (hf_bijective s).injective hfs
+        have := (hfs_bijective s).injective hfs
         have := Fin.toNat_lt x
         have : (x:ℕ) = n := by aesop
         omega
@@ -1280,7 +1288,8 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have hg_d {i} (s : S i) : f s n' = i := by
     sorry
 
-  have hg_e {i} (s1 s2 : S i) : g s1 = g s2 → s1 = s2 := by
+  have hg_e {i} (s1 s2 : S i) (heq : g s1 = g s2) : s1 = s2 := by
+    rw [←hf_inj]
     sorry
 
   have hg_bijective {i} (s : S i) : Function.Bijective (g s) := by
@@ -1288,13 +1297,13 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     intro x1 x2 heq
     by_cases hin : i = n
     · rw [←up_inj , hg_a _ hin, hg_a _ hin] at heq
-      have := (hf_bijective s).injective heq
+      have := (hfs_bijective s).injective heq
       rwa [up_inj] at this
     by_cases hfx1 : f s (up x1) = n <;>
     by_cases hfx2 : f s (up x2) = n
     · rw [hn'] at hfx1 hfx2
       rw [←hfx2] at hfx1
-      have := (hf_bijective s).injective hfx1
+      have := (hfs_bijective s).injective hfx1
       rwa [up_inj] at this
     · rw [hg_c _ hin] at hfx1 hfx2
       grind
@@ -1302,7 +1311,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       grind
     · rw [hg_b _ hin] at hfx1 hfx2
       have : f s (up x1) = f s (up x2) := by grind
-      have := (hf_bijective s).injective this
+      have := (hfs_bijective s).injective this
       rwa [up_inj] at this
 
   have hSe : ∀ i, S i ≈ Permutations n := by
