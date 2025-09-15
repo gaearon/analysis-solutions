@@ -1173,10 +1173,22 @@ noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) 
   exact this.choose.choose
 
 theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) :
-    Function.Bijective (Permutations_toFun p) := by sorry
+    Function.Bijective (Permutations_toFun p) := by
+  have := p.property
+  simp only [Permutations, specification_axiom'', powerset_axiom] at this
+  aesop
 
 theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) :
-    Permutations_toFun p1 = Permutations_toFun p2 ↔ p1 = p2 := by sorry
+    Permutations_toFun p1 = Permutations_toFun p2 ↔ p1 = p2 := by
+  constructor
+  · intro h
+    simp [Permutations_toFun] at h
+    generalize_proofs h1 h2 at h
+    have := h1.choose_spec
+    have := h2.choose_spec
+    grind
+  intro h
+  grind
 
 theorem SetTheory.Set.bijective_of_injective {n: ℕ} {f : Fin n → Fin n}
   (hf : Function.Injective f) : (Function.Bijective f) := by
@@ -1205,12 +1217,31 @@ noncomputable def SetTheory.Set.Permutations_mk
 @[simp]
 lemma SetTheory.Set.Permutations_toFun_mk {n : ℕ} {f : Fin n → Fin n} (hf : Function.Bijective f) :
   Permutations_toFun (Permutations_mk hf) = f := by
-  -- This should follow from how you defined Permutations_mk
-  sorry
+  simp [Permutations_toFun, Permutations_mk]
 
 @[simp]
 theorem SetTheory.Set.Fin.coe_toNat' {n m x:ℕ} (i: Fin n) (hi : ↑i ∈ Fin m) : (⟨i, hi⟩ : Fin m) = x ↔ i = x := by
-  sorry
+  obtain ⟨val, property⟩ := i
+  simp_all only
+  apply Iff.intro
+  · intro a
+    subst a
+    simp [Fin.toNat]
+    generalize_proofs h1 h2
+    have ⟨_, a⟩ := h1.choose_spec
+    have ⟨_, b⟩ := h2.choose_spec
+    suffices : (h1.choose: Object) = h2.choose
+    · apply (ofNat_inj' _ _).mp this
+    grind
+  · intro a
+    subst a
+    simp [Fin.toNat]
+    generalize_proofs h1 h2
+    have ⟨_, a⟩ := h1.choose_spec
+    have ⟨_, b⟩ := h2.choose_spec
+    suffices : (h1.choose: Object) = h2.choose
+    · apply (ofNat_inj' _ _).mp this
+    grind
 
 set_option maxHeartbeats 10000000 in
 /-- Exercise 3.6.12 (i) -/
