@@ -1202,7 +1202,17 @@ noncomputable def SetTheory.Set.Permutations_mk
       : Permutations n :=
   ⟨f, by simp [Permutations, pow_fun_equiv, hf]⟩
 
-set_option maxHeartbeats 1000000 in
+@[simp]
+lemma SetTheory.Set.Permutations_toFun_mk {n : ℕ} {f : Fin n → Fin n} (hf : Function.Bijective f) :
+  Permutations_toFun (Permutations_mk hf) = f := by
+  -- This should follow from how you defined Permutations_mk
+  sorry
+
+@[simp]
+theorem SetTheory.Set.Fin.coe_toNat' {n m x:ℕ} (i: Fin n) (hi : ↑i ∈ Fin m) : (⟨i, hi⟩ : Fin m) = x ↔ i = x := by
+  sorry
+
+set_option maxHeartbeats 10000000 in
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
@@ -1213,6 +1223,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have up_inj {x y} : up x = up y ↔ x = y := by simp only [up]; grind
   have down_inj {x y hx hy} : (down x hx) = (down y hy) ↔ x = y := by simp
   have up_down {x hx} : up (down x hx) = x := by simp only [up, down, Fin_embed]; aesop
+  have down_up {x hx} : down (up x) hx = x := by simp only [up, down, Fin_embed, Fin_mk]; aesop
 
   let S i := (Permutations (n + 1)).specify (fun p ↦ Permutations_toFun p n' = i)
 
@@ -1296,29 +1307,29 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       have := Fin.toNat_lt x
       omega
 
-    use fun s ↦
-      have hgs_bijective : Function.Bijective (g s) := by
-        apply bijective_of_injective
-        intro x1 x2 heq
-        by_cases hin : i = n
-        · rw [←up_inj , hg_a _ hin, hg_a _ hin] at heq
-          have := (hfs_bijective s).injective heq
-          rwa [up_inj] at this
-        by_cases hfx1 : f s (up x1) = n <;>
-        by_cases hfx2 : f s (up x2) = n
-        · rw [hn'] at hfx1 hfx2
-          rw [←hfx2] at hfx1
-          have := (hfs_bijective s).injective hfx1
-          rwa [up_inj] at this
-        · rw [hg_c _ hin] at hfx1 hfx2
-          grind
-        · rw [hg_c _ hin] at hfx1 hfx2
-          grind
-        · rw [hg_b _ hin] at hfx1 hfx2
-          have : f s (up x1) = f s (up x2) := by grind
-          have := (hfs_bijective s).injective this
-          rwa [up_inj] at this
-      Permutations_mk hgs_bijective
+    have hgs_bijective s : Function.Bijective (g s) := by
+      apply bijective_of_injective
+      intro x1 x2 heq
+      by_cases hin : i = n
+      · rw [←up_inj , hg_a _ hin, hg_a _ hin] at heq
+        have := (hfs_bijective s).injective heq
+        rwa [up_inj] at this
+      by_cases hfx1 : f s (up x1) = n <;>
+      by_cases hfx2 : f s (up x2) = n
+      · rw [hn'] at hfx1 hfx2
+        rw [←hfx2] at hfx1
+        have := (hfs_bijective s).injective hfx1
+        rwa [up_inj] at this
+      · rw [hg_c _ hin] at hfx1 hfx2
+        grind
+      · rw [hg_c _ hin] at hfx1 hfx2
+        grind
+      · rw [hg_b _ hin] at hfx1 hfx2
+        have : f s (up x1) = f s (up x2) := by grind
+        have := (hfs_bijective s).injective this
+        rwa [up_inj] at this
+
+    use fun s ↦ Permutations_mk (hgs_bijective s)
     constructor
     · intro s1 s2 heq
       simp only [Permutations_mk, Subtype.mk.injEq, coe_of_fun_inj] at heq
@@ -1350,15 +1361,62 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         i
       else if hin : i = n then
         up (u (down x hxn))
-      else if u (down x hxn) ≠ (down i hin) then
-        up (u (down x hxn))
-      else
+      else if u (down x hxn) = (down i hin) then
         n'
+      else
+        up (u (down x hxn))
     have hv_bijective : Function.Bijective v := by
       apply bijective_of_injective
       sorry
+    -- Create the element of Permutations (n+1) first
+    let v_perm := Permutations_mk hv_bijective
 
-    sorry
+    -- Show it's in S i
+    have hv_in_Si : ↑v_perm ∈ S i := by
+      simp [S, specification_axiom'']
+      use v_perm.property
+      simp [Permutations_toFun, Permutations_mk, v_perm, v]
+
+    -- Create the element of S i
+    let candidate : S i := ⟨v_perm, hv_in_Si⟩
+
+    -- Now show that applying your map to candidate gives p
+    use candidate
+    rw [←Permutations_inj]
+    simp only [Permutations_toFun_mk]
+    ext x
+    simp [candidate, g, f, ps, v_perm, v, u]
+    set pf := Permutations_toFun p
+    refold_let pf
+
+    by_cases hin : i = n
+    · simp [hin]
+      by_cases hxn : (up x) = n
+      · simp only [hxn, ↓reduceDIte]
+        generalize_proofs hin
+        tauto
+      simp [hxn, down_up]
+    simp only [hin]
+    have hxn : (up x : ℕ) ≠ n := by
+      intro h
+      simp only [Fin_embed, Fin.coe_toNat', up] at h
+      have := Fin.toNat_lt x
+      omega
+
+    simp only [hxn, reduceDIte, ↓reduceIte, down_up, false_or, ite_not]
+    by_cases hxi : ((pf x):ℕ) = i
+    · simp only [hxi, ↓reduceIte, Fin.toNat_mk]
+      rw [←Subtype.ext_iff]
+      simp only [Fin.coe_inj, Fin.toNat_mk]
+      exact hxi.symm
+    simp [hxi]
+    by_cases hxfn : up (pf x) = n
+    · simp only [hxfn, ↓reduceIte]
+      rw [←Subtype.ext_iff]
+      have := Fin.toNat_lt (pf x)
+      have : pf x = n := by simp [up] at hxfn; exact hxfn
+      omega
+    simp [hxfn, down_up]
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
     intro i
