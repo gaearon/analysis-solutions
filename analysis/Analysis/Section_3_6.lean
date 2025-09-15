@@ -1312,19 +1312,41 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       rw [←hf_inj]
       ext x
       rw [SetCoe.ext_iff]
-      sorry
+      simp [g] at heq
+      by_cases hxn : x = n
+      · have hxn' : x = n' := by simpa [n']
+        grind
+      let x' : Fin n := down x (by simpa [n'])
+      have hx' : up x' = x := by rwa [up_down]
+      have hgx := congrFun heq x'
+      have : (f s1 (up x'):ℕ) ≠ i := by sorry
+      have : (f s2 (up x'):ℕ) ≠ i := by sorry
+      by_cases hfx1 : (f s1 (up x')) < (i:ℕ) <;>
+      by_cases hfx2 : (f s2 (up x')) < (i:ℕ)
+      · simp [hfx1, hfx2] at hgx
+        have : f s1 (up x') = f s2 (up x') := by sorry
+        rwa [hx'] at this
+      · simp [hfx1, hfx2] at hgx
+        have : f s1 (up x') = f s2 (up x') - (1:ℕ) := by sorry
+        omega
+      · simp [hfx1, hfx2] at hgx
+        have : f s1 (up x') - (1:ℕ) = f s2 (up x') := by sorry
+        omega
+      · simp [hfx1, hfx2] at hgx
+        have : f s1 (up x') - (1:ℕ) = f s2 (up x') - (1:ℕ) := by sorry
+        have : f s1 (up x') = f s2 (up x') := by sorry
+        rwa [hx'] at this
     intro p
     let u := Permutations_toFun p
     let hu_bijective := Permutations_bijective p
-    let v  : Fin (n + 1) → Fin (n + 1) := open Classical in fun x ↦
-      if hxn : x = n then
-        i
-      else if hin : i = n then
-        up (u (down x hxn))
-      else if up (u (down x hxn)) = i then
-        n'
+
+    let v : Fin (n + 1) → Fin (n + 1) := open Classical in fun x ↦
+      if hxn : x = n then i else
+      let ux: ℕ := u (down x hxn)
+      if huxi : ux < (i:ℕ) then
+        ⟨ux, by sorry⟩
       else
-        up (u (down x hxn))
+        ⟨ux + (1:ℕ), by sorry⟩
 
     have hv_bijective : Function.Bijective v := by
       apply bijective_of_injective
@@ -1332,64 +1354,45 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       simp only [v] at heq
       by_cases hxn1 : x1 = n <;>
       by_cases hxn2 : x2 = n
-      · simp_rw [←hxn2] at hxn1
-        rwa [Fin.coe_inj]
-      · simp only [hxn1, ↓reduceDIte, hxn2, dite_eq_ite] at heq
-        by_cases hin : i = n
-        · simp [hin] at heq
-          generalize_proofs hx2 at heq
-          have := Fin.toNat_lt (u (down x2 hx2))
-          symm at heq
-          rw [up_coe] at heq
+      · simp_all
+      · simp [hxn1, hxn2] at heq
+        by_cases huxi2 : (u (down x2 hxn2)) < (i:ℕ)
+        · simp [huxi2] at heq
+          have : x2 = (i:ℕ) := by sorry
+          have : x2 < (i:ℕ) := by sorry
           omega
-        simp only [hin, ↓reduceIte, Fin.coe_inj] at heq
-        generalize_proofs hx2 at heq
-        by_cases hux2 : up (u (down x2 hx2)) = (i:ℕ)
-        · simp [hux2] at heq
-          tauto
-        simp [hux2] at heq
-        tauto
-      · simp only [hxn1, ↓reduceDIte, Fin.coe_inj, dite_eq_ite, hxn2] at heq
-        by_cases hin : i = n
-        · simp [hin] at heq
-          generalize_proofs hx1 at heq
-          have := Fin.toNat_lt (u (down x1 hx1))
-          rw [up_coe] at heq
+        simp [huxi2] at heq
+        have : x2 + 1 = (i:ℕ) := by sorry
+        have : x2 ≥ (i:ℕ) := by sorry
+        omega
+      · simp [hxn1, hxn2] at heq
+        by_cases huxi1 : (u (down x1 hxn1)) < (i:ℕ)
+        · simp [huxi1] at heq
+          have : x1 = (i:ℕ) := by sorry
+          have : x1 < (i:ℕ) := by sorry
           omega
-        simp only [hin, ↓reduceIte] at heq
-        generalize_proofs hx1 at heq
-        by_cases hux1 : up (u (down x1 hx1)) = (i:ℕ)
-        · simp [hux1] at heq
-          tauto
-        simp [hux1] at heq
-      · simp only [hxn1, ↓reduceDIte, Fin.coe_inj, dite_eq_ite, hxn2] at heq
-        by_cases hin : i = n
-        · simp [hin] at heq
-          generalize_proofs hx1 hx2 at heq
-          rw [←Fin.coe_inj, up_inj] at heq
-          apply hu_bijective.injective at heq
-          rwa [down_inj hx1 hx2] at heq
-        simp [hin] at heq
-        generalize_proofs hx1 hx2 at heq
-        by_cases hux1 : up (u (down x1 hx1)) = (i:ℕ) <;>
-        by_cases hux2 : up (u (down x2 hx2)) = (i:ℕ)
-        · rw [←Fin.coe_inj] at hux1 hux2
-          rw [←hux2, up_inj] at hux1
-          apply hu_bijective.injective at hux1
-          rwa [down_inj hx1 hx2] at hux1
-        · simp [hux1, hux2] at heq
-          have := Fin.toNat_lt (u (down x2 hx2))
-          symm at heq
-          rw [up_coe] at heq
+        simp [huxi1] at heq
+        have : x1 + 1 = (i:ℕ) := by sorry
+        have : x1 ≥ (i:ℕ) := by sorry
+        omega
+      · simp [hxn1, hxn2] at heq
+        by_cases huxi1 : (u (down x1 hxn1)) < (i:ℕ) <;>
+        by_cases huxi2 : (u (down x2 hxn2)) < (i:ℕ)
+        · simp [huxi1, huxi2] at heq
+          have : u (down x1 hxn1) = u (down x2 hxn2) := by aesop
+          have := hu_bijective.injective this
+          rwa [down_inj hxn1 hxn2] at this
+        · simp [huxi1, huxi2] at heq
+          have : u (down x1 hxn1) = u (down x2 hxn2) + (1:ℕ) := by sorry
           omega
-        · simp [hux1, hux2] at heq
-          have := Fin.toNat_lt (u (down x1 hx1))
-          rw [up_coe] at heq
+        · simp [huxi1, huxi2] at heq
+          have : u (down x1 hxn1) + (1:ℕ) = u (down x2 hxn2) := by sorry
           omega
-        simp [hux1, hux2] at heq
-        rw [←Fin.coe_inj, up_inj] at heq
-        apply hu_bijective.injective at heq
-        rwa [down_inj hx1 hx2] at heq
+        · simp [huxi1, huxi2] at heq
+          have : u (down x1 hxn1) + (1:ℕ) = u (down x2 hxn2) + (1:ℕ) := by sorry
+          have : u (down x1 hxn1) = u (down x2 hxn2) := by sorry
+          have := hu_bijective.injective this
+          rwa [down_inj hxn1 hxn2] at this
 
     let v_perm := Permutations_mk hv_bijective
     have hv_in_Si : ↑v_perm ∈ S i := by
@@ -1405,36 +1408,21 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     simp [candidate, g, f, ps, v_perm, v, u]
     set pf := Permutations_toFun p
     refold_let pf
-
-    by_cases hin : i = n
-    · simp [hin]
-      by_cases hxn : (up x) = n
-      · simp only [hxn, ↓reduceDIte]
-        generalize_proofs hin
-        tauto
-      simp [hxn, down_up]
-    simp only [hin]
-    have hxn : (up x : ℕ) ≠ n := by
-      intro h
-      simp only [Fin_embed, Fin.coe_toNat', up] at h
-      have := Fin.toNat_lt x
-      omega
-
-    simp only [hxn, reduceDIte, ↓reduceIte, down_up, false_or, ite_not]
-    by_cases hxi : (up (pf x):ℕ) = i
-    · simp only [hxi, ↓reduceIte, Fin.toNat_mk]
-      rw [←Subtype.ext_iff]
-      simp only [Fin.coe_inj, Fin.toNat_mk]
-      simp only [up_coe] at hxi
-      exact hxi.symm
-    simp only [hxi, ↓reduceIte]
-    by_cases hxfn : up (pf x) = n
-    · simp only [hxfn, ↓reduceIte]
-      rw [←Subtype.ext_iff]
-      have := Fin.toNat_lt (pf x)
-      have : pf x = n := by simp [up] at hxfn; exact hxfn
-      omega
-    simp [hxfn, down_up]
+    have hxn : (up x) ≠ n := by sorry
+    simp [down_up, hxn]
+    by_cases hpfx : (pf x) < (i:ℕ)
+    · simp [hpfx]
+      generalize_proofs h
+      have : (⟨(pf x), h⟩: Fin (n+1)) < (i:ℕ) := by sorry
+      simp [this]
+    · simp [hpfx]
+      generalize_proofs h
+      by_cases hpfx' : (⟨((pf x):ℕ) + (1:ℕ), h⟩: Fin (n+1)) < (i:ℕ)
+      · simp [hpfx']
+        have : (pf x) + 1 < (i:ℕ) := by sorry
+        omega
+      simp [hpfx']
+      sorry
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
     intro i
