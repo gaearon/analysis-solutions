@@ -1222,26 +1222,14 @@ lemma SetTheory.Set.Permutations_toFun_mk {n : ℕ} {f : Fin n → Fin n} (hf : 
 @[simp]
 theorem SetTheory.Set.Fin.coe_toNat' {n m x:ℕ} (i: Fin n) (hi : ↑i ∈ Fin m) : (⟨i, hi⟩ : Fin m) = x ↔ i = x := by
   obtain ⟨val, property⟩ := i
-  simp_all only
-  apply Iff.intro
-  · intro a
-    subst a
-    simp [Fin.toNat]
-    generalize_proofs h1 h2
-    have ⟨_, a⟩ := h1.choose_spec
-    have ⟨_, b⟩ := h2.choose_spec
-    suffices : (h1.choose: Object) = h2.choose
-    · apply (ofNat_inj' _ _).mp this
-    grind
-  · intro a
-    subst a
-    simp [Fin.toNat]
-    generalize_proofs h1 h2
-    have ⟨_, a⟩ := h1.choose_spec
-    have ⟨_, b⟩ := h2.choose_spec
-    suffices : (h1.choose: Object) = h2.choose
-    · apply (ofNat_inj' _ _).mp this
-    grind
+  simp only [toNat, Subtype.mk.injEq, exists_prop]
+  generalize_proofs h1 h2
+  suffices : (h1.choose: Object) = h2.choose
+  · apply Eq.congr _ rfl
+    apply (ofNat_inj' _ _).mp this
+  have := h1.choose_spec
+  have := h2.choose_spec
+  grind
 
 set_option maxHeartbeats 10000000 in
 /-- Exercise 3.6.12 (i) -/
