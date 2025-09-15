@@ -1221,9 +1221,11 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   let up (x: Fin n) : Fin (n + 1) := Fin_embed _ _ (by omega) x
   let down (x: Fin (n + 1)) (hx : x ≠ n) : Fin n := Fin_mk _ x (by have := Fin.toNat_lt x; omega)
   have up_inj {x y} : up x = up y ↔ x = y := by simp only [up]; grind
-  have down_inj {x y hx hy} : (down x hx) = (down y hy) ↔ x = y := by simp
+  have down_inj {x y} hx hy : (down x hx) = (down y hy) ↔ x = y := by simp
   have up_down {x hx} : up (down x hx) = x := by simp only [up, down, Fin_embed]; aesop
   have down_up {x hx} : down (up x) hx = x := by simp only [up, down, Fin_embed, Fin_mk]; aesop
+  have up_coe {x} {y:ℕ} : up x = y ↔ x = y := by simp only [up]; aesop
+  have down_coe {x hx} {y:ℕ} : down x hx = y ↔ x = y := by simp only [down]; aesop
 
   let S i := (Permutations (n + 1)).specify (fun p ↦ Permutations_toFun p n' = i)
 
@@ -1356,31 +1358,89 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         grind
     intro p
     let u := Permutations_toFun p
+    let hu_bijective := Permutations_bijective p
     let v  : Fin (n + 1) → Fin (n + 1) := open Classical in fun x ↦
       if hxn : x = n then
         i
       else if hin : i = n then
         up (u (down x hxn))
-      else if u (down x hxn) = (down i hin) then
+      else if up (u (down x hxn)) = i then
         n'
       else
         up (u (down x hxn))
+
     have hv_bijective : Function.Bijective v := by
       apply bijective_of_injective
-      sorry
-    -- Create the element of Permutations (n+1) first
-    let v_perm := Permutations_mk hv_bijective
+      intro x1 x2 heq
+      simp only [v] at heq
+      by_cases hxn1 : x1 = n <;>
+      by_cases hxn2 : x2 = n
+      · simp_rw [←hxn2] at hxn1
+        rwa [Fin.coe_inj]
+      · simp only [hxn1, ↓reduceDIte, hxn2, dite_eq_ite] at heq
+        by_cases hin : i = n
+        · simp [hin] at heq
+          generalize_proofs hx2 at heq
+          have := Fin.toNat_lt (u (down x2 hx2))
+          symm at heq
+          rw [up_coe] at heq
+          omega
+        simp only [hin, ↓reduceIte, Fin.coe_inj] at heq
+        generalize_proofs hx2 at heq
+        by_cases hux2 : up (u (down x2 hx2)) = (i:ℕ)
+        · simp [hux2] at heq
+          tauto
+        simp [hux2] at heq
+        tauto
+      · simp only [hxn1, ↓reduceDIte, Fin.coe_inj, dite_eq_ite, hxn2] at heq
+        by_cases hin : i = n
+        · simp [hin] at heq
+          generalize_proofs hx1 at heq
+          have := Fin.toNat_lt (u (down x1 hx1))
+          rw [up_coe] at heq
+          omega
+        simp only [hin, ↓reduceIte] at heq
+        generalize_proofs hx1 at heq
+        by_cases hux1 : up (u (down x1 hx1)) = (i:ℕ)
+        · simp [hux1] at heq
+          tauto
+        simp [hux1] at heq
+      · simp only [hxn1, ↓reduceDIte, Fin.coe_inj, dite_eq_ite, hxn2] at heq
+        by_cases hin : i = n
+        · simp [hin] at heq
+          generalize_proofs hx1 hx2 at heq
+          rw [←Fin.coe_inj, up_inj] at heq
+          apply hu_bijective.injective at heq
+          rwa [down_inj hx1 hx2] at heq
+        simp [hin] at heq
+        generalize_proofs hx1 hx2 at heq
+        by_cases hux1 : up (u (down x1 hx1)) = (i:ℕ) <;>
+        by_cases hux2 : up (u (down x2 hx2)) = (i:ℕ)
+        · rw [←Fin.coe_inj] at hux1 hux2
+          rw [←hux2, up_inj] at hux1
+          apply hu_bijective.injective at hux1
+          rwa [down_inj hx1 hx2] at hux1
+        · simp [hux1, hux2] at heq
+          have := Fin.toNat_lt (u (down x2 hx2))
+          symm at heq
+          rw [up_coe] at heq
+          omega
+        · simp [hux1, hux2] at heq
+          have := Fin.toNat_lt (u (down x1 hx1))
+          rw [up_coe] at heq
+          omega
+        simp [hux1, hux2] at heq
+        rw [←Fin.coe_inj, up_inj] at heq
+        apply hu_bijective.injective at heq
+        rwa [down_inj hx1 hx2] at heq
 
-    -- Show it's in S i
+    let v_perm := Permutations_mk hv_bijective
     have hv_in_Si : ↑v_perm ∈ S i := by
       simp [S, specification_axiom'']
       use v_perm.property
       simp [Permutations_toFun, Permutations_mk, v_perm, v]
 
-    -- Create the element of S i
     let candidate : S i := ⟨v_perm, hv_in_Si⟩
-
-    -- Now show that applying your map to candidate gives p
     use candidate
     rw [←Permutations_inj]
     simp only [Permutations_toFun_mk]
@@ -1404,12 +1464,13 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       omega
 
     simp only [hxn, reduceDIte, ↓reduceIte, down_up, false_or, ite_not]
-    by_cases hxi : ((pf x):ℕ) = i
+    by_cases hxi : (up (pf x):ℕ) = i
     · simp only [hxi, ↓reduceIte, Fin.toNat_mk]
       rw [←Subtype.ext_iff]
       simp only [Fin.coe_inj, Fin.toNat_mk]
+      simp only [up_coe] at hxi
       exact hxi.symm
-    simp [hxi]
+    simp only [hxi, ↓reduceIte]
     by_cases hxfn : up (pf x) = n
     · simp only [hxfn, ↓reduceIte]
       rw [←Subtype.ext_iff]
