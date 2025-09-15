@@ -1273,80 +1273,35 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       simp only [S, specification_axiom''] at this
       grind
 
-    let g (s : S i) : Fin n → Fin n := fun x ↦
-      let g' : Fin n → Fin (n + 1) := open Classical in fun x ↦
-        if hi : i = n' ∨ f s (up x) ≠ n then
-          f s (up x)
-        else
-          f s n'
-
-      have hg'_ne_n : ∀ x, g' x ≠ n := by
-        intro x
-        simp only [g']
-        by_cases hi : i = n'
-        · simp only [hi, ne_eq, true_or, reduceDIte]
-          have : f s (up x) ≠ n' := by
-            intro hfs
-            simp_rw [hi] at hfn
-            rw [←hfn] at hfs
-            have := Fin.toNat_lt x
-            have := (hfs_bijective s).injective hfs
-            have : (x:ℕ) = n := by simpa [up, n']
-            omega
-          have : f s (up x) ≠ n := by simpa [n']
-          grind
-        simp only [hi, ne_eq, false_or, dite_eq_ite, ite_not]
-        by_cases hfx : f s (up x) = n
-        · simp only [hfx, reduceIte, hfn]
-          simp_all
-        simp only [hfx, reduceIte, not_false_eq_true]
-
-      down (g' x) (by apply hg'_ne_n)
-
-    have hg_a s (hin : i = n) : ∀ x, up (g s x) = f s (up x) := by
-      intro x
-      simp [g, hin, up_down]
-
-    have hg_b s (hin : i ≠ n) : ∀ x, f s (up x) = n ↔ up (g s x) ≠ f s (up x) := by
-      intro x
-      have hin' : i ≠ n' := by simpa [n']
-      simp only [hin', ne_eq, false_or, hfn, dite_eq_ite, ite_not, up_down, ite_eq_right_iff,
-        Fin.coe_inj, Classical.not_imp, iff_self_and, g]
-      grind
-
-    have hg_c s (hin : i ≠ n) : ∀ x, f s (up x) = n ↔ up (g s x) = i := by
-      intro x
-      have hin' : i ≠ n' := by simpa [n']
-      simp only [Fin.coe_inj, Fin.toNat_mk, hin, ne_eq, false_or, dite_eq_ite, ite_not, up_down, g]
-      by_cases hfxn : f s (up x) = n
-      · simp [hfxn, hfn]
-      simp only [hfxn, reduceIte, false_iff, ne_eq]
-      intro h
-      rw [←Fin.coe_inj, ←hfn] at h
-      have := (hfs_bijective s).injective h
-      have : x = n := by simpa [n', up]
-      have := Fin.toNat_lt x
-      omega
+    let g (s : S i) : Fin n → Fin n := open Classical in fun x ↦
+      let fx : ℕ := f s (up x)
+      have : fx ≠ i := by sorry
+      if hfx : fx < i then
+        ⟨fx, by sorry⟩
+      else
+        ⟨fx - (1:ℕ), by sorry⟩
 
     have hgs_bijective s : Function.Bijective (g s) := by
       apply bijective_of_injective
       intro x1 x2 heq
-      by_cases hin : i = n
-      · rw [←up_inj , hg_a _ hin, hg_a _ hin] at heq
-        have := (hfs_bijective s).injective heq
+      simp [g] at heq
+      have : (f s (up x1):ℕ) ≠ i := by sorry
+      have : (f s (up x2):ℕ) ≠ i := by sorry
+      by_cases hfx1 : (f s (up x1):ℕ) < i <;>
+      by_cases hfx2 : (f s (up x2):ℕ) < i
+      · simp [hfx1, hfx2] at heq
+        have : f s (up x1) = f s (up x2) := by aesop
+        have := (hfs_bijective s).injective this
         rwa [up_inj] at this
-      by_cases hfx1 : f s (up x1) = n <;>
-      by_cases hfx2 : f s (up x2) = n
-      · rw [hn'] at hfx1 hfx2
-        rw [←hfx2] at hfx1
-        have := (hfs_bijective s).injective hfx1
-        rwa [up_inj] at this
-      · rw [hg_c _ hin] at hfx1 hfx2
-        grind
-      · rw [hg_c _ hin] at hfx1 hfx2
-        grind
-      · rw [hg_b _ hin] at hfx1 hfx2
-        have : f s (up x1) = f s (up x2) := by grind
+      · simp [hfx1, hfx2] at heq
+        have : (f s (up x1)) = f s (up x2) - (1:ℕ) := by sorry
+        omega
+      · simp [hfx1, hfx2] at heq
+        have : f s (up x1) - (1:ℕ) = f s (up x2) := by sorry
+        omega
+      · simp [hfx1, hfx2] at heq
+        have : f s (up x1) - (1:ℕ) = f s (up x2) - (1:ℕ) := by sorry
+        have : f s (up x1) = f s (up x2) := by sorry
         have := (hfs_bijective s).injective this
         rwa [up_inj] at this
 
@@ -1357,24 +1312,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       rw [←hf_inj]
       ext x
       rw [SetCoe.ext_iff]
-      by_cases hxn : x = n
-      · have hxn' : x = n' := by simpa [n']
-        grind
-      let x' : Fin n := down x (by simpa [n'])
-      have hx' : up x' = x := by rwa [up_down]
-      have hgx := congrFun heq x'
-      by_cases hin : i = n
-      · rwa [←hx', ←hg_a _ hin, ←hg_a _ hin, up_inj]
-      by_cases hfn1 : f s1 x = n <;>
-      by_cases hfn2 : f s2 x = n
-      · rw [hn'] at hfn1 hfn2
-        grind
-      · rw [←hx', hg_c _ hin] at hfn1 hfn2
-        grind
-      · rw [←hx', hg_c _ hin] at hfn1 hfn2
-        grind
-      · rw [←hx', hg_b _ hin] at hfn1 hfn2
-        grind
+      sorry
     intro p
     let u := Permutations_toFun p
     let hu_bijective := Permutations_bijective p
