@@ -1276,6 +1276,12 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       else
         succ x
 
+    have shift_up_ne_i {x} : shift_up x ≠ i := by
+      simp [shift_up]
+      by_cases h : x < (i:ℕ) <;> simp [h]
+      · aesop
+      omega
+
     have shift_up_down {x} (hx : x ≠ i) : shift_up (shift_down x hx) = x := by
       have : x ≠ (i:ℕ) := by simp_all
       simp [shift_up, shift_down]
@@ -1288,7 +1294,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       · have : (up x) < (i:ℕ) := by
           have : (x:ℕ) = up x := by
             simp [up, Fin_embed]
-            apply (Fin.coe_toNat' x _).mp rfl
+            apply (Fin.coe_toNat' _ _).mp rfl
           grind
         simp [this]
         apply (Fin.coe_toNat' (up x) x.property).mp rfl
@@ -1304,9 +1310,13 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
             have := f.injective h
             have : x = n := by simpa [n', up]
             have : x < n := Fin.toNat_lt x
-            omega
-          )
-        invFun := fun y => sorry
+            omega)
+        invFun := fun y =>
+          down (f.invFun (shift_up y)) (by
+            suffices : f.invFun (shift_up y) ≠ n'
+            · simpa
+            intro h
+            simp [←h, shift_up_ne_i] at hf)
         left_inv := by sorry
         right_inv := by sorry
       },
