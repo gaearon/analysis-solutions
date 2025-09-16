@@ -1246,8 +1246,10 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have up_coe {x} {y:ℕ} : up x = y ↔ x = y := by simp only [up]; aesop
   have down_coe {x hx} {y:ℕ} : down x hx = y ↔ x = y := by simp only [down]; aesop
 
-  have pred (x : Fin (n+1)) {y:ℕ} (hx : x > y) : Fin n := Fin_mk _ ((x:ℕ) - (1:ℕ)) (by have := Fin.toNat_lt x; omega)
-  have succ (x : Fin n) : Fin (n+1) := Fin_mk _ ((x:ℕ) + (1:ℕ)) (by have := Fin.toNat_lt x; omega)
+  let pred (x : Fin (n+1)) (hx : x > (0:ℕ)) : Fin n := Fin_mk _ ((x:ℕ) - (1:ℕ)) (by have := Fin.toNat_lt x; omega)
+  let succ (x : Fin n) : Fin (n+1) := Fin_mk _ ((x:ℕ) + (1:ℕ)) (by have := Fin.toNat_lt x; omega)
+  have succ_pred (x : Fin (n+1)) {hx} : succ (pred x hx) = x := by simp [succ, pred]; omega
+  have pred_succ (x : Fin n) {hx} : (pred (succ x) hx) = x := by simp [succ, pred]
 
   let S i := (Permutations (n + 1)).specify (fun p ↦ Permutations_toFun p n' = i)
 
@@ -1259,18 +1261,39 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
 
-    let shift_down (y : Fin (n+1)) (hy : y ≠ (i:ℕ)) : Fin n :=
-      if hy_lt : y < (i:ℕ) then
-        down y (by have := Fin.toNat_lt i; omega)
+    let shift_down (x : Fin (n+1)) (hx : x ≠ i) : Fin n :=
+      if hx_lt : x < (i:ℕ) then
+        down x (by have := Fin.toNat_lt i; omega)
       else
-        let hy : y > (i:ℕ) := by omega
-        pred y hy
+        let hx : x > (0:ℕ) := by
+          have : x ≠ (i:ℕ) := by simp_all
+          omega
+        pred x hx
 
     let shift_up (x : Fin n) : Fin (n+1) :=
       if hx_lt : (x:ℕ) < i then
         up x
       else
         succ x
+
+    have shift_up_down {x} (hx : x ≠ i) : shift_up (shift_down x hx) = x := by
+      have : x ≠ (i:ℕ) := by simp_all
+      simp [shift_up, shift_down]
+      by_cases h : x < (i:ℕ) <;> simp [h,  up_down, succ_pred]
+      by_cases h : x - 1 < (i:ℕ) <;> simp [h]; omega
+
+    have shift_down_up {x} hx : shift_down (shift_up x) hx = x := by
+      simp [shift_up, shift_down]
+      by_cases h : x < (i:ℕ) <;> simp [h]
+      · have : (up x) < (i:ℕ) := by
+          have : (x:ℕ) = up x := by
+            simp [up, Fin_embed]
+            apply (Fin.coe_toNat' x _).mp rfl
+          grind
+        simp [this]
+        apply (Fin.coe_toNat' (up x) x.property).mp rfl
+      by_cases h : (x + 1) < (i:ℕ) <;> simp [h, pred_succ]
+      omega
 
     let perm_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} ≃ (Fin n ≃ Fin n) := {
       toFun := fun ⟨f, hf⟩ => {
