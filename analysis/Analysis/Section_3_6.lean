@@ -1251,15 +1251,10 @@ set_option maxHeartbeats 10000000 in
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
   let n' : Fin (n + 1) := Fin_mk _ n (by omega)
-  have hn' {x : Fin (n + 1)} : (x = n) ↔ (x = n') := by simp [n']
   let up (x: Fin n) : Fin (n + 1) := Fin_embed _ _ (by omega) x
   let down (x: Fin (n + 1)) (hx : x ≠ n) : Fin n := Fin_mk _ x (by have := Fin.toNat_lt x; omega)
-  have up_inj {x y} : up x = up y ↔ x = y := by simp only [up]; grind
-  have down_inj {x y} hx hy : (down x hx) = (down y hy) ↔ x = y := by simp
   have up_down {x hx} : up (down x hx) = x := by simp only [up, down, Fin_embed]; aesop
   have down_up {x hx} : down (up x) hx = x := by simp only [up, down, Fin_embed, Fin_mk]; aesop
-  have up_coe {x} {y:ℕ} : up x = y ↔ x = y := by simp only [up]; aesop
-  have down_coe {x hx} {y:ℕ} : down x hx = y ↔ x = y := by simp only [down]; aesop
 
   let pred (x : Fin (n+1)) (hx : x > (0:ℕ)) : Fin n := Fin_mk _ ((x:ℕ) - (1:ℕ)) (by have := Fin.toNat_lt x; omega)
   let succ (x : Fin n) : Fin (n+1) := Fin_mk _ ((x:ℕ) + (1:ℕ)) (by have := Fin.toNat_lt x; omega)
@@ -1276,6 +1271,26 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
 
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
+
+    have si_to_equiv : S i ≃ {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} := {
+        toFun := fun s =>
+          let hs : s.1 ∈ S i := s.2
+          let hp : s.1 ∈ Permutations (n+1) := by simp [S] at hs; grind
+          let p : Permutations (n+1) := ⟨s.1, hp⟩
+          let f := Permutations_toFun p
+          let hf_bij := Permutations_bijective p
+          let hf_prop : f n' = i := by simp [S] at hs; simp [Permutations_toFun, f] at *; grind
+          let e := Equiv.ofBijective f hf_bij
+          ⟨e, by simp only [e, Equiv.ofBijective]; exact hf_prop⟩
+        invFun := fun ⟨e, he⟩ =>
+          let p := Permutations_mk e.bijective
+          let hp_in_Si : p.1 ∈ S i := by
+            simp only [specification_axiom'', Subtype.coe_eta, Permutations_toFun_mk, exists_prop, S, p]
+            use p.2
+          ⟨p.1, hp_in_Si⟩
+        left_inv := fun s => by simp
+        right_inv := fun ⟨e, he⟩ => by ext; simp [Permutations_toFun_mk, Equiv.ofBijective]
+      }
 
     let shift_down (x : Fin (n+1)) (hx : x ≠ i) : Fin n :=
       if hx_lt : x < (i:ℕ) then
@@ -1317,7 +1332,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       by_cases h : (x + 1) < (i:ℕ) <;> simp [h, pred_succ]
       omega
 
-    have perm_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} ≃ (Fin n ≃ Fin n) := open Classical in {
+    have shift_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} ≃ (Fin n ≃ Fin n) := open Classical in {
       toFun := fun ⟨f, hf⟩ => {
         toFun := fun x =>
           shift_down (f (up x)) (by
@@ -1339,16 +1354,10 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         right_inv := by intro x; simp [shift_down_up, up_down]
       },
       invFun := fun g => ⟨{
-        toFun := fun x =>
-          if hxn : x = n then i else shift_up (g (down x hxn))
-        invFun := fun x =>
-          if hxi : x = i then n' else up (g.invFun (shift_down x hxi))
-        left_inv := by
-          intro x
-          by_cases hxn : x = n <;> simp [hxn, shift_down_up, shift_up_ne_i, up_down]
-        right_inv := by
-          intro x
-          by_cases hxi : x = i <;> simp [hxi, down_up, shift_up_down, up_ne_n]
+        toFun := fun x => if hxn : x = n then i else shift_up (g (down x hxn))
+        invFun := fun x => if hxi : x = i then n' else up (g.invFun (shift_down x hxi))
+        left_inv := by intro x; by_cases hxn : x = n <;> simp [hxn, shift_down_up, shift_up_ne_i, up_down]
+        right_inv := by intro x; by_cases hxi : x = i <;> simp [hxi, down_up, shift_up_down, up_ne_n]
       }, by simp⟩
       left_inv := by
         intro f
@@ -1365,26 +1374,6 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         simp
     }
 
-    have si_to_equiv : S i ≃ {e : Fin (n+1) ≃ Fin (n+1) // e n' = i} := {
-      toFun := fun s =>
-        let hs : s.1 ∈ S i := s.2
-        let hp : s.1 ∈ Permutations (n+1) := by simp [S] at hs; grind
-        let p : Permutations (n+1) := ⟨s.1, hp⟩
-        let f := Permutations_toFun p
-        let hf_bij := Permutations_bijective p
-        let hf_prop : f n' = i := by simp [S] at hs; simp [Permutations_toFun, f] at *; grind
-        let e := Equiv.ofBijective f hf_bij
-        ⟨e, by simp only [e, Equiv.ofBijective]; exact hf_prop⟩
-      invFun := fun ⟨e, he⟩ =>
-        let p := Permutations_mk e.bijective
-        let hp_in_Si : p.1 ∈ S i := by
-          simp only [specification_axiom'', Subtype.coe_eta, Permutations_toFun_mk, exists_prop, S, p]
-          use p.2
-        ⟨p.1, hp_in_Si⟩
-      left_inv := fun s => by simp
-      right_inv := fun ⟨e, he⟩ => by ext; simp [Permutations_toFun_mk, Equiv.ofBijective]
-    }
-
     have equiv_to_perm {m : ℕ} : (Fin m ≃ Fin m) ≃ Permutations m := {
       toFun := fun e => Permutations_mk e.bijective
       invFun := fun p => Equiv.ofBijective (Permutations_toFun p) (Permutations_bijective p)
@@ -1392,7 +1381,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       right_inv := fun p => by rw [←Permutations_inj]; simp [Equiv.ofBijective]
     }
 
-    have equiv := si_to_equiv.trans (perm_equiv.trans equiv_to_perm)
+    have equiv := si_to_equiv.trans (shift_equiv.trans equiv_to_perm)
     exact ⟨equiv.toFun, equiv.injective, equiv.surjective⟩
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
