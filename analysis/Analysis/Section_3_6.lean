@@ -1345,7 +1345,6 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
 
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
-
     have si_to_equiv : S i ≃ {f : Fin (n+1) ≃ Fin (n+1) // f (Fin.last n) = i} := {
       toFun := fun s =>
         let hs : s.1 ∈ S i := s.2
@@ -1365,7 +1364,6 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       left_inv s := by simp
       right_inv e := by ext; simp [Permutations_toFun_mk, Equiv.ofBijective]
     }
-
     have equiv_to_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f (Fin.last n) = i} ≃ (Fin n ≃ Fin n) := open Classical in {
       toFun := fun ⟨f, hf⟩ => {
         toFun x := Fin.predAbove i (f (Fin.castSucc x)) (by
@@ -1393,14 +1391,12 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       left_inv := by intro f; ext x; simp_all [Subtype.coe_inj, ←f.property]
       right_inv := by intro; aesop
     }
-
     have equiv_to_perm {m : ℕ} : (Fin m ≃ Fin m) ≃ Permutations m := {
       toFun := fun e => Permutations_mk e.bijective
       invFun := fun p => Equiv.ofBijective (Permutations_toFun p) (Permutations_bijective p)
       left_inv := fun e => by ext; simp [Permutations_toFun_mk, Equiv.ofBijective]
       right_inv := fun p => by rw [←Permutations_inj]; simp [Equiv.ofBijective]
     }
-
     have equiv := si_to_equiv.trans (equiv_to_equiv.trans equiv_to_perm)
     exact ⟨equiv.toFun, equiv.injective, equiv.surjective⟩
 
