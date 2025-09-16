@@ -1302,7 +1302,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       by_cases h : (x + 1) < (i:ℕ) <;> simp [h, pred_succ]
       omega
 
-    let perm_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} ≃ (Fin n ≃ Fin n) := open Classical in {
+    have perm_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} ≃ (Fin n ≃ Fin n) := open Classical in {
       toFun := fun ⟨f, hf⟩ => {
         toFun := fun x =>
           shift_down (f (up x)) (by
@@ -1349,7 +1349,72 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         ext x
         simp
     }
-    sorry
+
+    -- The actual equivalence S i ≃ Permutations n
+    have foo : S i ≃ Permutations n := {
+      toFun := fun s =>
+        let pf : Permutations (n+1) := ⟨s, by
+          have := s.property
+          simp [S] at this
+          grind
+        ⟩
+        let f := Equiv.ofBijective (Permutations_toFun pf) (Permutations_bijective pf)
+        have hf : f n' = i := by
+          have := s.property
+          simp [S] at this
+          simp [Permutations_toFun] at *
+          grind
+        let g := perm_equiv ⟨f, by simp only [f]; exact hf⟩
+        Permutations_mk g.bijective
+
+      invFun := fun pg =>
+        let g := Equiv.ofBijective (Permutations_toFun pg) (Permutations_bijective pg)
+        let ⟨f, hf⟩ := perm_equiv.invFun g
+        let fp := Permutations_mk f.bijective
+        have hfpS : ↑fp ∈ S i := by
+          simp only [specification_axiom'', Subtype.coe_eta, exists_prop, S, Permutations_toFun_mk, fp]
+          use fp.property
+        ⟨fp, hfpS⟩
+
+      left_inv := fun s => by
+        ext
+        -- We need to show that after round-tripping, we get back s
+        simp
+        -- Key: perm_equiv.left_inv tells us that perm_equiv.invFun (perm_equiv ⟨f, hf⟩) = ⟨f, hf⟩
+        let pf : Permutations (n+1) := ⟨s, by
+          have := s.property
+          simp [S] at this
+          grind⟩
+        let f := Equiv.ofBijective (Permutations_toFun pf) (Permutations_bijective pf)
+        have hf : f n' = i := by
+          have := s.property
+          simp [S] at this
+          simp [Permutations_toFun] at *
+          grind
+        have key := perm_equiv.left_inv ⟨f, hf⟩
+        -- This tells us perm_equiv.invFun (perm_equiv ⟨f, hf⟩) = ⟨f, hf⟩
+        simp [Permutations_mk]
+        grind
+        congr
+        -- Need to show the underlying functions are the same
+        ext x
+        have : (perm_equiv.invFun (perm_equiv ⟨f, hf⟩)).val = f := by
+          rw [key]
+        simp [this, f, Equiv.ofBijective]
+
+      right_inv := fun p => by
+        rw [←Permutations_inj]
+        simp [Permutations_toFun_mk, from_equiv_n]
+        ext x
+        -- Use perm_equiv.right_inv
+        have key := perm_equiv.right_inv (to_equiv p)
+        have : (perm_equiv (perm_equiv.invFun (to_equiv p))).toFun = (to_equiv p).toFun := by
+          rw [key]
+        exact congrFun this x
+    }
+
+    -- Convert to EquivCard
+    exact ⟨foo.toFun, foo.injective, foo.surjective⟩
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
     intro i
