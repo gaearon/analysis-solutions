@@ -1365,48 +1365,35 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         simp
     }
 
-    let equiv1 : S i ≃ {f : Fin (n+1) → Fin (n+1) // Function.Bijective f ∧ f n' = i} := {
+    have si_to_equiv : S i ≃ {e : Fin (n+1) ≃ Fin (n+1) // e n' = i} := {
       toFun := fun s =>
-        ⟨Permutations_toFun ⟨s, by have := s.property; simp [S] at this; grind⟩, by
-          constructor
-          · exact Permutations_bijective _
-          · have := s.property; simp [S] at this; simp [Permutations_toFun] at *; grind
-        ⟩
-      invFun := fun ⟨f, hf⟩ => ⟨Permutations_mk hf.1, by
-        simp only [specification_axiom'', Subtype.coe_eta, Permutations_toFun_mk, exists_prop, S]
-        use (Permutations_mk hf.1).property
-        exact hf.2
-      ⟩
+        let hs : s.1 ∈ S i := s.2
+        let hp : s.1 ∈ Permutations (n+1) := by simp [S] at hs; grind
+        let p : Permutations (n+1) := ⟨s.1, hp⟩
+        let f := Permutations_toFun p
+        let hf_bij := Permutations_bijective p
+        let hf_prop : f n' = i := by simp [S] at hs; simp [Permutations_toFun, f] at *; grind
+        let e := Equiv.ofBijective f hf_bij
+        ⟨e, by simp only [e, Equiv.ofBijective]; exact hf_prop⟩
+      invFun := fun ⟨e, he⟩ =>
+        let p := Permutations_mk e.bijective
+        let hp_in_Si : p.1 ∈ S i := by
+          simp only [specification_axiom'', Subtype.coe_eta, Permutations_toFun_mk, exists_prop, S, p]
+          use p.2
+        ⟨p.1, hp_in_Si⟩
       left_inv := fun s => by simp
-      right_inv := fun ⟨f, hf⟩ => by simp [Permutations_toFun_mk]
+      right_inv := fun ⟨e, he⟩ => by ext; simp [Permutations_toFun_mk, Equiv.ofBijective]
     }
 
-    let equiv2 : {f : Fin (n+1) → Fin (n+1) // Function.Bijective f ∧ f n' = i} ≃
-                {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} := {
-      toFun := fun ⟨f, hf⟩ => ⟨Equiv.ofBijective f hf.1, by simp only [Equiv.ofBijective]; exact hf.2⟩
-      invFun := fun ⟨f, hf⟩ => ⟨f.toFun, f.bijective, hf⟩
-      left_inv := fun ⟨f, hf⟩ => by simp [Equiv.ofBijective]
-      right_inv := fun ⟨f, hf⟩ => by ext; simp [Equiv.ofBijective]
+    have equiv_to_perm {m : ℕ} : (Fin m ≃ Fin m) ≃ Permutations m := {
+      toFun := fun e => Permutations_mk e.bijective
+      invFun := fun p => Equiv.ofBijective (Permutations_toFun p) (Permutations_bijective p)
+      left_inv := fun e => by ext; simp [Permutations_toFun_mk, Equiv.ofBijective]
+      right_inv := fun p => by rw [←Permutations_inj]; simp [Equiv.ofBijective]
     }
 
-    let equiv3 := perm_equiv
-
-    let equiv4 : (Fin n ≃ Fin n) ≃ {g : Fin n → Fin n // Function.Bijective g} := {
-      toFun := fun g => ⟨g.toFun, g.bijective⟩
-      invFun := fun ⟨g, hg⟩ => Equiv.ofBijective g hg
-      left_inv := fun g => by ext; simp [Equiv.ofBijective]
-      right_inv := fun ⟨g, hg⟩ => by simp [Equiv.ofBijective]
-    }
-
-    let equiv5 : {g : Fin n → Fin n // Function.Bijective g} ≃ Permutations n := {
-      toFun := fun ⟨g, hg⟩ => Permutations_mk hg
-      invFun := fun p => ⟨Permutations_toFun p, Permutations_bijective p⟩
-      left_inv := fun ⟨g, hg⟩ => by simp [Permutations_toFun_mk]
-      right_inv := fun p => by rw [←Permutations_inj]; simp [Permutations_toFun_mk]
-    }
-
-    let foo := equiv1.trans (equiv2.trans (equiv3.trans (equiv4.trans equiv5)))
-    exact ⟨foo.toFun, foo.injective, foo.surjective⟩
+    have equiv := si_to_equiv.trans (perm_equiv.trans equiv_to_perm)
+    exact ⟨equiv.toFun, equiv.injective, equiv.surjective⟩
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
     intro i
