@@ -1250,6 +1250,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
   let succ (x : Fin n) : Fin (n+1) := Fin_mk _ ((x:ℕ) + (1:ℕ)) (by have := Fin.toNat_lt x; omega)
   have succ_pred (x : Fin (n+1)) {hx} : succ (pred x hx) = x := by simp [succ, pred]; omega
   have pred_succ (x : Fin n) {hx} : (pred (succ x) hx) = x := by simp [succ, pred]
+  have up_ne_n (x: Fin n) : up x ≠ n := by simp [up]; have := Fin.toNat_lt x; omega
 
   let S i := (Permutations (n + 1)).specify (fun p ↦ Permutations_toFun p n' = i)
 
@@ -1301,7 +1302,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       by_cases h : (x + 1) < (i:ℕ) <;> simp [h, pred_succ]
       omega
 
-    let perm_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} ≃ (Fin n ≃ Fin n) := {
+    let perm_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} ≃ (Fin n ≃ Fin n) := open Classical in {
       toFun := fun ⟨f, hf⟩ => {
         toFun := fun x =>
           shift_down (f (up x)) (by
@@ -1310,24 +1311,43 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
             have := f.injective h
             have : x = n := by simpa [n', up]
             have : x < n := Fin.toNat_lt x
-            omega)
-        invFun := fun y =>
-          down (f.invFun (shift_up y)) (by
-            suffices : f.invFun (shift_up y) ≠ n'
+            omega
+          )
+        invFun := fun x =>
+          down (f.invFun (shift_up x)) (by
+            suffices : f.invFun (shift_up x) ≠ n'
             · simpa
             intro h
-            simp [←h, shift_up_ne_i] at hf)
-        left_inv := by sorry
-        right_inv := by sorry
+            simp [←h, shift_up_ne_i] at hf
+          )
+        left_inv := by intro x; simp [shift_up_down, down_up]
+        right_inv := by intro x; simp [shift_down_up, up_down]
       },
       invFun := fun g => ⟨{
-        toFun := fun x => sorry
-        invFun := fun y => sorry
-        left_inv := by sorry
-        right_inv := by sorry
-      }, by sorry⟩
-      left_inv := by sorry
-      right_inv := by sorry
+        toFun := fun x =>
+          if hxn : x = n then i else shift_up (g (down x hxn))
+        invFun := fun x =>
+          if hxi : x = i then n' else up (g.invFun (shift_down x hxi))
+        left_inv := by
+          intro x
+          by_cases hxn : x = n <;> simp [hxn, shift_down_up, shift_up_ne_i, up_down]
+        right_inv := by
+          intro x
+          by_cases hxi : x = i <;> simp [hxi, down_up, shift_up_down, up_ne_n]
+      }, by simp⟩
+      left_inv := by
+        intro f
+        simp [shift_up_down, up_down]
+        ext x
+        by_cases hxn : x = n <;> simp [hxn]
+        have := f.property
+        simp_rw [Subtype.coe_inj, ←this]
+        symm; simpa
+      right_inv := by
+        intro g
+        simp [shift_down_up, down_up, up_ne_n]
+        ext x
+        simp
     }
     sorry
 
