@@ -1297,7 +1297,15 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
 
     let perm_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} ≃ (Fin n ≃ Fin n) := {
       toFun := fun ⟨f, hf⟩ => {
-        toFun := fun x => sorry
+        toFun := fun x =>
+          shift_down (f (up x)) (by
+            intro h
+            rw [←hf] at h
+            have := f.injective h
+            have : x = n := by simpa [n', up]
+            have : x < n := Fin.toNat_lt x
+            omega
+          )
         invFun := fun y => sorry
         left_inv := by sorry
         right_inv := by sorry
