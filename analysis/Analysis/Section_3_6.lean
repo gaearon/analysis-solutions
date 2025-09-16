@@ -1220,6 +1220,21 @@ lemma SetTheory.Set.Permutations_toFun_mk {n : ℕ} {f : Fin n → Fin n} (hf : 
   simp [Permutations_toFun, Permutations_mk]
 
 @[simp]
+lemma SetTheory.Set.Permutations_mk_bijective {n : ℕ}: Permutations_mk (Permutations_bijective p) = p := by
+  simp [Permutations_mk, Permutations_toFun]
+  generalize_proofs h1 h2
+  have := h1.choose_spec
+  grind
+
+@[simp]
+lemma SetTheory.Set.Permutations_mk_bijective' : Permutations_mk (Permutations_bijective ⟨p, hp⟩) = p := by
+  simp [Permutations_mk, Permutations_toFun]
+  generalize_proofs h1 h2
+  have := h1.choose_spec
+  grind
+
+
+@[simp]
 theorem SetTheory.Set.Fin.coe_toNat' {n m x:ℕ} (i: Fin n) (hi : ↑i ∈ Fin m) : (⟨i, hi⟩ : Fin m) = x ↔ i = x := by
   obtain ⟨val, property⟩ := i
   simp only [toNat, Subtype.mk.injEq, exists_prop]
@@ -1350,70 +1365,47 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
         simp
     }
 
-    -- The actual equivalence S i ≃ Permutations n
-    have foo : S i ≃ Permutations n := {
+    let equiv1 : S i ≃ {f : Fin (n+1) → Fin (n+1) // Function.Bijective f ∧ f n' = i} := {
       toFun := fun s =>
-        let pf : Permutations (n+1) := ⟨s, by
-          have := s.property
-          simp [S] at this
-          grind
+        ⟨Permutations_toFun ⟨s, by have := s.property; simp [S] at this; grind⟩, by
+          constructor
+          · exact Permutations_bijective _
+          · have := s.property; simp [S] at this; simp [Permutations_toFun] at *; grind
         ⟩
-        let f := Equiv.ofBijective (Permutations_toFun pf) (Permutations_bijective pf)
-        have hf : f n' = i := by
-          have := s.property
-          simp [S] at this
-          simp [Permutations_toFun] at *
-          grind
-        let g := perm_equiv ⟨f, by simp only [f]; exact hf⟩
-        Permutations_mk g.bijective
-
-      invFun := fun pg =>
-        let g := Equiv.ofBijective (Permutations_toFun pg) (Permutations_bijective pg)
-        let ⟨f, hf⟩ := perm_equiv.invFun g
-        let fp := Permutations_mk f.bijective
-        have hfpS : ↑fp ∈ S i := by
-          simp only [specification_axiom'', Subtype.coe_eta, exists_prop, S, Permutations_toFun_mk, fp]
-          use fp.property
-        ⟨fp, hfpS⟩
-
-      left_inv := fun s => by
-        ext
-        -- We need to show that after round-tripping, we get back s
-        simp
-        -- Key: perm_equiv.left_inv tells us that perm_equiv.invFun (perm_equiv ⟨f, hf⟩) = ⟨f, hf⟩
-        let pf : Permutations (n+1) := ⟨s, by
-          have := s.property
-          simp [S] at this
-          grind⟩
-        let f := Equiv.ofBijective (Permutations_toFun pf) (Permutations_bijective pf)
-        have hf : f n' = i := by
-          have := s.property
-          simp [S] at this
-          simp [Permutations_toFun] at *
-          grind
-        have key := perm_equiv.left_inv ⟨f, hf⟩
-        -- This tells us perm_equiv.invFun (perm_equiv ⟨f, hf⟩) = ⟨f, hf⟩
-        simp [Permutations_mk]
-        grind
-        congr
-        -- Need to show the underlying functions are the same
-        ext x
-        have : (perm_equiv.invFun (perm_equiv ⟨f, hf⟩)).val = f := by
-          rw [key]
-        simp [this, f, Equiv.ofBijective]
-
-      right_inv := fun p => by
-        rw [←Permutations_inj]
-        simp [Permutations_toFun_mk, from_equiv_n]
-        ext x
-        -- Use perm_equiv.right_inv
-        have key := perm_equiv.right_inv (to_equiv p)
-        have : (perm_equiv (perm_equiv.invFun (to_equiv p))).toFun = (to_equiv p).toFun := by
-          rw [key]
-        exact congrFun this x
+      invFun := fun ⟨f, hf⟩ => ⟨Permutations_mk hf.1, by
+        simp only [specification_axiom'', Subtype.coe_eta, Permutations_toFun_mk, exists_prop, S]
+        use (Permutations_mk hf.1).property
+        exact hf.2
+      ⟩
+      left_inv := fun s => by simp
+      right_inv := fun ⟨f, hf⟩ => by simp [Permutations_toFun_mk]
     }
 
-    -- Convert to EquivCard
+    let equiv2 : {f : Fin (n+1) → Fin (n+1) // Function.Bijective f ∧ f n' = i} ≃
+                {f : Fin (n+1) ≃ Fin (n+1) // f n' = i} := {
+      toFun := fun ⟨f, hf⟩ => ⟨Equiv.ofBijective f hf.1, by simp only [Equiv.ofBijective]; exact hf.2⟩
+      invFun := fun ⟨f, hf⟩ => ⟨f.toFun, f.bijective, hf⟩
+      left_inv := fun ⟨f, hf⟩ => by simp [Equiv.ofBijective]
+      right_inv := fun ⟨f, hf⟩ => by ext; simp [Equiv.ofBijective]
+    }
+
+    let equiv3 := perm_equiv
+
+    let equiv4 : (Fin n ≃ Fin n) ≃ {g : Fin n → Fin n // Function.Bijective g} := {
+      toFun := fun g => ⟨g.toFun, g.bijective⟩
+      invFun := fun ⟨g, hg⟩ => Equiv.ofBijective g hg
+      left_inv := fun g => by ext; simp [Equiv.ofBijective]
+      right_inv := fun ⟨g, hg⟩ => by simp [Equiv.ofBijective]
+    }
+
+    let equiv5 : {g : Fin n → Fin n // Function.Bijective g} ≃ Permutations n := {
+      toFun := fun ⟨g, hg⟩ => Permutations_mk hg
+      invFun := fun p => ⟨Permutations_toFun p, Permutations_bijective p⟩
+      left_inv := fun ⟨g, hg⟩ => by simp [Permutations_toFun_mk]
+      right_inv := fun p => by rw [←Permutations_inj]; simp [Permutations_toFun_mk]
+    }
+
+    let foo := equiv1.trans (equiv2.trans (equiv3.trans (equiv4.trans equiv5)))
     exact ⟨foo.toFun, foo.injective, foo.surjective⟩
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
