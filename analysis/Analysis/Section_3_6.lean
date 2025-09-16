@@ -1301,18 +1301,41 @@ theorem SetTheory.Set.Fin.predAbove_succAbove {n} (i : Fin (n + 1)) (x : Fin n) 
     have not_lt : ¬((x : ℕ) + 1 < i) := by omega
     simp [not_lt]
 
-def SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
+abbrev SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
 
-set_option maxHeartbeats 10000000 in
+-- Direct equivalent to your `up`
+def SetTheory.Set.Fin.castSucc (x : Fin n) : Fin (n + 1) :=
+  Fin_embed _ _ (by omega) x
+
+-- Direct equivalent to your `down`
+noncomputable def SetTheory.Set.Fin.castPred (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) : Fin n :=
+  Fin_mk _ (x : ℕ) (by have := Fin.toNat_lt x; omega)
+
+-- Key properties
+@[simp]
+theorem SetTheory.Set.Fin.castSucc_castPred (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) :
+    castSucc (castPred x h) = x := by
+  ext
+  simp [castSucc, castPred, Fin_embed]
+
+@[simp]
+theorem SetTheory.Set.Fin.castPred_castSucc (x : Fin n) (h : ((castSucc x : Fin (n + 1)) : ℕ) ≠ n) :
+    castPred (castSucc x) h = x := by
+  ext
+  simp [castSucc, castPred, Fin_embed]
+
+@[simp]
+theorem SetTheory.Set.Fin.castSucc_ne (x : Fin n) : castSucc x ≠ n := by
+  intro h
+  have : (x : ℕ) = n := by
+    simp [castSucc] at h
+    exact h
+  have : (x : ℕ) < n := Fin.toNat_lt x
+  omega
+
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
-  let up (x: Fin n) : Fin (n + 1) := Fin_embed _ _ (by omega) x
-  let down (x: Fin (n + 1)) (hx : x ≠ n) : Fin n := Fin_mk _ x (by have := Fin.toNat_lt x; omega)
-  have up_down {x hx} : up (down x hx) = x := by simp only [up, down, Fin_embed]; aesop
-  have down_up {x hx} : down (up x) hx = x := by simp only [up, down, Fin_embed, Fin_mk]; aesop
-  have up_ne_n (x: Fin n) : up x ≠ n := by simp [up]; have := Fin.toNat_lt x; omega
-
   let S i := (Permutations (n + 1)).specify (fun p ↦ Permutations_toFun p (Fin.last n) = i)
 
   have hSd : Pairwise fun i j => Disjoint (S i) (S j) := by
@@ -1324,63 +1347,51 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
     intro i
 
     have si_to_equiv : S i ≃ {f : Fin (n+1) ≃ Fin (n+1) // f (Fin.last n) = i} := {
-        toFun := fun s =>
-          let hs : s.1 ∈ S i := s.2
-          let hp : s.1 ∈ Permutations (n+1) := by simp [S] at hs; grind
-          let p : Permutations (n+1) := ⟨s.1, hp⟩
-          let f := Permutations_toFun p
-          let hf_bij := Permutations_bijective p
-          let hf_prop : f (Fin.last n) = i := by simp [S] at hs; simp [Permutations_toFun, f] at *; grind
-          let e := Equiv.ofBijective f hf_bij
-          ⟨e, by simp only [e, Equiv.ofBijective]; exact hf_prop⟩
-        invFun := fun ⟨e, he⟩ =>
-          let p := Permutations_mk e.bijective
-          let hp_in_Si : p.1 ∈ S i := by
-            simp only [specification_axiom'', Subtype.coe_eta, Permutations_toFun_mk, exists_prop, S, p]
-            use p.2
-          ⟨p.1, hp_in_Si⟩
-        left_inv s := by simp
-        right_inv e := by ext; simp [Permutations_toFun_mk, Equiv.ofBijective]
-      }
+      toFun := fun s =>
+        let hs : s.1 ∈ S i := s.2
+        let hp : s.1 ∈ Permutations (n+1) := by simp [S] at hs; grind
+        let p : Permutations (n+1) := ⟨s.1, hp⟩
+        let f := Permutations_toFun p
+        let hf_bij := Permutations_bijective p
+        let hf_prop : f (Fin.last n) = i := by simp [S] at hs; simp [Permutations_toFun, f] at *; grind
+        let e := Equiv.ofBijective f hf_bij
+        ⟨e, by simp only [e, Equiv.ofBijective]; exact hf_prop⟩
+      invFun := fun ⟨e, he⟩ =>
+        let p := Permutations_mk e.bijective
+        let hp_in_Si : p.1 ∈ S i := by
+          simp only [specification_axiom'', Subtype.coe_eta, Permutations_toFun_mk, exists_prop, S, p]
+          use p.2
+        ⟨p.1, hp_in_Si⟩
+      left_inv s := by simp
+      right_inv e := by ext; simp [Permutations_toFun_mk, Equiv.ofBijective]
+    }
 
-    have shift_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f (Fin.last n) = i} ≃ (Fin n ≃ Fin n) := open Classical in {
+    have equiv_to_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f (Fin.last n) = i} ≃ (Fin n ≃ Fin n) := open Classical in {
       toFun := fun ⟨f, hf⟩ => {
-        toFun := fun x =>
-          Fin.predAbove i (f (up x)) (by
-            intro h
-            rw [←hf] at h
-            have := f.injective h
-            have : x = n := by simpa [up]
-            have : x < n := Fin.toNat_lt x
-            omega)
-        invFun := fun x =>
-          down (f.invFun (Fin.succAbove i x)) (by
-            suffices : f.invFun (Fin.succAbove i x) ≠ (Fin.last n)
-            · simpa
-            intro h
-            rw [←h, Equiv.invFun_as_coe] at hf
-            aesop)
-        left_inv := by intro x; simp [down_up]
-        right_inv := by intro x; simp [up_down]
+        toFun x := Fin.predAbove i (f (Fin.castSucc x)) (by
+          intro h
+          rw [←hf] at h
+          have := f.injective h
+          have : x = n := by simpa
+          have : x < n := Fin.toNat_lt x
+          omega)
+        invFun x := Fin.castPred (f.invFun (Fin.succAbove i x)) (by
+          suffices : f.invFun (Fin.succAbove i x) ≠ (Fin.last n)
+          · simpa
+          intro h
+          rw [←h, Equiv.invFun_as_coe] at hf
+          aesop)
+        left_inv := by intro; simp
+        right_inv := by intro; simp
       },
       invFun := fun g => ⟨{
-        toFun := fun x => if hxn : x = n then i else Fin.succAbove i (g (down x hxn))
-        invFun := fun x => if hxi : x = i then (Fin.last n) else up (g.invFun (Fin.predAbove i x hxi))
-        left_inv := by intro x; by_cases hxn : x = n <;> simp [hxn, up_down]
-        right_inv := by intro x; by_cases hxi : x = i <;> simp [hxi, down_up, up_ne_n]
+        toFun x := if hx : x = n then i else Fin.succAbove i (g (Fin.castPred x hx))
+        invFun x := if hx : x = i then Fin.last n else Fin.castSucc (g.invFun (Fin.predAbove i x hx))
+        left_inv := by intro; aesop
+        right_inv := by intro; aesop
       }, by simp⟩
-      left_inv := by
-        intro f
-        simp [up_down]
-        ext x
-        by_cases hxn : x = n <;> simp [hxn]
-        simp_rw [Subtype.coe_inj, ←f.property]
-        simp_all
-      right_inv := by
-        intro g
-        simp [down_up, up_ne_n]
-        ext x
-        simp
+      left_inv := by intro f; ext x; simp_all [Subtype.coe_inj, ←f.property]
+      right_inv := by intro; aesop
     }
 
     have equiv_to_perm {m : ℕ} : (Fin m ≃ Fin m) ≃ Permutations m := {
@@ -1390,7 +1401,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       right_inv := fun p => by rw [←Permutations_inj]; simp [Equiv.ofBijective]
     }
 
-    have equiv := si_to_equiv.trans (shift_equiv.trans equiv_to_perm)
+    have equiv := si_to_equiv.trans (equiv_to_equiv.trans equiv_to_perm)
     exact ⟨equiv.toFun, equiv.injective, equiv.surjective⟩
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
