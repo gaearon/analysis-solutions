@@ -1172,14 +1172,12 @@ noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) 
   simp only [Permutations, specification_axiom'', powerset_axiom] at this
   exact this.choose.choose
 
-theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) :
-    Function.Bijective (Permutations_toFun p) := by
+theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) : Function.Bijective (Permutations_toFun p) := by
   have := p.property
   simp only [Permutations, specification_axiom'', powerset_axiom] at this
   aesop
 
-theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) :
-    Permutations_toFun p1 = Permutations_toFun p2 ↔ p1 = p2 := by
+theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) : Permutations_toFun p1 = Permutations_toFun p2 ↔ p1 = p2 := by
   constructor
   · intro h
     simp [Permutations_toFun] at h
@@ -1190,49 +1188,12 @@ theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) :
   intro h
   grind
 
-theorem SetTheory.Set.bijective_of_injective {n: ℕ} {f : Fin n → Fin n}
-  (hf : Function.Injective f) : (Function.Bijective f) := by
-    constructor
-    · exact hf
-    intro y
-    by_contra! h
-    have hs : (image f (Fin n)) ⊂ Fin n := by
-      simp_rw [ssubset_def, subset_def, mem_image]
-      have : ↑y ∉ image f (Fin n) := by aesop
-      grind
-    have hic := card_ssubset (Fin_finite n) hs
-    have heq : image f (Fin n) ≈ Fin n := by
-      have := card_image_inj (Fin_finite n) hf
-      rw [Fin_card n] at this
-      have := card_to_has_card (by aesop) this
-      rwa [has_card_iff] at this
-    have := EquivCard_to_card_eq heq
-    omega
-
-noncomputable def SetTheory.Set.Permutations_mk
-    {n : ℕ} {f : Fin n → Fin n} (hf : Function.Bijective f)
-      : Permutations n :=
-  ⟨f, by simp [Permutations, pow_fun_equiv, hf]⟩
-
-@[simp]
-lemma SetTheory.Set.Permutations_toFun_mk {n : ℕ} {f : Fin n → Fin n} (hf : Function.Bijective f) :
-  Permutations_toFun (Permutations_mk hf) = f := by
-  simp [Permutations_toFun, Permutations_mk]
-
-@[simp]
-lemma SetTheory.Set.Permutations_mk_bijective {n : ℕ}: Permutations_mk (Permutations_bijective p) = p := by
-  simp [Permutations_mk, Permutations_toFun]
-  generalize_proofs h1 h2
-  have := h1.choose_spec
-  grind
-
-@[simp]
-lemma SetTheory.Set.Permutations_mk_bijective' : Permutations_mk (Permutations_bijective ⟨p, hp⟩) = p := by
-  simp [Permutations_mk, Permutations_toFun]
-  generalize_proofs h1 h2
-  have := h1.choose_spec
-  grind
-
+noncomputable def SetTheory.Set.perm_equiv_equiv {n : ℕ} : Permutations n ≃ (Fin n ≃ Fin n) := {
+  toFun := fun p => Equiv.ofBijective (Permutations_toFun p) (Permutations_bijective p)
+  invFun := fun e => ⟨e, by simp [Permutations, pow_fun_equiv, e.bijective]⟩
+  left_inv := fun p => by rw [←Permutations_inj]; simp [Equiv.ofBijective, Permutations_toFun]
+  right_inv := fun e => by ext; simp [Permutations_toFun, Equiv.ofBijective]
+}
 
 @[simp]
 theorem SetTheory.Set.Fin.coe_toNat' {n m x:ℕ} (i: Fin n) (hi : ↑i ∈ Fin m) : (⟨i, hi⟩ : Fin m) = x ↔ i = x := by
@@ -1273,11 +1234,6 @@ theorem SetTheory.Set.Fin.succAbove_ne {n} (i : Fin (n + 1)) (x : Fin n) : succA
     have : (x : ℕ) + 1 = i := by simpa using h
     omega
 
--- @[simp]
--- theorem SetTheory.Set.Fin.succAbove_ne' {n} (i : Fin (n + 1)) (x : Fin n) : ((succAbove i x):ℕ) ≠ i := by
---   have := succAbove_ne i x
---   aesop
-
 @[simp]
 theorem SetTheory.Set.Fin.succAbove_predAbove {n} (i : Fin (n + 1)) (x : Fin (n + 1)) (h : x ≠ i) :
     (succAbove i) (predAbove i x h) = x := by
@@ -1301,28 +1257,21 @@ theorem SetTheory.Set.Fin.predAbove_succAbove {n} (i : Fin (n + 1)) (x : Fin n) 
     have not_lt : ¬((x : ℕ) + 1 < i) := by omega
     simp [not_lt]
 
-abbrev SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
+def SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
 
--- Direct equivalent to your `up`
 def SetTheory.Set.Fin.castSucc (x : Fin n) : Fin (n + 1) :=
   Fin_embed _ _ (by omega) x
 
--- Direct equivalent to your `down`
 noncomputable def SetTheory.Set.Fin.castPred (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) : Fin n :=
   Fin_mk _ (x : ℕ) (by have := Fin.toNat_lt x; omega)
 
--- Key properties
 @[simp]
 theorem SetTheory.Set.Fin.castSucc_castPred (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) :
-    castSucc (castPred x h) = x := by
-  ext
-  simp [castSucc, castPred, Fin_embed]
+    castSucc (castPred x h) = x := by ext; simp [castSucc, castPred, Fin_embed]
 
 @[simp]
 theorem SetTheory.Set.Fin.castPred_castSucc (x : Fin n) (h : ((castSucc x : Fin (n + 1)) : ℕ) ≠ n) :
-    castPred (castSucc x) h = x := by
-  ext
-  simp [castSucc, castPred, Fin_embed]
+    castPred (castSucc x) h = x := by ext; simp [castSucc, castPred, Fin_embed]
 
 @[simp]
 theorem SetTheory.Set.Fin.castSucc_ne (x : Fin n) : castSucc x ≠ n := by
@@ -1336,7 +1285,7 @@ theorem SetTheory.Set.Fin.castSucc_ne (x : Fin n) : castSucc x ≠ n := by
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
-  let S i := (Permutations (n + 1)).specify (fun p ↦ Permutations_toFun p (Fin.last n) = i)
+  let S i := (Permutations (n + 1)).specify (fun p ↦ perm_equiv_equiv p (Fin.last n) = i)
 
   have hSd : Pairwise fun i j => Disjoint (S i) (S j) := by
     intro i h hij
@@ -1345,26 +1294,20 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
 
   have hSe : ∀ i, S i ≈ Permutations n := by
     intro i
-    have si_to_equiv : S i ≃ {f : Fin (n+1) ≃ Fin (n+1) // f (Fin.last n) = i} := {
-      toFun := fun s =>
-        let hs : s.1 ∈ S i := s.2
-        let hp : s.1 ∈ Permutations (n+1) := by simp [S] at hs; grind
-        let p : Permutations (n+1) := ⟨s.1, hp⟩
-        let f := Permutations_toFun p
-        let hf_bij := Permutations_bijective p
-        let hf_prop : f (Fin.last n) = i := by simp [S] at hs; simp [Permutations_toFun, f] at *; grind
-        let e := Equiv.ofBijective f hf_bij
-        ⟨e, by simp only [e, Equiv.ofBijective]; exact hf_prop⟩
-      invFun := fun ⟨e, he⟩ =>
-        let p := Permutations_mk e.bijective
-        let hp_in_Si : p.1 ∈ S i := by
-          simp only [specification_axiom'', Subtype.coe_eta, Permutations_toFun_mk, exists_prop, S, p]
-          use p.2
-        ⟨p.1, hp_in_Si⟩
-      left_inv s := by simp
-      right_inv e := by ext; simp [Permutations_toFun_mk, Equiv.ofBijective]
+    have si_to_equiv : S i ≃ {f : Fin (n + 1) ≃ Fin (n + 1) // f (Fin.last n) = i} := {
+      toFun s := by
+        let hs := s.property
+        simp only [specification_axiom'', S] at hs
+        let p : Permutations (n + 1) := ⟨s, by grind⟩
+        let f := perm_equiv_equiv p
+        exact ⟨f, by grind⟩
+      invFun := fun ⟨f, hf⟩ ↦
+        let p := perm_equiv_equiv.symm f
+        ⟨p, by simp only [specification_axiom'', S]; grind⟩
+      left_inv s := by ext; simp
+      right_inv e := by ext; simp
     }
-    have equiv_to_equiv : {f : Fin (n+1) ≃ Fin (n+1) // f (Fin.last n) = i} ≃ (Fin n ≃ Fin n) := open Classical in {
+    have equiv_to_equiv : {f : Fin (n + 1) ≃ Fin (n + 1) // f (Fin.last n) = i} ≃ (Fin n ≃ Fin n) := open Classical in {
       toFun := fun ⟨f, hf⟩ => {
         toFun x := Fin.predAbove i (f (Fin.castSucc x)) (by
           intro h
@@ -1391,13 +1334,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       left_inv := by intro f; ext x; simp_all [Subtype.coe_inj, ←f.property]
       right_inv := by intro; aesop
     }
-    have equiv_to_perm {m : ℕ} : (Fin m ≃ Fin m) ≃ Permutations m := {
-      toFun := fun e => Permutations_mk e.bijective
-      invFun := fun p => Equiv.ofBijective (Permutations_toFun p) (Permutations_bijective p)
-      left_inv := fun e => by ext; simp [Permutations_toFun_mk, Equiv.ofBijective]
-      right_inv := fun p => by rw [←Permutations_inj]; simp [Equiv.ofBijective]
-    }
-    have equiv := si_to_equiv.trans (equiv_to_equiv.trans equiv_to_perm)
+    have equiv := si_to_equiv.trans (equiv_to_equiv.trans perm_equiv_equiv.symm)
     exact ⟨equiv.toFun, equiv.injective, equiv.surjective⟩
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
