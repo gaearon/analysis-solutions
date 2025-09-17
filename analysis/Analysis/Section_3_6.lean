@@ -1070,7 +1070,10 @@ theorem SetTheory.Set.two_to_two_iff {X Y:Set} (f: X → Y): Function.Injective 
   rw [this] at hS
   tauto
 
-def SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
+/-
+  We'll now develop some conveniences for moving between `Fin n` and `Fin (n + 1)`, as often done in Exercises 3.6.12.
+  These roughly follow their Mathlib equivalents `_root_.Fin.castSucc`, `_root_.Fin.castPred`, and `_root_.Fin.last`.
+-/
 
 def SetTheory.Set.Fin.castSucc (x : Fin n) : Fin (n + 1) :=
   Fin_embed _ _ (by omega) x
@@ -1103,6 +1106,9 @@ theorem SetTheory.Set.Fin.castSucc_ne (x : Fin n) : castSucc x ≠ n := by
   have : (x : ℕ) < n := Fin.toNat_lt x
   omega
 
+def SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
+
+/-- You might find this result useful for exercise 3.6.12. -/
 theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
     (hSc : ∀ i, (S i).has_card m)
     (hSd : Pairwise fun i j => Disjoint (S i) (S j)) :
@@ -1174,6 +1180,57 @@ theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
   use this.1
   exact card_union_disjoint hUf hSnf hd
 
+/- We'll now develop more theory about `Fin` that you might find useful for Exercise 3.6.12. -/
+
+/--
+  If some `x : Fin (n+1)` is never equal to `i`, we can fit it into `Fin n` by shifting all `x > i` down by one.
+  Compare to Mathlib `_root_.Fin.predAbove`.
+-/
+noncomputable def SetTheory.Set.Fin.predAbove {n} (i : Fin (n + 1)) (x : Fin (n + 1)) (h : x ≠ i) : Fin n :=
+  if hlt : (x : ℕ) < i then
+    Fin_mk _ (x : ℕ) (by have := Fin.toNat_lt x; have := Fin.toNat_lt i; omega)
+  else
+    Fin_mk _ ((x : ℕ) - 1) (by
+      have := Fin.toNat_lt x
+      have : (x : ℕ) ≠ i := by aesop
+      omega)
+
+/--
+  We can map `x : Fin n` to `Fin (n + 1)` by shifting all `x ≥ i` up by one. This will never return `i`.
+  Compare to Mathlib `_root_.Fin.predAbove`.
+-/
+noncomputable def SetTheory.Set.Fin.succAbove {n} (i : Fin (n + 1)) (x : Fin n) : Fin (n + 1) :=
+  if (x : ℕ) < i then
+    Fin_embed _ _ (by omega) x
+  else
+    Fin_mk _ ((x : ℕ) + 1) (by have := Fin.toNat_lt x; omega)
+
+@[simp]
+theorem SetTheory.Set.Fin.succAbove_ne {n} (i : Fin (n + 1)) (x : Fin n) : succAbove i x ≠ i := by
+  intro h
+  simp only [succAbove, Fin_embed] at h
+  by_cases hx : (x : ℕ) < i
+  · aesop
+  simp only [hx, ↓reduceIte, coe_inj, toNat_mk] at h
+  omega
+
+@[simp]
+theorem SetTheory.Set.Fin.succAbove_predAbove {n} (i : Fin (n + 1)) (x : Fin (n + 1)) (h : x ≠ i) :
+    (succAbove i) (predAbove i x h) = x := by
+  simp only [succAbove, predAbove, coe_inj]
+  have : x ≠ (i:ℕ) := by aesop
+  by_cases hx : (x:ℕ) < i <;> simp only [hx, toNat_mk, coe_eq_iff', ↓reduceDIte, ↓reduceIte]
+  by_cases hx' : (x:ℕ) - 1 < i <;> simp only [hx', coe_eq_iff'', toNat_mk, ↓reduceIte] <;> omega
+
+@[simp]
+theorem SetTheory.Set.Fin.predAbove_succAbove {n} (i : Fin (n + 1)) (x : Fin n) :
+    (predAbove i) (succAbove i x) (succAbove_ne i x) = x := by
+  simp only [succAbove, predAbove]
+  by_cases hx : (x:ℕ) < i <;> simp only [hx, ↓reduceIte]
+  · aesop
+  have hx' : ¬((x : ℕ) + 1 < i) := by omega
+  simp [hx']
+
 /-- Exercise 3.6.12 -/
 def SetTheory.Set.Permutations (n: ℕ): Set := (Fin n ^ Fin n).specify (fun F ↦
     Function.Bijective (pow_fun_equiv F))
@@ -1199,6 +1256,7 @@ theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) : Permut
   intro h
   grind
 
+/-- It is convenient to think of a permutation as an equivalence between `Fin n` and `Fin n`. -/
 noncomputable def SetTheory.Set.perm_equiv_equiv {n : ℕ} : Permutations n ≃ (Fin n ≃ Fin n) := {
   toFun := fun p => Equiv.ofBijective (Permutations_toFun p) (Permutations_bijective p)
   invFun := fun e => ⟨e, by simp [Permutations, pow_fun_equiv, e.bijective]⟩
@@ -1213,54 +1271,6 @@ theorem SetTheory.Set.Permutations_finite (n: ℕ): (Permutations n).finite := b
     apply specify_subset
   have ⟨hpf, hpc⟩ := card_pow (Fin_finite n) (Fin_finite n)
   exact (card_subset hpf hs).1
-
-noncomputable def SetTheory.Set.Fin.succAbove {n} (i : Fin (n + 1)) (x : Fin n) : Fin (n + 1) :=
-  if (x : ℕ) < i then
-    Fin_embed _ _ (by omega) x
-  else
-    Fin_mk _ ((x : ℕ) + 1) (by have := Fin.toNat_lt x; omega)
-
-noncomputable def SetTheory.Set.Fin.predAbove {n} (i : Fin (n + 1)) (x : Fin (n + 1)) (h : x ≠ i) : Fin n :=
-  if hlt : (x : ℕ) < i then
-    Fin_mk _ (x : ℕ) (by have := Fin.toNat_lt x; have := Fin.toNat_lt i; omega)
-  else
-    Fin_mk _ ((x : ℕ) - 1) (by
-      have := Fin.toNat_lt x
-      have : (x : ℕ) ≠ i := by aesop
-      omega)
-
-@[simp]
-theorem SetTheory.Set.Fin.succAbove_ne {n} (i : Fin (n + 1)) (x : Fin n) : succAbove i x ≠ i := by
-  intro h
-  simp [succAbove] at h
-  by_cases hlt : (x : ℕ) < i
-  · simp [hlt] at h
-    have : (x : ℕ) = i := by simpa [Fin_embed] using h
-    omega
-  · simp [hlt] at h
-    have : (x : ℕ) + 1 = i := by simpa using h
-    omega
-
-@[simp]
-theorem SetTheory.Set.Fin.succAbove_predAbove {n} (i : Fin (n + 1)) (x : Fin (n + 1)) (h : x ≠ i) :
-    (succAbove i) (predAbove i x h) = x := by
-  simp only [succAbove, predAbove, coe_inj]
-  have : x ≠ (i:ℕ) := by aesop
-  by_cases hlt : (x : ℕ) < i <;> simp only [hlt, ↓reduceDIte, toNat_mk, ↓reduceIte, coe_eq_iff']
-  by_cases hlt' : (x : ℕ) - 1 < i <;> simp [hlt'] <;> omega
-
-@[simp]
-theorem SetTheory.Set.Fin.predAbove_succAbove {n} (i : Fin (n + 1)) (x : Fin n) :
-    (predAbove i) (succAbove i x) (succAbove_ne i x) = x := by
-  simp [succAbove, predAbove]
-  by_cases hlt : (x : ℕ) < i <;> simp only [hlt, ↓reduceIte]
-  · have : (x:ℕ) = Fin_embed n (n+1) (by omega) x := by apply (coe_eq_iff' x _).mp rfl
-    have embed_lt : (Fin_embed n (n+1) (by omega) x : ℕ) < i := by
-      simp [Fin_embed]
-      rwa [←this]
-    simp [embed_lt]
-  · have not_lt : ¬((x : ℕ) + 1 < i) := by omega
-    simp [not_lt]
 
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
