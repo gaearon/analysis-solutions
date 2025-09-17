@@ -76,7 +76,7 @@ lemma Real.zpow_zero (x: Real) : x ^ (0:ℤ) = 1 := by rfl
 lemma Real.zpow_neg {x:Real} (n:ℕ) : x^(-n:ℤ) = 1 / (x^n) := by simp
 
 /-- Analogue of Proposition 4.3.12(a) -/
-theorem Real.zpow_add (x:Real) (n m:ℤ) : x^n * x^m = x^(n+m) := by sorry
+theorem Real.zpow_add (x:Real) (n m:ℤ) (hx: x ≠ 0): x^n * x^m = x^(n+m) := by sorry
 
 /-- Analogue of Proposition 4.3.12(a) -/
 theorem Real.zpow_mul (x:Real) (n m:ℤ) : (x^n)^m = x^(n*m) := by sorry
@@ -97,7 +97,7 @@ theorem Real.zpow_ge_zpow_ofneg {x y:Real} {n:ℤ} (hxy: x ≥ y) (hy: y > 0) (h
 theorem Real.zpow_inj {x y:Real} {n:ℤ} (hx: x > 0) (hy : y > 0) (hn: n ≠ 0) (hxy: x^n = y^n) : x = y := by
   sorry
 /-- Analogue of Proposition 4.3.12(d) -/
-theorem Real.zpow_abs (x:Real) (n:ℤ) (hx: x ≠ 0) : |x|^n = |x^n| := by sorry
+theorem Real.zpow_abs (x:Real) (n:ℤ) : |x|^n = |x^n| := by sorry
 
 /-- Definition 5.6.2.  We permit ``junk values'' when `x` is negative or `n` vanishes. -/
 noncomputable abbrev Real.root (x:Real) (n:ℕ) : Real := sSup { y:Real | y ≥ 0 ∧ y^n ≤ x }
@@ -109,7 +109,7 @@ theorem Real.rootset_nonempty {x:Real} (hx: x ≥ 0) (n:ℕ) (hn: n ≥ 1) : { y
   use 0
   sorry
 
-theorem Real.rootset_bddAbove {x:Real} (hx: x ≥ 0) (n:ℕ) (hn: n ≥ 1) : BddAbove { y:Real | y ≥ 0 ∧ y^n ≤ x } := by
+theorem Real.rootset_bddAbove {x:Real} (n:ℕ) (hn: n ≥ 1) : BddAbove { y:Real | y ≥ 0 ∧ y^n ≤ x } := by
   -- This proof is written to follow the structure of the original text.
   rw [_root_.bddAbove_def]
   obtain h | h := le_or_gt x 1
@@ -150,7 +150,7 @@ theorem Real.root_mono_of_gt_one {x : Real} (hx: x > 1) {k l: ℕ} (hkl: k > l) 
 theorem Real.root_mono_of_lt_one {x : Real} (hx0: 0 < x) (hx: x < 1) {k l: ℕ} (hkl: k > l) (hl: l ≥ 1) : x.root k > x.root l := by sorry
 
 /-- Lemma 5.6.6 (e) / Exercise 5.6.1 -/
-theorem Real.root_of_one (k: ℕ): (1:Real).root k = 1 := by sorry
+theorem Real.root_of_one {k: ℕ} (hk: k ≥ 1): (1:Real).root k = 1 := by sorry
 
 /-- Lemma 5.6.6 (f) / Exercise 5.6.1 -/
 theorem Real.root_mul {x y:Real} (hx: x ≥ 0) (hy: y ≥ 0) {n:ℕ} (hn: n ≥ 1) : (x*y).root n = (x.root n) * (y.root n) := by sorry
@@ -213,7 +213,7 @@ theorem Real.ratPow_eq_root {x:Real} (hx: x > 0) {n:ℕ} (hn: n ≥ 1) : x^(1/n:
 theorem Real.ratPow_eq_pow {x:Real} (hx: x > 0) (n:ℤ) : x^(n:ℚ) = x^n := by sorry
 
 /-- Lemma 5.6.9(a) / Exercise 5.6.2 -/
-theorem Real.ratPow_nonneg {x:Real} (hx: x > 0) (q:ℚ) : x^q ≥ 0 := by
+theorem Real.ratPow_nonneg {x:Real} (hx: x > 0) (q:ℚ) : x^q > 0 := by
   sorry
 
 /-- Lemma 5.6.9(b) / Exercise 5.6.2 -/

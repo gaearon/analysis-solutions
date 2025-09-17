@@ -205,6 +205,12 @@ noncomputable instance Real.instLinearOrder : LinearOrder Real where
   le_total := sorry
   toDecidableLE := Classical.decRel _
 
+/--
+  (Not from textbook) Linear Orders come with a definition of absolute value |.|
+  Show that it agrees with our earlier definition.
+-/
+theorem Real.abs_eq_abs (x:Real) : |x| = abs x := by sorry
+
 /-- Proposition 5.4.8 -/
 theorem Real.inv_of_pos {x:Real} (hx: x.IsPos) : x⁻¹.IsPos := by
   observe hnon: x ≠ 0
@@ -277,8 +283,8 @@ theorem Real.LIM_mono_fail :
     ∧ (b:Sequence).IsCauchy
     ∧ (∀ n, a n > b n)
     ∧ ¬LIM a > LIM b := by
-  use (fun n ↦ 1 + 1/(n:ℚ))
-  use (fun n ↦ 1 - 1/(n:ℚ))
+  use (fun n ↦ 1 + 1/((n:ℚ) + 1))
+  use (fun n ↦ 1 - 1/((n:ℚ) + 1))
   sorry
 
 /-- Proposition 5.4.12 (Bounding reals by rationals) -/
@@ -320,10 +326,10 @@ theorem Real.le_mul {ε:Real} (hε: ε.IsPos) (x:Real) : ∃ M:ℕ, M > 0 ∧ M 
 theorem Real.rat_between {x y:Real} (hxy: x < y) : ∃ q:ℚ, x < (q:Real) ∧ (q:Real) < y := by sorry
 
 /-- Exercise 5.4.3 -/
-theorem Real.floor_exist (x:Real) : ∃ n:ℤ, (n:Real) ≤ x ∧ x < (n:Real)+1 := by sorry
+theorem Real.floor_exist (x:Real) : ∃! n:ℤ, (n:Real) ≤ x ∧ x < (n:Real)+1 := by sorry
 
 /-- Exercise 5.4.4 -/
-theorem Real.exist_inv_nat_le {x:Real} (hx: x.IsPos) : ∃ N, N>0 ∧ (N:Real)⁻¹ < x := by sorry
+theorem Real.exist_inv_nat_le {x:Real} (hx: x.IsPos) : ∃ N:ℤ, N>0 ∧ (N:Real)⁻¹ < x := by sorry
 
 /-- Exercise 5.4.6 -/
 theorem Real.dist_lt_iff (ε x y:Real) : |x-y| < ε ↔ y-ε < x ∧ x < y+ε := by sorry
@@ -332,10 +338,10 @@ theorem Real.dist_lt_iff (ε x y:Real) : |x-y| < ε ↔ y-ε < x ∧ x < y+ε :=
 theorem Real.dist_le_iff (ε x y:Real) : |x-y| ≤ ε ↔ y-ε ≤ x ∧ x ≤ y+ε := by sorry
 
 /-- Exercise 5.4.7 -/
-theorem Real.le_add_eps_iff (x y:Real) : ∀ ε > 0, x ≤ y+ε ↔ x ≤ y := by sorry
+theorem Real.le_add_eps_iff (x y:Real) : (∀ ε > 0, x ≤ y+ε) ↔ x ≤ y := by sorry
 
 /-- Exercise 5.4.7 -/
-theorem Real.dist_le_eps_iff (x y:Real) : ∀ ε > 0, |x-y| ≤ ε ↔ x = y := by sorry
+theorem Real.dist_le_eps_iff (x y:Real) : (∀ ε > 0, |x-y| ≤ ε) ↔ x = y := by sorry
 
 /-- Exercise 5.4.8 -/
 theorem Real.LIM_of_le {x:Real} {a:ℕ → ℚ} (hcauchy: (a:Sequence).IsCauchy) (h: ∀ n, a n ≤ x) :
