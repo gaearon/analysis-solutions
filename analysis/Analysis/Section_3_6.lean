@@ -1220,8 +1220,8 @@ theorem SetTheory.Set.Fin.succAbove_predAbove {n} (i : Fin (n + 1)) (x : Fin (n 
     (succAbove i) (predAbove i x h) = x := by
   simp only [succAbove, predAbove, coe_inj]
   have : x ≠ (i:ℕ) := by aesop
-  by_cases hx : (x:ℕ) < i <;> simp only [hx, toNat_mk, coe_eq_iff', ↓reduceDIte, ↓reduceIte]
-  by_cases hx' : (x:ℕ) - 1 < i <;> simp only [hx', coe_eq_iff'', toNat_mk, ↓reduceIte] <;> omega
+  by_cases hx : (x:ℕ) < i <;> simp only [hx, ↓reduceDIte, toNat_mk, ↓reduceIte, coe_eq_iff']
+  by_cases hx' : (x:ℕ) - 1 < i <;> simp only [hx', coe_eq_iff', toNat_mk, ↓reduceIte] <;> omega
 
 @[simp]
 theorem SetTheory.Set.Fin.predAbove_succAbove {n} (i : Fin (n + 1)) (x : Fin n) :

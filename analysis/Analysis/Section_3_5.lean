@@ -436,19 +436,7 @@ theorem SetTheory.Set.Fin.coe_eq_iff {n:ℕ} (i: Fin n) {j:ℕ} : (i:Object) = (
   aesop
 
 @[simp]
-theorem SetTheory.Set.Fin.coe_eq_iff' {n m j:ℕ} (i: Fin n) (hi : ↑i ∈ Fin m) : (⟨i, hi⟩ : Fin m) = j ↔ i = j := by
-  obtain ⟨val, property⟩ := i
-  simp only [toNat, Subtype.mk.injEq, exists_prop]
-  generalize_proofs h1 h2
-  suffices : (h1.choose: Object) = h2.choose
-  · apply Eq.congr _ rfl
-    apply (ofNat_inj' _ _).mp this
-  have := h1.choose_spec
-  have := h2.choose_spec
-  grind
-
-@[simp]
-theorem SetTheory.Set.Fin.coe_eq_iff'' {n m:ℕ} (i: Fin n) (hi : ↑i ∈ Fin m) : ((⟨i, hi⟩ : Fin m):ℕ) = (i:ℕ) := by
+theorem SetTheory.Set.Fin.coe_eq_iff' {n m:ℕ} (i: Fin n) (hi : ↑i ∈ Fin m) : ((⟨i, hi⟩ : Fin m):ℕ) = (i:ℕ) := by
   obtain ⟨val, property⟩ := i
   simp only [toNat, Subtype.mk.injEq, exists_prop]
   generalize_proofs h1 h2
