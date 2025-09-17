@@ -1071,8 +1071,8 @@ theorem SetTheory.Set.two_to_two_iff {X Y:Set} (f: X → Y): Function.Injective 
   tauto
 
 /-
-  We'll now develop some conveniences for moving between `Fin n` and `Fin (n + 1)`, as often done in Exercises 3.6.12.
-  These roughly follow their Mathlib equivalents `_root_.Fin.castSucc`, `_root_.Fin.castPred`, and `_root_.Fin.last`.
+  We'll now develop some conveniences for moving between `Fin n` and `Fin (n + 1)`, as often done in Exercise 3.6.12.
+  Compare to Mathlib equivalents `_root_.Fin.castSucc`, `_root_.Fin.castPred`, and `_root_.Fin.last`.
 -/
 
 def SetTheory.Set.Fin.castSucc (x : Fin n) : Fin (n + 1) :=
