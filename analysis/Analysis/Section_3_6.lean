@@ -1070,11 +1070,52 @@ theorem SetTheory.Set.two_to_two_iff {X Y:Set} (f: X → Y): Function.Injective 
   rw [this] at hS
   tauto
 
-/-
-  We'll now develop some conveniences for moving between `Fin n` and `Fin (n + 1)`, as often done in Exercise 3.6.12.
-  Compare to Mathlib equivalents `_root_.Fin.castSucc`, `_root_.Fin.castPred`, and `_root_.Fin.last`.
--/
+/-- Exercise 3.6.12 -/
+def SetTheory.Set.Permutations (n: ℕ): Set := (Fin n ^ Fin n).specify (fun F ↦
+    Function.Bijective (pow_fun_equiv F))
 
+/-- Exercise 3.6.12 (i), first part -/
+theorem SetTheory.Set.Permutations_finite (n: ℕ): (Permutations n).finite := by
+  have hs : Permutations n ⊆ (Fin n ^ Fin n) := by
+    simp only [Permutations]
+    apply specify_subset
+  have ⟨hpf, hpc⟩ := card_pow (Fin_finite n) (Fin_finite n)
+  exact (card_subset hpf hs).1
+
+/- To continue Exercise 3.6.12 (i), we'll first develop some theory about `Permutations` and `Fin`. -/
+
+noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) : (Fin n) → (Fin n) := by
+  have := p.property
+  simp only [Permutations, specification_axiom'', powerset_axiom] at this
+  exact this.choose.choose
+
+theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) : Function.Bijective (Permutations_toFun p) := by
+  have := p.property
+  simp only [Permutations, specification_axiom'', powerset_axiom] at this
+  aesop
+
+theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) : Permutations_toFun p1 = Permutations_toFun p2 ↔ p1 = p2 := by
+  constructor
+  · intro h
+    simp [Permutations_toFun] at h
+    generalize_proofs h1 h2 at h
+    have := h1.choose_spec
+    have := h2.choose_spec
+    grind
+  intro h
+  grind
+
+/-- It's handy to think of a permutation as an equivalence between `Fin n` and `Fin n`. -/
+noncomputable def SetTheory.Set.perm_equiv_equiv {n : ℕ} : Permutations n ≃ (Fin n ≃ Fin n) := {
+  toFun := fun p => Equiv.ofBijective (Permutations_toFun p) (Permutations_bijective p)
+  invFun := fun e => ⟨e, by simp [Permutations, pow_fun_equiv, e.bijective]⟩
+  left_inv := fun p => by rw [←Permutations_inj]; simp [Equiv.ofBijective, Permutations_toFun]
+  right_inv := fun e => by ext; simp [Permutations_toFun, Equiv.ofBijective]
+}
+
+/- Exercise 3.6.12 involves a lot of moving between `Fin n` and `Fin (n + 1)` so let's add some conveniences. -/
+
+/-- Any `Fin n` can be cast to `Fin (n + 1)`. Compare to Mathlib `_root_.Fin.castSucc`. -/
 def SetTheory.Set.Fin.castSucc (x : Fin n) : Fin (n + 1) :=
   Fin_embed _ _ (by omega) x
 
@@ -1180,7 +1221,7 @@ theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
   use this.1
   exact card_union_disjoint hUf hSnf hd
 
-/- We'll now develop more theory about `Fin` that you might find useful for Exercise 3.6.12. -/
+/- Let's set up a way to shrink `Fin (n + 1)` into `Fin n` (or expand the latter) by making a hole. -/
 
 /--
   If some `x : Fin (n+1)` is never equal to `i`, we can shrink it into `Fin n` by shifting all `x > i` down by one.
@@ -1232,48 +1273,7 @@ theorem SetTheory.Set.Fin.predAbove_succAbove {n} (i : Fin (n + 1)) (x : Fin n) 
   have hx' : ¬((x : ℕ) + 1 < i) := by omega
   simp [hx']
 
-/-- Exercise 3.6.12 -/
-def SetTheory.Set.Permutations (n: ℕ): Set := (Fin n ^ Fin n).specify (fun F ↦
-    Function.Bijective (pow_fun_equiv F))
-
-noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) : (Fin n) → (Fin n) := by
-  have := p.property
-  simp only [Permutations, specification_axiom'', powerset_axiom] at this
-  exact this.choose.choose
-
-theorem SetTheory.Set.Permutations_bijective {n: ℕ} (p: Permutations n) : Function.Bijective (Permutations_toFun p) := by
-  have := p.property
-  simp only [Permutations, specification_axiom'', powerset_axiom] at this
-  aesop
-
-theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) : Permutations_toFun p1 = Permutations_toFun p2 ↔ p1 = p2 := by
-  constructor
-  · intro h
-    simp [Permutations_toFun] at h
-    generalize_proofs h1 h2 at h
-    have := h1.choose_spec
-    have := h2.choose_spec
-    grind
-  intro h
-  grind
-
-/-- You might find it convenient to think of a permutation as an equivalence between `Fin n` and `Fin n`. -/
-noncomputable def SetTheory.Set.perm_equiv_equiv {n : ℕ} : Permutations n ≃ (Fin n ≃ Fin n) := {
-  toFun := fun p => Equiv.ofBijective (Permutations_toFun p) (Permutations_bijective p)
-  invFun := fun e => ⟨e, by simp [Permutations, pow_fun_equiv, e.bijective]⟩
-  left_inv := fun p => by rw [←Permutations_inj]; simp [Equiv.ofBijective, Permutations_toFun]
-  right_inv := fun e => by ext; simp [Permutations_toFun, Equiv.ofBijective]
-}
-
-/-- Exercise 3.6.12 (i) -/
-theorem SetTheory.Set.Permutations_finite (n: ℕ): (Permutations n).finite := by
-  have hs : Permutations n ⊆ (Fin n ^ Fin n) := by
-    simp only [Permutations]
-    apply specify_subset
-  have ⟨hpf, hpc⟩ := card_pow (Fin_finite n) (Fin_finite n)
-  exact (card_subset hpf hs).1
-
-/-- Exercise 3.6.12 (i) -/
+/-- Exercise 3.6.12 (i), second part -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
     (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
   let S i := (Permutations (n + 1)).specify (fun p ↦ perm_equiv_equiv p (Fin.last n) = i)
