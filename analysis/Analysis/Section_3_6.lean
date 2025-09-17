@@ -1183,7 +1183,7 @@ theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
 /- We'll now develop more theory about `Fin` that you might find useful for Exercise 3.6.12. -/
 
 /--
-  If some `x : Fin (n+1)` is never equal to `i`, we can fit it into `Fin n` by shifting all `x > i` down by one.
+  If some `x : Fin (n+1)` is never equal to `i`, we can shrink it into `Fin n` by shifting all `x > i` down by one.
   Compare to Mathlib `_root_.Fin.predAbove`.
 -/
 noncomputable def SetTheory.Set.Fin.predAbove {n} (i : Fin (n + 1)) (x : Fin (n + 1)) (h : x ≠ i) : Fin n :=
@@ -1196,8 +1196,9 @@ noncomputable def SetTheory.Set.Fin.predAbove {n} (i : Fin (n + 1)) (x : Fin (n 
       omega)
 
 /--
-  We can map `x : Fin n` to `Fin (n + 1)` by shifting all `x ≥ i` up by one. This will never return `i`.
-  Compare to Mathlib `_root_.Fin.predAbove`.
+  We can expand `x : Fin n` into `Fin (n + 1)` by shifting all `x ≥ i` up by one.
+  The output is never `i`, so it forms an inverse to the shrinking done by `predAbove`.
+  Compare to Mathlib `_root_.Fin.succAbove`.
 -/
 noncomputable def SetTheory.Set.Fin.succAbove {n} (i : Fin (n + 1)) (x : Fin n) : Fin (n + 1) :=
   if (x : ℕ) < i then
@@ -1256,7 +1257,7 @@ theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) : Permut
   intro h
   grind
 
-/-- It is convenient to think of a permutation as an equivalence between `Fin n` and `Fin n`. -/
+/-- You might find it convenient to think of a permutation as an equivalence between `Fin n` and `Fin n`. -/
 noncomputable def SetTheory.Set.perm_equiv_equiv {n : ℕ} : Permutations n ≃ (Fin n ≃ Fin n) := {
   toFun := fun p => Equiv.ofBijective (Permutations_toFun p) (Permutations_bijective p)
   invFun := fun e => ⟨e, by simp [Permutations, pow_fun_equiv, e.bijective]⟩
