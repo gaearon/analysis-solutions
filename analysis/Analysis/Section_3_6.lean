@@ -1070,6 +1070,39 @@ theorem SetTheory.Set.two_to_two_iff {X Y:Set} (f: X → Y): Function.Injective 
   rw [this] at hS
   tauto
 
+def SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
+
+def SetTheory.Set.Fin.castSucc (x : Fin n) : Fin (n + 1) :=
+  Fin_embed _ _ (by omega) x
+
+@[simp]
+lemma SetTheory.Set.Fin.castSucc_inj : castSucc x = castSucc y ↔ x = y := by
+  constructor
+  · intro h
+    simp [castSucc] at h
+    aesop
+  aesop
+
+noncomputable def SetTheory.Set.Fin.castPred (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) : Fin n :=
+  Fin_mk _ (x : ℕ) (by have := Fin.toNat_lt x; omega)
+
+@[simp]
+theorem SetTheory.Set.Fin.castSucc_castPred (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) :
+    castSucc (castPred x h) = x := by ext; simp [castSucc, castPred, Fin_embed]
+
+@[simp]
+theorem SetTheory.Set.Fin.castPred_castSucc (x : Fin n) (h : ((castSucc x : Fin (n + 1)) : ℕ) ≠ n) :
+    castPred (castSucc x) h = x := by ext; simp [castSucc, castPred, Fin_embed]
+
+@[simp]
+theorem SetTheory.Set.Fin.castSucc_ne (x : Fin n) : castSucc x ≠ n := by
+  intro h
+  have : (x : ℕ) = n := by
+    simp [castSucc] at h
+    exact h
+  have : (x : ℕ) < n := Fin.toNat_lt x
+  omega
+
 theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
     (hSc : ∀ i, (S i).has_card m)
     (hSd : Pairwise fun i j => Disjoint (S i) (S j)) :
@@ -1087,27 +1120,15 @@ theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
     obtain ⟨a, ha⟩ := h
     have := Fin.toNat_lt a
     omega
-  let S' : (Fin n).toSubtype → Set := fun i ↦ S (Fin_embed _ _ (by omega) i)
-  have hS' : ∀ i, S (Fin_embed _ _ (by omega) i) = S' i := by simp [S']
-  have hSc' : ∀ (i : (Fin n).toSubtype), (S' i).has_card m := by
-    intro i
-    let i': Fin (n+1) := (Fin_embed _ _ (by omega) i)
-    specialize hSc i'
-    exact hSc
-  have hSd' : Pairwise fun i j ↦ Disjoint (S' i) (S' j) := by
-    intro i j hij
-    let i': Fin (n+1) := (Fin_embed _ _ (by omega) i)
-    let j': Fin (n+1) := (Fin_embed _ _ (by omega) j)
-    have hij' : i' ≠ j' := by simp [i', j']; by_contra h; rw [←Subtype.eq_iff] at h; tauto
-    specialize hSd hij'
-    rw [←hS', ←hS']
-    exact hSd
+  let S' : (Fin n).toSubtype → Set := fun i ↦ S (Fin.castSucc i)
+  have hS' : ∀ i, S (Fin.castSucc i) = S' i := by simp [S']
+  have hSc' : ∀ (i : (Fin n).toSubtype), (S' i).has_card m := by intro i; apply hSc
+  have hSd' : Pairwise fun i j ↦ Disjoint (S' i) (S' j) := by intro i j hij; apply hSd; aesop
   specialize ih hSc' hSd'
-  let n': Fin (n+1) := Fin_mk _ n (by omega)
-  have hSnf : (S n').finite := by use m; apply hSc
-  have hSnc := has_card_to_card (hSc n')
+  have hSnf : (S (Fin.last n)).finite := by use m; apply hSc
+  have hSnc := has_card_to_card (hSc (Fin.last n))
   rw [add_mul, one_mul, ←ih.2, ←hSnc]
-  have hU : (Fin (n + 1)).iUnion S = (Fin n).iUnion S' ∪ S n' := by
+  have hU : (Fin (n + 1)).iUnion S = (Fin n).iUnion S' ∪ S (Fin.last n) := by
     ext x
     constructor
     · intro hx
@@ -1116,23 +1137,24 @@ theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
       obtain ⟨a, ha⟩ := hx
       by_cases ha' : a < n
       · left
-        use ⟨a, by rw [mem_Fin]; use a; aesop⟩
+        use Fin.castPred a (by omega)
+        aesop
       right
       have : a = n := by have := Fin.toNat_lt a; omega
-      have : a = n' := by simpa
-      rwa [←this]
+      have : a = Fin.last n := by aesop
+      aesop
     intro hx
     rw [mem_iUnion]
     rw [mem_union, mem_iUnion] at hx
     rcases hx with (hx | hx)
     · simp only [S'] at hx
       obtain ⟨a, ha⟩ := hx
-      use Fin_embed n (n + 1) (by omega) a
-    use n'
+      use Fin.castSucc a
+    use Fin.last n
   have hUf : ((Fin n).iUnion S').finite := ih.1
   rw [hU]
   set X := (Fin n).iUnion S'
-  set Y := S n'
+  set Y := S (Fin.last n)
   have hd : Disjoint X Y := by
     rw [disjoint_iff, eq_empty_iff_forall_notMem]
     intro x
@@ -1140,17 +1162,14 @@ theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
     simp only [X, Y, mem_iUnion]
     intro ⟨⟨i, hi⟩, hx⟩
     let i' : Fin (n+1) := Fin_embed _ _ (by omega) i
-    have : i' ≠ n' := by
+    have : i' ≠ Fin.last n := by
       intro h
       have := Fin.toNat_lt i
       have : i = n := by aesop
       omega
     specialize hSd this
-    rw [disjoint_iff] at hSd
-    rw [hS', eq_empty_iff_forall_notMem] at hSd
-    specialize hSd x
-    rw [mem_inter] at hSd
-    tauto
+    rw [disjoint_iff, eq_empty_iff_forall_notMem] at hSd
+    aesop
   have := card_union hUf hSnf
   use this.1
   exact card_union_disjoint hUf hSnf hd
@@ -1158,14 +1177,6 @@ theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
 /-- Exercise 3.6.12 -/
 def SetTheory.Set.Permutations (n: ℕ): Set := (Fin n ^ Fin n).specify (fun F ↦
     Function.Bijective (pow_fun_equiv F))
-
-/-- Exercise 3.6.12 (i) -/
-theorem SetTheory.Set.Permutations_finite (n: ℕ): (Permutations n).finite := by
-  have hs : Permutations n ⊆ (Fin n ^ Fin n) := by
-    simp only [Permutations]
-    apply specify_subset
-  have ⟨hpf, hpc⟩ := card_pow (Fin_finite n) (Fin_finite n)
-  exact (card_subset hpf hs).1
 
 noncomputable def SetTheory.Set.Permutations_toFun {n: ℕ} (p: Permutations n) : (Fin n) → (Fin n) := by
   have := p.property
@@ -1195,17 +1206,13 @@ noncomputable def SetTheory.Set.perm_equiv_equiv {n : ℕ} : Permutations n ≃ 
   right_inv := fun e => by ext; simp [Permutations_toFun, Equiv.ofBijective]
 }
 
-@[simp]
-theorem SetTheory.Set.Fin.coe_toNat' {n m x:ℕ} (i: Fin n) (hi : ↑i ∈ Fin m) : (⟨i, hi⟩ : Fin m) = x ↔ i = x := by
-  obtain ⟨val, property⟩ := i
-  simp only [toNat, Subtype.mk.injEq, exists_prop]
-  generalize_proofs h1 h2
-  suffices : (h1.choose: Object) = h2.choose
-  · apply Eq.congr _ rfl
-    apply (ofNat_inj' _ _).mp this
-  have := h1.choose_spec
-  have := h2.choose_spec
-  grind
+/-- Exercise 3.6.12 (i) -/
+theorem SetTheory.Set.Permutations_finite (n: ℕ): (Permutations n).finite := by
+  have hs : Permutations n ⊆ (Fin n ^ Fin n) := by
+    simp only [Permutations]
+    apply specify_subset
+  have ⟨hpf, hpc⟩ := card_pow (Fin_finite n) (Fin_finite n)
+  exact (card_subset hpf hs).1
 
 noncomputable def SetTheory.Set.Fin.succAbove {n} (i : Fin (n + 1)) (x : Fin n) : Fin (n + 1) :=
   if (x : ℕ) < i then
@@ -1239,48 +1246,21 @@ theorem SetTheory.Set.Fin.succAbove_predAbove {n} (i : Fin (n + 1)) (x : Fin (n 
     (succAbove i) (predAbove i x h) = x := by
   simp only [succAbove, predAbove, coe_inj]
   have : x ≠ (i:ℕ) := by aesop
-  by_cases hlt : (x : ℕ) < i <;> simp only [hlt, ↓reduceDIte, toNat_mk, ↓reduceIte, coe_toNat']
+  by_cases hlt : (x : ℕ) < i <;> simp only [hlt, ↓reduceDIte, toNat_mk, ↓reduceIte, coe_eq_iff']
   by_cases hlt' : (x : ℕ) - 1 < i <;> simp [hlt'] <;> omega
 
 @[simp]
 theorem SetTheory.Set.Fin.predAbove_succAbove {n} (i : Fin (n + 1)) (x : Fin n) :
     (predAbove i) (succAbove i x) (succAbove_ne i x) = x := by
   simp [succAbove, predAbove]
-  by_cases hlt : (x : ℕ) < i
-  · simp [hlt]
-    have : (x:ℕ) = Fin_embed n (n+1) (by omega) x := by apply (coe_toNat' x _).mp rfl
+  by_cases hlt : (x : ℕ) < i <;> simp only [hlt, ↓reduceIte]
+  · have : (x:ℕ) = Fin_embed n (n+1) (by omega) x := by apply (coe_eq_iff' x _).mp rfl
     have embed_lt : (Fin_embed n (n+1) (by omega) x : ℕ) < i := by
       simp [Fin_embed]
       rwa [←this]
     simp [embed_lt]
-  · simp [hlt]
-    have not_lt : ¬((x : ℕ) + 1 < i) := by omega
+  · have not_lt : ¬((x : ℕ) + 1 < i) := by omega
     simp [not_lt]
-
-def SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
-
-def SetTheory.Set.Fin.castSucc (x : Fin n) : Fin (n + 1) :=
-  Fin_embed _ _ (by omega) x
-
-noncomputable def SetTheory.Set.Fin.castPred (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) : Fin n :=
-  Fin_mk _ (x : ℕ) (by have := Fin.toNat_lt x; omega)
-
-@[simp]
-theorem SetTheory.Set.Fin.castSucc_castPred (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) :
-    castSucc (castPred x h) = x := by ext; simp [castSucc, castPred, Fin_embed]
-
-@[simp]
-theorem SetTheory.Set.Fin.castPred_castSucc (x : Fin n) (h : ((castSucc x : Fin (n + 1)) : ℕ) ≠ n) :
-    castPred (castSucc x) h = x := by ext; simp [castSucc, castPred, Fin_embed]
-
-@[simp]
-theorem SetTheory.Set.Fin.castSucc_ne (x : Fin n) : castSucc x ≠ n := by
-  intro h
-  have : (x : ℕ) = n := by
-    simp [castSucc] at h
-    exact h
-  have : (x : ℕ) < n := Fin.toNat_lt x
-  omega
 
 /-- Exercise 3.6.12 (i) -/
 theorem SetTheory.Set.Permutations_ih (n: ℕ):
