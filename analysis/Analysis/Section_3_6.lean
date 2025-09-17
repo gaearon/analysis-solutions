@@ -1149,7 +1149,7 @@ theorem SetTheory.Set.Fin.castSucc_ne (x : Fin n) : castSucc x ≠ n := by
 
 def SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
 
-/-- You might find this result useful for exercise 3.6.12. -/
+/-- Now is a good time to prove this result, which will be useful for completing Exercise 3.6.12 (i). -/
 theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
     (hSc : ∀ i, (S i).has_card m)
     (hSd : Pairwise fun i j => Disjoint (S i) (S j)) :
@@ -1221,7 +1221,7 @@ theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
   use this.1
   exact card_union_disjoint hUf hSnf hd
 
-/- Let's set up a way to shrink `Fin (n + 1)` into `Fin n` (or expand the latter) by making a hole. -/
+/- Finally, we'll set up a way to shrink `Fin (n + 1)` into `Fin n` (or expand the latter) by making a hole. -/
 
 /--
   If some `x : Fin (n+1)` is never equal to `i`, we can shrink it into `Fin n` by shifting all `x > i` down by one.
@@ -1245,13 +1245,13 @@ noncomputable def SetTheory.Set.Fin.succAbove {n} (i : Fin (n + 1)) (x : Fin n) 
   if (x : ℕ) < i then
     Fin_embed _ _ (by omega) x
   else
-    Fin_mk _ ((x : ℕ) + 1) (by have := Fin.toNat_lt x; omega)
+    Fin_mk _ ((x:ℕ) + 1) (by have := Fin.toNat_lt x; omega)
 
 @[simp]
 theorem SetTheory.Set.Fin.succAbove_ne {n} (i : Fin (n + 1)) (x : Fin n) : succAbove i x ≠ i := by
   intro h
   simp only [succAbove, Fin_embed] at h
-  by_cases hx : (x : ℕ) < i
+  by_cases hx : (x:ℕ) < i
   · aesop
   simp only [hx, ↓reduceIte, coe_inj, toNat_mk] at h
   omega
@@ -1270,7 +1270,7 @@ theorem SetTheory.Set.Fin.predAbove_succAbove {n} (i : Fin (n + 1)) (x : Fin n) 
   simp only [succAbove, predAbove]
   by_cases hx : (x:ℕ) < i <;> simp only [hx, ↓reduceIte]
   · aesop
-  have hx' : ¬((x : ℕ) + 1 < i) := by omega
+  have hx' : ¬((x:ℕ) + 1 < i) := by omega
   simp [hx']
 
 /-- Exercise 3.6.12 (i), second part -/
