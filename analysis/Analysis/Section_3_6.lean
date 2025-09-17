@@ -1346,7 +1346,32 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
 
 /-- Exercise 3.6.12 (ii) -/
 theorem SetTheory.Set.Permutations_card (n: ℕ):
-    (Permutations n).card = n.factorial := by sorry
+    (Permutations n).card = n.factorial := by
+  induction' n with n ih
+  · rw [Nat.factorial_zero, Permutations]
+    have hs : (Fin 0 ^ Fin 0) = (Fin 0 ^ Fin 0).specify
+        fun F ↦ Function.Bijective (pow_fun_equiv F) := by
+      ext x
+      rw [specification_axiom'']
+      constructor
+      · intro hx
+        let f := pow_fun_equiv ⟨x, hx⟩
+        have : Function.Bijective f := by
+          constructor
+          · intro x1 x2 heq
+            have := x1.property
+            rw [mem_Fin] at this
+            tauto
+          intro y
+          have := y.property
+          rw [mem_Fin] at this
+          tauto
+        grind
+      grind
+    rw [←hs]
+    have ⟨hpf, hpc⟩ := card_pow (Fin_finite 0) (Fin_finite 0)
+    rw [hpc, Fin_card 0, pow_zero]
+  rw [Nat.factorial_succ, Permutations_ih, ih]
 
 /-- Connections with Mathlib's `Nat.card` -/
 theorem SetTheory.Set.card_eq_nat_card {X:Set} : X.card = Nat.card X := by sorry
