@@ -1328,7 +1328,7 @@ theorem SetTheory.Set.Permutations_ih (n: ℕ):
       right_inv := by intro; aesop
     }
     have equiv := si_to_equiv.trans (equiv_to_equiv.trans perm_equiv_equiv.symm)
-    exact ⟨equiv.toFun, equiv.injective, equiv.surjective⟩
+    use equiv, equiv.injective, equiv.surjective
 
   have hSc : ∀ i, (S i).has_card (Permutations n).card := by
     intro i
