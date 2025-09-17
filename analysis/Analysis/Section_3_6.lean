@@ -1105,7 +1105,7 @@ theorem SetTheory.Set.Permutations_inj {n: ℕ} (p1 p2: Permutations n) : Permut
   intro h
   grind
 
-/-- It's handy to think of a permutation as an equivalence between `Fin n` and `Fin n`. -/
+/-- This connects our concept of a permutation with Mathlib's `Equiv` between `Fin n` and `Fin n`. -/
 noncomputable def SetTheory.Set.perm_equiv_equiv {n : ℕ} : Permutations n ≃ (Fin n ≃ Fin n) := {
   toFun := fun p => Equiv.ofBijective (Permutations_toFun p) (Permutations_bijective p)
   invFun := fun e => ⟨e, by simp [Permutations, pow_fun_equiv, e.bijective]⟩
@@ -1115,31 +1115,32 @@ noncomputable def SetTheory.Set.perm_equiv_equiv {n : ℕ} : Permutations n ≃ 
 
 /- Exercise 3.6.12 involves a lot of moving between `Fin n` and `Fin (n + 1)` so let's add some conveniences. -/
 
-/-- Any `Fin n` can be cast to `Fin (n + 1)`. Compare to Mathlib `_root_.Fin.castSucc`. -/
-def SetTheory.Set.Fin.castSucc (x : Fin n) : Fin (n + 1) :=
+/-- Any `Fin n` can be cast to `Fin (n + 1)`. Compare to Mathlib `Fin.castSucc`. -/
+def SetTheory.Set.Fin.castSucc {n} (x : Fin n) : Fin (n + 1) :=
   Fin_embed _ _ (by omega) x
 
 @[simp]
-lemma SetTheory.Set.Fin.castSucc_inj : castSucc x = castSucc y ↔ x = y := by
+lemma SetTheory.Set.Fin.castSucc_inj {n} {x y : Fin n} : castSucc x = castSucc y ↔ x = y := by
   constructor
   · intro h
     simp [castSucc] at h
     aesop
   aesop
 
-noncomputable def SetTheory.Set.Fin.castPred (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) : Fin n :=
+/-- Any `Fin (n + 1)` except `n` can be cast to `Fin n`. Compare to Mathlib `Fin.castPred`. -/
+noncomputable def SetTheory.Set.Fin.castPred {n} (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) : Fin n :=
   Fin_mk _ (x : ℕ) (by have := Fin.toNat_lt x; omega)
 
 @[simp]
-theorem SetTheory.Set.Fin.castSucc_castPred (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) :
+theorem SetTheory.Set.Fin.castSucc_castPred {n} (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) :
     castSucc (castPred x h) = x := by ext; simp [castSucc, castPred, Fin_embed]
 
 @[simp]
-theorem SetTheory.Set.Fin.castPred_castSucc (x : Fin n) (h : ((castSucc x : Fin (n + 1)) : ℕ) ≠ n) :
+theorem SetTheory.Set.Fin.castPred_castSucc {n} (x : Fin n) (h : ((castSucc x : Fin (n + 1)) : ℕ) ≠ n) :
     castPred (castSucc x) h = x := by ext; simp [castSucc, castPred, Fin_embed]
 
 @[simp]
-theorem SetTheory.Set.Fin.castSucc_ne (x : Fin n) : castSucc x ≠ n := by
+theorem SetTheory.Set.Fin.castSucc_ne {n} (x : Fin n) : castSucc x ≠ n := by
   intro h
   have : (x : ℕ) = n := by
     simp [castSucc] at h
@@ -1147,6 +1148,7 @@ theorem SetTheory.Set.Fin.castSucc_ne (x : Fin n) : castSucc x ≠ n := by
   have : (x : ℕ) < n := Fin.toNat_lt x
   omega
 
+/-- Any natural `n` can be cast to `Fin (n + 1)`. Compare to Mathlib `Fin.last`. -/
 def SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
 
 /-- Now is a good time to prove this result, which will be useful for completing Exercise 3.6.12 (i). -/
@@ -1225,7 +1227,7 @@ theorem SetTheory.Set.card_iUnion_card_disjoint {n m: ℕ} {S : Fin n → Set}
 
 /--
   If some `x : Fin (n+1)` is never equal to `i`, we can shrink it into `Fin n` by shifting all `x > i` down by one.
-  Compare to Mathlib `_root_.Fin.predAbove`.
+  Compare to Mathlib `Fin.predAbove`.
 -/
 noncomputable def SetTheory.Set.Fin.predAbove {n} (i : Fin (n + 1)) (x : Fin (n + 1)) (h : x ≠ i) : Fin n :=
   if hlt : (x : ℕ) < i then
@@ -1239,7 +1241,7 @@ noncomputable def SetTheory.Set.Fin.predAbove {n} (i : Fin (n + 1)) (x : Fin (n 
 /--
   We can expand `x : Fin n` into `Fin (n + 1)` by shifting all `x ≥ i` up by one.
   The output is never `i`, so it forms an inverse to the shrinking done by `predAbove`.
-  Compare to Mathlib `_root_.Fin.succAbove`.
+  Compare to Mathlib `Fin.succAbove`.
 -/
 noncomputable def SetTheory.Set.Fin.succAbove {n} (i : Fin (n + 1)) (x : Fin n) : Fin (n + 1) :=
   if (x : ℕ) < i then
