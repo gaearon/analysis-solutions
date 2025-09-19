@@ -286,6 +286,10 @@ theorem Int.sub_eq_formal_sub (a b:ℕ) : (a:Int) - (b:Int) = a —— b := by
 
 /-- Proposition 4.1.8 (No zero divisors) / Exercise 4.1.5 -/
 theorem Int.mul_eq_zero {a b:Int} (h: a * b = 0) : a = 0 ∨ b = 0 := by
+  obtain ⟨m, n, rfl⟩ := eq_diff a
+  obtain ⟨x, y, rfl⟩ := eq_diff b
+  simp_all only [mul_eq, ofNat_eq, eq, add_zero, zero_add]
+
   sorry
 
 /-- Corollary 4.1.9 (Cancellation law) / Exercise 4.1.6 -/
