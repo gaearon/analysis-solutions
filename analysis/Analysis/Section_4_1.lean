@@ -38,8 +38,8 @@ structure PreInt where
 instance PreInt.instSetoid : Setoid PreInt where
   r a b := a.minuend + b.subtrahend = b.minuend + a.subtrahend
   iseqv := {
-    refl := by sorry
-    symm := by sorry
+    refl := by intro; rfl
+    symm := by intro; omega
     trans := by
       -- This proof is written to follow the structure of the original text.
       intro ⟨ a,b ⟩ ⟨ c,d ⟩ ⟨ e,f ⟩ h1 h2; simp_all
@@ -148,11 +148,17 @@ example : 3 = 3 —— 0 := rfl
 example : 3 = 4 —— 1 := by rw [Int.ofNat_eq, Int.eq]
 
 /-- (Not from textbook) 0 is the only natural whose cast is 0 -/
-lemma Int.cast_eq_0_iff_eq_0 (n : ℕ) : (n : Int) = 0 ↔ n = 0 := by sorry
+lemma Int.cast_eq_0_iff_eq_0 (n : ℕ) : (n : Int) = 0 ↔ n = 0 := by
+  rw [←natCast_inj]
+  rfl
 
 /-- Definition 4.1.4 (Negation of integers) / Exercise 4.1.2 -/
 instance Int.instNeg : Neg Int where
-  neg := Quotient.lift (fun ⟨ a, b ⟩ ↦ b —— a) (by sorry)
+  neg := Quotient.lift (fun ⟨ a, b ⟩ ↦ b —— a) (by
+    intro ⟨a, b⟩ ⟨c, d⟩ h
+    simp [Quotient.eq, Setoid.r] at *
+    omega
+  )
 
 theorem Int.neg_eq (a b:ℕ) : -(a —— b) = b —— a := rfl
 
@@ -190,7 +196,23 @@ theorem Int.not_pos_neg (x:Int) : x.IsPos ∧ x.IsNeg → False := by
 
 /-- Proposition 4.1.6 (laws of algebra) / Exercise 4.1.4 -/
 instance Int.instAddGroup : AddGroup Int :=
-  AddGroup.ofLeftAxioms (by sorry) (by sorry) (by sorry)
+  AddGroup.ofLeftAxioms (by
+    intro a b c
+    obtain ⟨a1, ⟨a2, rfl⟩⟩ := eq_diff a
+    obtain ⟨b1, ⟨b2, rfl⟩⟩ := eq_diff b
+    obtain ⟨c1, ⟨c2, rfl⟩⟩ := eq_diff c
+    simp only [add_eq]
+    ring_nf
+  ) (by
+    intro a
+    obtain ⟨a1, ⟨a2, rfl⟩⟩ := eq_diff a
+    simp [ofNat_eq, add_eq]
+  ) (by
+    intro a
+    obtain ⟨a1, ⟨a2, rfl⟩⟩ := eq_diff a
+    simp only [neg_eq, ofNat_eq, add_eq, eq]
+    ring
+  )
 
 /-- Proposition 4.1.6 (laws of algebra) / Exercise 4.1.4 -/
 instance Int.instAddCommGroup : AddCommGroup Int where

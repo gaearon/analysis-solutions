@@ -65,7 +65,7 @@ noncomputable instance ZFSet.inst_SetTheory : Chapter3.SetTheory.{u + 1,u + 1} w
   union_pair x y := x ∪ y
   union_pair_axiom _ _ _ := mem_union
   specify A P := ZFSet.sep (fun s ↦ (h : s ∈ A) → P ⟨s,h⟩) A
-  specification_axiom := by simp +contextual
+  specification_axiom := by simp_all
   replace A P hp := @(A.sep (fun s ↦ (hs : s ∈ A) → ∃ z, P ⟨s,hs⟩ z)).image (fun s ↦
     if h : ∃ (hs : s ∈ A), ∃ z, P ⟨s,hs⟩ z then h.choose_spec.choose else ∅) (allZFSetDefinable _)
   replacement_axiom A P hp s := by
