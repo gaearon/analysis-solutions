@@ -197,26 +197,31 @@ theorem Int.not_pos_neg (x:Int) : x.IsPos ∧ x.IsNeg → False := by
 /-- Proposition 4.1.6 (laws of algebra) / Exercise 4.1.4 -/
 instance Int.instAddGroup : AddGroup Int :=
   AddGroup.ofLeftAxioms (by
-    intro a b c
-    obtain ⟨a1, ⟨a2, rfl⟩⟩ := eq_diff a
-    obtain ⟨b1, ⟨b2, rfl⟩⟩ := eq_diff b
-    obtain ⟨c1, ⟨c2, rfl⟩⟩ := eq_diff c
+    intro x y z
+    obtain ⟨a, ⟨b, rfl⟩⟩ := eq_diff x
+    obtain ⟨c, ⟨d, rfl⟩⟩ := eq_diff y
+    obtain ⟨e, ⟨f, rfl⟩⟩ := eq_diff z
     simp only [add_eq]
     ring_nf
   ) (by
-    intro a
-    obtain ⟨a1, ⟨a2, rfl⟩⟩ := eq_diff a
+    intro x
+    obtain ⟨a, ⟨b, rfl⟩⟩ := eq_diff x
     simp [ofNat_eq, add_eq]
   ) (by
-    intro a
-    obtain ⟨a1, ⟨a2, rfl⟩⟩ := eq_diff a
+    intro x
+    obtain ⟨a, ⟨b, rfl⟩⟩ := eq_diff x
     simp only [neg_eq, ofNat_eq, add_eq, eq]
     ring
   )
 
 /-- Proposition 4.1.6 (laws of algebra) / Exercise 4.1.4 -/
 instance Int.instAddCommGroup : AddCommGroup Int where
-  add_comm := by sorry
+  add_comm := by
+    intro x y
+    obtain ⟨a, ⟨b, rfl⟩⟩ := eq_diff x
+    obtain ⟨c, ⟨d, rfl⟩⟩ := eq_diff y
+    simp only [add_eq, eq]
+    ring
 
 /-- Proposition 4.1.6 (laws of algebra) / Exercise 4.1.4 -/
 instance Int.instCommMonoid : CommMonoid Int where
