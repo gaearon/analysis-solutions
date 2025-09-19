@@ -258,9 +258,23 @@ instance Int.instCommRing : CommRing Int where
     obtain ⟨e, f, rfl⟩ := eq_diff z
     simp only [mul_eq, add_eq, eq]
     ring
-  right_distrib := by sorry
-  zero_mul := by sorry
-  mul_zero := by sorry
+  right_distrib := by
+    intro x y z
+    obtain ⟨a, b, rfl⟩ := eq_diff x
+    obtain ⟨c, d, rfl⟩ := eq_diff y
+    obtain ⟨e, f, rfl⟩ := eq_diff z
+    simp only [mul_eq, add_eq, eq]
+    ring
+  zero_mul := by
+    intro x
+    obtain ⟨a, b, rfl⟩ := eq_diff x
+    simp only [ofNat_eq, mul_eq, eq]
+    ring
+  mul_zero := by
+    intro x
+    obtain ⟨a, b, rfl⟩ := eq_diff x
+    simp only [ofNat_eq, mul_eq, eq]
+    ring
 
 /-- Definition of subtraction -/
 theorem Int.sub_eq (a b:Int) : a - b = a + (-b) := by rfl
