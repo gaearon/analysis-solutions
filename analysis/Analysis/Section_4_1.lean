@@ -289,17 +289,20 @@ theorem Int.mul_eq_zero {a b:Int} (h: a * b = 0) : a = 0 ∨ b = 0 := by
   obtain ⟨m, n, rfl⟩ := eq_diff a
   obtain ⟨x, y, rfl⟩ := eq_diff b
   simp_all only [mul_eq, ofNat_eq, eq, add_zero, zero_add]
-  by_contra h'
-  have hmn : m < n ∨ m > n := by grind
-  have hxy : x < y ∨ x > y := by grind
+  wlog hmn : m < n
+  . rcases eq_or_gt_of_not_lt hmn with (hmn | hmn)
+    . omega
+    . specialize this n m x y (by omega) hmn; omega
+  wlog hxy : x < y
+  . rcases eq_or_gt_of_not_lt hxy with (hxy | hxy)
+    . omega
+    . specialize this m n y x (by omega) hmn hxy; omega
   rw [lt_iff_exists_add] at hmn hxy
-  rw [gt_iff_lt, lt_iff_exists_add] at hmn hxy
-  rcases hxy with (⟨z, hz⟩ | ⟨z, hz⟩) <;> rcases hmn with (⟨o, ho⟩ | ⟨o, ho⟩)
-  all_goals {
-    simp only [hz.2, ho.2, right_distrib, left_distrib] at h
-    have : o * z = 0 := by omega
-    simp_all
-  }
+  obtain ⟨o, ho⟩ := hmn
+  obtain ⟨z, hz⟩ := hxy
+  simp only [hz.2, ho.2, right_distrib, left_distrib] at h
+  have : o * z = 0 := by omega
+  simp_all
 
 /-- Corollary 4.1.9 (Cancellation law) / Exercise 4.1.6 -/
 theorem Int.mul_right_cancel₀ (a b c:Int) (h: a*c = b*c) (hc: c ≠ 0) : a = b := by
