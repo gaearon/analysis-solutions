@@ -416,10 +416,16 @@ theorem Int.not_gt_and_lt (a b:Int) : ¬ (a > b ∧ a < b):= by
 
 /-- Lemma 4.1.11(f) (Order trichotomy) / Exercise 4.1.7 -/
 theorem Int.not_gt_and_eq (a b:Int) : ¬ (a > b ∧ a = b):= by
-  sorry
+  intro h
+  rw [h.2, gt_iff_lt, lt_iff_exists_positive_difference] at h
+  obtain ⟨x, y, rfl⟩ := eq_diff b
+  simp only [natCast_eq, add_eq, eq] at h
+  omega
 
 /-- Lemma 4.1.11(f) (Order trichotomy) / Exercise 4.1.7 -/
-theorem Int.not_lt_and_eq (a b:Int) : ¬ (a < b ∧ a = b):= by sorry
+theorem Int.not_lt_and_eq (a b:Int) : ¬ (a < b ∧ a = b):= by
+  have := not_gt_and_eq b a
+  grind
 
 /-- (Not from textbook) Establish the decidability of this order. -/
 instance Int.decidableRel : DecidableRel (· ≤ · : Int → Int → Prop) := by
