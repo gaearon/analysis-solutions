@@ -391,7 +391,16 @@ theorem Int.lt_trans {a b c:Int} (hab: a < b) (hbc: b < c) : a < c := by
 
 /-- Lemma 4.1.11(f) (Order trichotomy) / Exercise 4.1.7 -/
 theorem Int.trichotomous' (a b:Int) : a > b ∨ a < b ∨ a = b := by
-  sorry
+  rcases (a - b).trichotomous with (h | h | h)
+  · right; right; grind
+  · left
+    rw [gt_iff_lt, lt_iff_exists_positive_difference]
+    obtain ⟨n, hn⟩ := h
+    use n, by omega, by grind
+  · right; left
+    rw [lt_iff_exists_positive_difference]
+    obtain ⟨n, hn⟩ := h
+    use n, by omega, by grind
 
 /-- Lemma 4.1.11(f) (Order trichotomy) / Exercise 4.1.7 -/
 theorem Int.not_gt_and_lt (a b:Int) : ¬ (a > b ∧ a < b):= by sorry
