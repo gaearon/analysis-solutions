@@ -306,7 +306,22 @@ theorem Int.mul_eq_zero {a b:Int} (h: a * b = 0) : a = 0 ∨ b = 0 := by
 
 /-- Corollary 4.1.9 (Cancellation law) / Exercise 4.1.6 -/
 theorem Int.mul_right_cancel₀ (a b c:Int) (h: a*c = b*c) (hc: c ≠ 0) : a = b := by
-  sorry
+  obtain ⟨m, n, rfl⟩ := eq_diff a
+  obtain ⟨u, v, rfl⟩ := eq_diff b
+  obtain ⟨x, y, rfl⟩ := eq_diff c
+  simp_all only [ofNat_eq, ne_eq, mul_eq, eq, add_zero, zero_add]
+  wlog hxy : x < y
+  . rcases eq_or_gt_of_not_lt hxy with (hxy | hxy)
+    . omega
+    . specialize this m n u v y x (by omega)
+      omega
+  rw [lt_iff_exists_add] at hxy
+  obtain ⟨z, hz⟩ := hxy
+  simp only [hz.2, left_distrib] at h
+  have h' : m * z + v * z = u * z + n * z := by omega
+  have hz' : z ≠ 0 := by omega
+  simp only [←right_distrib] at h'
+  rwa [Nat.mul_left_inj hz'] at h'
 
 /-- Definition 4.1.10 (Ordering of the integers) -/
 instance Int.instLE : LE Int where
