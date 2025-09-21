@@ -403,10 +403,20 @@ theorem Int.trichotomous' (a b:Int) : a > b ∨ a < b ∨ a = b := by
     use n, by omega, by grind
 
 /-- Lemma 4.1.11(f) (Order trichotomy) / Exercise 4.1.7 -/
-theorem Int.not_gt_and_lt (a b:Int) : ¬ (a > b ∧ a < b):= by sorry
+theorem Int.not_gt_and_lt (a b:Int) : ¬ (a > b ∧ a < b):= by
+  intro h
+  obtain ⟨⟨n, hn⟩, h1⟩ := h.1
+  obtain ⟨⟨m, hm⟩, h2⟩ := h.2
+  rw [hm] at hn
+  obtain ⟨x, y, rfl⟩ := eq_diff a
+  simp only [natCast_eq, add_eq, eq] at hn
+  have : m = 0 := by omega
+  subst this
+  grind
 
 /-- Lemma 4.1.11(f) (Order trichotomy) / Exercise 4.1.7 -/
-theorem Int.not_gt_and_eq (a b:Int) : ¬ (a > b ∧ a = b):= by sorry
+theorem Int.not_gt_and_eq (a b:Int) : ¬ (a > b ∧ a = b):= by
+  sorry
 
 /-- Lemma 4.1.11(f) (Order trichotomy) / Exercise 4.1.7 -/
 theorem Int.not_lt_and_eq (a b:Int) : ¬ (a < b ∧ a = b):= by sorry
