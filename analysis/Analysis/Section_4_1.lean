@@ -449,7 +449,8 @@ instance Int.decidableRel : DecidableRel (· ≤ · : Int → Int → Prop) := b
   exact Quotient.recOnSubsingleton₂ n m this
 
 /-- (Not from textbook) 0 is the only additive identity -/
-lemma Int.is_additive_identity_iff_eq_0 (b : Int) : (∀ a, a = a + b) ↔ b = 0 := by sorry
+lemma Int.is_additive_identity_iff_eq_0 (b : Int) : (∀ a, a = a + b) ↔ b = 0 := by
+  simp_all
 
 /-- (Not from textbook) Int has the structure of a linear ordering. -/
 instance Int.instLinearOrder : LinearOrder Int where
