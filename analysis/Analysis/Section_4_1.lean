@@ -363,10 +363,21 @@ theorem Int.mul_lt_mul_of_pos_right {a b c:Int} (hab : a < b) (hc: 0 < c) : a*c 
 
 /-- Lemma 4.1.11(d) (Negation reverses order) / Exercise 4.1.7 -/
 theorem Int.neg_gt_neg {a b:Int} (h: b < a) : -a < -b := by
-  sorry
+  rw [lt_iff_exists_positive_difference] at *
+  obtain ⟨n, hn⟩ := h
+  use n, hn.1
+  simp_all
 
 /-- Lemma 4.1.11(d) (Negation reverses order) / Exercise 4.1.7 -/
-theorem Int.neg_ge_neg {a b:Int} (h: b ≤ a) : -a ≤ -b := by sorry
+theorem Int.neg_ge_neg {a b:Int} (h: b ≤ a) : -a ≤ -b := by
+  by_cases b = a
+  · rw [le_iff]
+    use 0
+    simp_all
+  suffices : -a < -b
+  · exact this.1
+  apply neg_gt_neg
+  use h
 
 /-- Lemma 4.1.11(e) (Order is transitive) / Exercise 4.1.7 -/
 theorem Int.lt_trans {a b c:Int} (hab: a < b) (hbc: b < c) : a < c := by sorry
