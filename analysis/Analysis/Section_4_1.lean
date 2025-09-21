@@ -336,7 +336,16 @@ theorem Int.le_iff (a b:Int) : a ≤ b ↔ ∃ t:ℕ, b = a + t := by rfl
 theorem Int.lt_iff (a b:Int): a < b ↔ (∃ t:ℕ, b = a + t) ∧ a ≠ b := by rfl
 
 /-- Lemma 4.1.11(a) (Properties of order) / Exercise 4.1.7 -/
-theorem Int.lt_iff_exists_positive_difference (a b:Int) : a < b ↔ ∃ n:ℕ, n ≠ 0 ∧ b = a + n := by sorry
+theorem Int.lt_iff_exists_positive_difference (a b:Int) : a < b ↔ ∃ n:ℕ, n ≠ 0 ∧ b = a + n := by
+  rw [lt_iff]
+  constructor
+  · rintro ⟨⟨n, hn⟩, hab⟩
+    aesop
+  rintro ⟨n, ⟨hn, rfl⟩⟩
+  constructor
+  · aesop
+  contrapose! hn
+  rwa [left_eq_add, cast_eq_0_iff_eq_0] at hn
 
 /-- Lemma 4.1.11(b) (Addition preserves order) / Exercise 4.1.7 -/
 theorem Int.add_lt_add_right {a b:Int} (c:Int) (h: a < b) : a+c < b+c := by sorry
