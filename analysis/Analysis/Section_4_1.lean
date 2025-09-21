@@ -437,10 +437,15 @@ instance Int.decidableRel : DecidableRel (· ≤ · : Int → Int → Prop) := b
     cases (a + d).decLe (b + c) with
       | isTrue h =>
         apply isTrue
-        sorry
+        rw [le_iff]
+        simp only [natCast_eq, add_eq, eq, add_zero]
+        simp [le_iff_exists_add] at h
+        grind
       | isFalse h =>
         apply isFalse
-        sorry
+        rw [le_iff]
+        simp only [natCast_eq, add_eq, eq, add_zero]
+        grind
   exact Quotient.recOnSubsingleton₂ n m this
 
 /-- (Not from textbook) 0 is the only additive identity -/
