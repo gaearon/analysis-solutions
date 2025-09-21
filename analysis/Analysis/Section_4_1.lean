@@ -380,10 +380,18 @@ theorem Int.neg_ge_neg {a b:Int} (h: b ≤ a) : -a ≤ -b := by
   use h
 
 /-- Lemma 4.1.11(e) (Order is transitive) / Exercise 4.1.7 -/
-theorem Int.lt_trans {a b c:Int} (hab: a < b) (hbc: b < c) : a < c := by sorry
+theorem Int.lt_trans {a b c:Int} (hab: a < b) (hbc: b < c) : a < c := by
+  rw [lt_iff_exists_positive_difference] at *
+  obtain ⟨m, hm⟩ := hbc
+  obtain ⟨n, hn⟩ := hab
+  use m + n
+  constructor
+  · omega
+  simp [hm.2, hn.2, add_assoc, add_comm m]
 
 /-- Lemma 4.1.11(f) (Order trichotomy) / Exercise 4.1.7 -/
-theorem Int.trichotomous' (a b:Int) : a > b ∨ a < b ∨ a = b := by sorry
+theorem Int.trichotomous' (a b:Int) : a > b ∨ a < b ∨ a = b := by
+  sorry
 
 /-- Lemma 4.1.11(f) (Order trichotomy) / Exercise 4.1.7 -/
 theorem Int.not_gt_and_lt (a b:Int) : ¬ (a > b ∧ a < b):= by sorry
