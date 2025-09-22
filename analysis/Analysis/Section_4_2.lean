@@ -45,9 +45,16 @@ structure PreRat where
 instance PreRat.instSetoid : Setoid PreRat where
   r a b := a.numerator * b.denominator = b.numerator * a.denominator
   iseqv := {
-    refl := by sorry
-    symm := by sorry
-    trans := by sorry
+    refl := by omega
+    symm := by omega
+    trans := by
+      intro ⟨a, b, hb⟩ ⟨c, d, hd⟩ ⟨e, f, hf⟩ h1 h2
+      have : a * f * (c * d) = e * b * (c * d) := by grind
+      by_cases hc : c = 0
+      · have : e = 0 := by simp_all
+        have : a = 0 := by simp_all
+        grind
+      simp_all
     }
 
 @[simp]
@@ -78,7 +85,13 @@ theorem Rat.eq_diff (n:Rat) : ∃ a b, b ≠ 0 ∧ n = a // b := by
   may be more convenient to avoid that operation and work directly with the `Quotient` API.
 -/
 instance Rat.decidableEq : DecidableEq Rat := by
-  sorry
+  intro a b
+  have : ∀ (n:PreRat) (m: PreRat),
+      Decidable (Quotient.mk PreRat.instSetoid n = Quotient.mk PreRat.instSetoid m) := by
+    intro ⟨a, b, hb⟩ ⟨c, d, hd⟩
+    simp only [Quotient.eq]
+    exact decEq _ _
+  exact Quotient.recOnSubsingleton₂ a b this
 
 /-- Lemma 4.2.3 (Addition well-defined) -/
 instance Rat.add_inst : Add Rat where
@@ -98,7 +111,12 @@ theorem Rat.add_eq (a c:ℤ) {b d:ℤ} (hb: b ≠ 0) (hd: d ≠ 0) :
 
 /-- Lemma 4.2.3 (Multiplication well-defined) -/
 instance Rat.mul_inst : Mul Rat where
-  mul := Quotient.lift₂ (fun ⟨ a, b, h1 ⟩ ⟨ c, d, h2 ⟩ ↦ (a*c) // (b*d)) (by sorry)
+  mul := Quotient.lift₂ (fun ⟨ a, b, h1 ⟩ ⟨ c, d, h2 ⟩ ↦ (a*c) // (b*d)) (by
+    intro ⟨a, b, hb⟩ ⟨c, d, hd⟩ ⟨a', b', hb'⟩ ⟨c', d', hd'⟩ h1 h2
+    simp only [PreRat.eq] at h1 h2
+    rw [Rat.eq _ _ (by simp_all) (by simp_all)]
+    grind
+  )
 
 /-- Definition 4.2.2 (Multiplication of rationals) -/
 theorem Rat.mul_eq (a c:ℤ) {b d:ℤ} (hb: b ≠ 0) (hd: d ≠ 0) :
@@ -107,7 +125,12 @@ theorem Rat.mul_eq (a c:ℤ) {b d:ℤ} (hb: b ≠ 0) (hd: d ≠ 0) :
 
 /-- Lemma 4.2.3 (Negation well-defined) -/
 instance Rat.neg_inst : Neg Rat where
-  neg := Quotient.lift (fun ⟨ a, b, h1 ⟩ ↦ (-a) // b) (by sorry)
+  neg := Quotient.lift (fun ⟨ a, b, h1 ⟩ ↦ (-a) // b) (by
+    intro ⟨a, b, hb⟩ ⟨c, d, hd⟩ h1
+    simp only [PreRat.eq] at h1
+    rw [Rat.eq _ _ (by simp_all) (by simp_all)]
+    grind
+  )
 
 /-- Definition 4.2.2 (Negation of rationals) -/
 theorem Rat.neg_eq (a:ℤ) {b:ℤ} (hb: b ≠ 0) : - (a // b) = (-a) // b := by
@@ -130,18 +153,31 @@ theorem Rat.coe_Nat_eq (n:ℕ) : (n:Rat) = n // 1 := rfl
 theorem Rat.of_Nat_eq (n:ℕ) : (ofNat(n):Rat) = (ofNat(n):Nat) // 1 := rfl
 
 /-- natCast distributes over successor -/
-theorem Rat.natCast_succ (n: ℕ) : ((n + 1: ℕ): Rat) = (n: Rat) + 1 := by sorry
+theorem Rat.natCast_succ (n: ℕ) : ((n + 1: ℕ): Rat) = (n: Rat) + 1 := by
+  simp only [of_Nat_eq, coe_Nat_eq]
+  rw [add_eq _ _ (by simp) (by simp)]
+  simp
 
 /-- intCast distributes over addition -/
-lemma Rat.intCast_add (a b:ℤ) : (a:Rat) + (b:Rat) = (a+b:ℤ) := by sorry
+lemma Rat.intCast_add (a b:ℤ) : (a:Rat) + (b:Rat) = (a+b:ℤ) := by
+  simp only [coe_Int_eq]
+  rw [add_eq _ _ (by simp) (by simp)]
+  simp
 
 /-- intCast distributes over multiplication -/
-lemma Rat.intCast_mul (a b:ℤ) : (a:Rat) * (b:Rat) = (a*b:ℤ) := by sorry
+lemma Rat.intCast_mul (a b:ℤ) : (a:Rat) * (b:Rat) = (a*b:ℤ) := by
+  simp only [coe_Int_eq]
+  rw [mul_eq _ _ (by simp) (by simp)]
+  simp
 
 /-- intCast commutes with negation -/
 lemma Rat.intCast_neg (a:ℤ) : - (a:Rat) = (-a:ℤ) := rfl
 
-theorem Rat.coe_Int_inj : Function.Injective (fun n:ℤ ↦ (n:Rat)) := by sorry
+theorem Rat.coe_Int_inj : Function.Injective (fun n:ℤ ↦ (n:Rat)) := by
+  intro x1 x2 heq
+  simp only [coe_Int_eq] at heq
+  rw [eq _ _ (by simp) (by simp)] at heq
+  grind
 
 /--
   Whereas the book leaves the inverse of 0 undefined, it is more convenient in Lean to assign a
@@ -149,7 +185,17 @@ theorem Rat.coe_Int_inj : Function.Injective (fun n:ℤ ↦ (n:Rat)) := by sorry
 -/
 instance Rat.instInv : Inv Rat where
   inv := Quotient.lift (fun ⟨ a, b, h1 ⟩ ↦ b // a) (by
-    sorry -- hint: split into the `a=0` and `a≠0` cases
+    -- hint: split into the `a=0` and `a≠0` cases
+    intro a b hab
+    rw [PreRat.eq] at hab
+    by_cases haz : a.numerator = 0
+    · have : b.numerator = 0 := by simp_all [a.nonzero]
+      grind
+    by_cases hbz : b.numerator = 0
+    · have : a.numerator = 0 := by simp_all [b.nonzero]
+      grind
+    rw [eq _ _ haz hbz]
+    grind
 )
 
 lemma Rat.inv_eq (a:ℤ) {b:ℤ} (hb: b ≠ 0) : (a // b)⁻¹ = b // a := by
@@ -173,26 +219,105 @@ AddGroup.ofLeftAxioms (by
       add_eq _ _ hb hdf, ←mul_assoc b, eq _ _ hbdf hbdf]
   ring
 )
- (by sorry) (by sorry)
+ (by
+  intro x
+  simp only [of_Nat_eq]
+  obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+  rw [add_eq _ _ (by simp_all) (by simp_all)]
+  rw [eq _ _ (by simp_all) (by simp_all)]
+  grind
+ ) (by
+  intro x
+  simp only [of_Nat_eq]
+  obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+  rw [neg_eq _ hb, add_eq _ _ hb hb]
+  have : b*b > 0 := mul_self_pos.mpr hb
+  rw [eq _ _ (by simp_all) (by simp_all)]
+  grind
+)
 
 /-- Proposition 4.2.4 (laws of algebra) / Exercise 4.2.3 -/
 instance Rat.instAddCommGroup : AddCommGroup Rat where
-  add_comm := by sorry
+  add_comm := by
+    intro x y
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    repeat rw [add_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
 
 /-- Proposition 4.2.4 (laws of algebra) / Exercise 4.2.3 -/
 instance Rat.instCommMonoid : CommMonoid Rat where
-  mul_comm := by sorry
-  mul_assoc := by sorry
-  one_mul := by sorry
-  mul_one := by sorry
+  mul_comm := by
+    intro x y
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    grind
+  mul_assoc := by
+    intro x y z
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    obtain ⟨e, f, hf, rfl⟩ := eq_diff z
+    repeat rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    grind
+  one_mul := by
+    intro x
+    simp only [of_Nat_eq]
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    grind
+  mul_one := by
+    intro x
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    simp only [of_Nat_eq]
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    grind
 
 /-- Proposition 4.2.4 (laws of algebra) / Exercise 4.2.3 -/
 instance Rat.instCommRing : CommRing Rat where
-  left_distrib := by sorry
-  right_distrib := by sorry
-  zero_mul := by sorry
-  mul_zero := by sorry
-  mul_assoc := by sorry
+  left_distrib := by
+    intro x y z
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    obtain ⟨e, f, hf, rfl⟩ := eq_diff z
+    repeat rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    repeat rw [add_eq _ _ (by simp_all) (by simp_all)]
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
+  right_distrib := by
+    intro x y z
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    obtain ⟨e, f, hf, rfl⟩ := eq_diff z
+    repeat rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    repeat rw [add_eq _ _ (by simp_all) (by simp_all)]
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
+  zero_mul := by
+    intro x
+    simp only [of_Nat_eq]
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
+  mul_zero := by
+    intro x
+    simp only [of_Nat_eq]
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
+  mul_assoc := by
+    intro x y z
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    obtain ⟨e, f, hf, rfl⟩ := eq_diff z
+    repeat rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    grind
   -- Usually CommRing will generate a natCast instance and a proof for this.
   -- However, we are using a custom natCast for which `natCast_succ` cannot
   -- be proven automatically by `rfl`. Luckily we have proven it already.
@@ -201,7 +326,13 @@ instance Rat.instCommRing : CommRing Rat where
 instance Rat.instRatCast : RatCast Rat where
   ratCast q := q.num // q.den
 
-theorem Rat.ratCast_inj : Function.Injective (fun n:ℚ ↦ (n:Rat)) := by sorry
+theorem Rat.ratCast_inj : Function.Injective (fun n:ℚ ↦ (n:Rat)) := by
+  intro x1 x2 heq
+  simp only [Rat.cast, RatCast.ratCast] at heq
+  have := x1.den_nz
+  have := x2.den_nz
+  rw [eq _ _ (by grind) (by grind)] at heq
+  exact Rat.eq_iff_mul_eq_mul.mpr heq
 
 theorem Rat.coe_Rat_eq (a:ℤ) {b:ℤ} (hb: b ≠ 0) : (a/b:ℚ) = a // b := by
   set q := (a/b:ℚ)
@@ -221,8 +352,23 @@ theorem Rat.div_eq (q r:Rat) : q/r = q * r⁻¹ := by rfl
 
 /-- Proposition 4.2.4 (laws of algebra) / Exercise 4.2.3 -/
 instance Rat.instField : Field Rat where
-  exists_pair_ne := by sorry
-  mul_inv_cancel := by sorry
+  exists_pair_ne := by
+    use 0 // 1, 1 // 1
+    intro h
+    rw [eq _ _ (by simp) (by simp)] at h
+    grind
+  mul_inv_cancel := by
+    intro x hx
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    simp only [of_Nat_eq, inv_eq _ hb]
+    have : a ≠ 0 := by
+      contrapose! hx
+      simp only [hx, of_Nat_eq]
+      rw [eq _ _ (by grind) (by grind)]
+      simp
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
   inv_zero := rfl
   ratCast_def := by
     intro q
@@ -235,7 +381,9 @@ instance Rat.instField : Field Rat where
   qsmul := _
   nnqsmul := _
 
-example : (3//4) / (5//6) = 9 // 10 := by sorry
+example : (3//4) / (5//6) = 9 // 10 := by
+  rw [Rat.div_eq, Rat.inv_eq, Rat.mul_eq, Rat.eq]
+  repeat norm_num
 
 def Rat.coe_int_hom : ℤ →+* Rat where
   toFun n := (n:Rat)
