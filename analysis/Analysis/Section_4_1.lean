@@ -494,13 +494,30 @@ instance Int.instLinearOrder : LinearOrder Int where
   toDecidableLE := decidableRel
 
 /-- Exercise 4.1.3 -/
-theorem Int.neg_one_mul (a:Int) : -1 * a = -a := by sorry
+theorem Int.neg_one_mul (a:Int) : -1 * a = -a := by
+  ring
 
 /-- Exercise 4.1.8 -/
-theorem Int.no_induction : ∃ P: Int → Prop, P 0 ∧ ∀ n, P n → P (n+1) ∧ ¬ ∀ n, P n := by sorry
+theorem Int.no_induction : ∃ P: Int → Prop, (P 0 ∧ ∀ n, P n → P (n+1)) ∧ ¬ ∀ n, P n := by
+  use fun x ↦ x ≥ 0
+  simp only [le_refl, true_and]
+  constructor
+  · intro n hn
+    trans n
+    · rw [ge_iff_le, le_iff]
+      use 1
+      simp
+    exact hn
+  push_neg
+  use -1
+  rw [lt_iff]
+  constructor
+  · use 1; norm_num
+  · norm_num
 
 /-- A nonnegative number squared is nonnegative. This is a special case of 4.1.9 that's useful for proving the general case. --/
-lemma Int.sq_nonneg_of_pos (n:Int) (h: 0 ≤ n) : 0 ≤ n*n := by sorry
+lemma Int.sq_nonneg_of_pos (n:Int) (h: 0 ≤ n) : 0 ≤ n*n := by
+  sorry
 
 /-- Exercise 4.1.9. The square of any integer is nonnegative. -/
 theorem Int.sq_nonneg (n:Int) : 0 ≤ n*n := by sorry
