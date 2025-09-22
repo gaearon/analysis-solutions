@@ -543,10 +543,27 @@ theorem Int.sq_nonneg' (n:Int) : ∃ (m:Nat), n*n = m := by
 -/
 abbrev Int.equivInt : Int ≃ ℤ where
   toFun := Quotient.lift (fun ⟨ a, b ⟩ ↦ a - b) (by
-    sorry)
-  invFun := sorry
-  left_inv n := sorry
-  right_inv n := sorry
+    intro a b hab
+    rw [PreInt.eq] at hab
+    grind
+  )
+  invFun n := match n with
+    | .ofNat m => m
+    | .negSucc m => -(m+1)
+  left_inv n := by
+    obtain ⟨a, b, rfl⟩ := eq_diff n
+    simp only [Quotient.lift_mk]
+    rcases h : (a:ℤ) - b with (m | m)
+    · simp_all only [Int.ofNat_eq_coe, natCast_eq, eq]
+      omega
+    simp_all only [ofNat_eq, natCast_eq, neg_eq, add_eq, eq]
+    omega
+  right_inv n := by
+    rcases n with (m | m)
+    · simp only [Int.ofNat_eq_coe, natCast_eq, Quotient.lift_mk]
+      omega
+    simp only [ofNat_eq, natCast_eq, neg_eq, add_eq, Quotient.lift_mk]
+    omega
 
 /-- Not in textbook: equivalence preserves order and ring operations -/
 abbrev Int.equivInt_ordered_ring : Int ≃+*o ℤ where
