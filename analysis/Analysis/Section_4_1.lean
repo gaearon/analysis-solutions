@@ -454,11 +454,43 @@ lemma Int.is_additive_identity_iff_eq_0 (b : Int) : (∀ a, a = a + b) ↔ b = 0
 
 /-- (Not from textbook) Int has the structure of a linear ordering. -/
 instance Int.instLinearOrder : LinearOrder Int where
-  le_refl := sorry
-  le_trans := sorry
-  lt_iff_le_not_ge := sorry
-  le_antisymm := sorry
-  le_total := sorry
+  le_refl := by intro a; rw [le_iff]; use 0; simp
+  le_trans := by
+    rintro a b c ⟨x, rfl⟩ ⟨y, rfl⟩
+    use x + y
+    simp only [Nat.cast_add]
+    ring
+  lt_iff_le_not_ge := by
+    intro a b
+    constructor
+    · rintro ⟨haleb, hneq⟩
+      constructor
+      · grind
+      intro hba
+      rcases (trichotomous' a b) with (hab | hab | hab)
+      · have : a < b := ⟨haleb, hneq⟩
+        have := not_gt_and_lt
+        grind
+      · have : b < a := ⟨hba, hneq.symm⟩
+        have := not_gt_and_lt
+        grind
+      · grind
+    intro
+    constructor <;> grind
+  le_antisymm := by
+    intro a b hab hba
+    by_cases heq : a = b
+    · grind
+    have : a < b := ⟨hab, heq⟩
+    have : b < a := ⟨hba, by grind⟩
+    have := not_gt_and_lt
+    grind
+  le_total := by
+    intro a b
+    rcases trichotomous' a b with (hab | hab | hab)
+    · right; exact hab.1
+    · left; exact hab.1
+    · left; use 0; grind
   toDecidableLE := decidableRel
 
 /-- Exercise 4.1.3 -/
