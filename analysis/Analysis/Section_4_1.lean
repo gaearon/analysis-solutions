@@ -584,7 +584,8 @@ abbrev Int.equivInt_ordered_ring : Int ≃+*o ℤ where
     intro x y
     obtain ⟨a, b, rfl⟩ := eq_diff x
     obtain ⟨c, d, rfl⟩ := eq_diff y
-    simp_all only [Quotient.lift_mk]
-    sorry
+    simp_all only [Quotient.lift_mk, le_iff, natCast_eq, add_eq, eq]
+    rw [show (a:ℤ) - b ≤ c - d ↔ a + d ≤ c + b by omega, le_iff_exists_nonneg_add]
+    grind
 
 end Section_4_1
