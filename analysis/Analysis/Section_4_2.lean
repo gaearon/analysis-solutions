@@ -219,7 +219,22 @@ AddGroup.ofLeftAxioms (by
       add_eq _ _ hb hdf, ←mul_assoc b, eq _ _ hbdf hbdf]
   ring
 )
- (by sorry) (by sorry)
+ (by
+  intro x
+  simp only [of_Nat_eq]
+  obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+  rw [add_eq _ _ (by omega) (by omega)]
+  rw [eq _ _ (by omega) (by omega)]
+  grind
+ ) (by
+  intro x
+  obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+  simp only [of_Nat_eq]
+  rw [neg_eq _ hb, add_eq _ _ hb hb]
+  have : b*b > 0 := mul_self_pos.mpr hb
+  rw [eq _ _ (by omega) (by omega)]
+  grind
+)
 
 /-- Proposition 4.2.4 (laws of algebra) / Exercise 4.2.3 -/
 instance Rat.instAddCommGroup : AddCommGroup Rat where
