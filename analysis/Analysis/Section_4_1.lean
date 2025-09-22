@@ -517,7 +517,12 @@ theorem Int.no_induction : ∃ P: Int → Prop, (P 0 ∧ ∀ n, P n → P (n+1))
 
 /-- A nonnegative number squared is nonnegative. This is a special case of 4.1.9 that's useful for proving the general case. --/
 lemma Int.sq_nonneg_of_pos (n:Int) (h: 0 ≤ n) : 0 ≤ n*n := by
-  sorry
+  by_cases hz : n = 0
+  · subst hz; simp
+  apply le_of_lt
+  have : 0 = 0 * n := by simp
+  rw [this]
+  apply mul_lt_mul_of_pos_right <;> exact ⟨h, by grind⟩
 
 /-- Exercise 4.1.9. The square of any integer is nonnegative. -/
 theorem Int.sq_nonneg (n:Int) : 0 ≤ n*n := by sorry
