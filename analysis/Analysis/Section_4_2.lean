@@ -186,7 +186,16 @@ theorem Rat.coe_Int_inj : Function.Injective (fun n:ℤ ↦ (n:Rat)) := by
 instance Rat.instInv : Inv Rat where
   inv := Quotient.lift (fun ⟨ a, b, h1 ⟩ ↦ b // a) (by
     -- hint: split into the `a=0` and `a≠0` cases
-    sorry
+    intro a b hab
+    rw [PreRat.eq] at hab
+    by_cases haz : a.numerator = 0
+    · have : b.numerator = 0 := by simp_all [a.nonzero]
+      grind
+    by_cases hbz : b.numerator = 0
+    · have : a.numerator = 0 := by simp_all [b.nonzero]
+      grind
+    rw [eq _ _ haz hbz]
+    grind
 )
 
 lemma Rat.inv_eq (a:ℤ) {b:ℤ} (hb: b ≠ 0) : (a // b)⁻¹ = b // a := by
