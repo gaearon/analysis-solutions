@@ -153,10 +153,16 @@ theorem Rat.coe_Nat_eq (n:ℕ) : (n:Rat) = n // 1 := rfl
 theorem Rat.of_Nat_eq (n:ℕ) : (ofNat(n):Rat) = (ofNat(n):Nat) // 1 := rfl
 
 /-- natCast distributes over successor -/
-theorem Rat.natCast_succ (n: ℕ) : ((n + 1: ℕ): Rat) = (n: Rat) + 1 := by sorry
+theorem Rat.natCast_succ (n: ℕ) : ((n + 1: ℕ): Rat) = (n: Rat) + 1 := by
+  simp only [of_Nat_eq, coe_Nat_eq]
+  rw [add_eq _ _ (by simp) (by simp)]
+  simp
 
 /-- intCast distributes over addition -/
-lemma Rat.intCast_add (a b:ℤ) : (a:Rat) + (b:Rat) = (a+b:ℤ) := by sorry
+lemma Rat.intCast_add (a b:ℤ) : (a:Rat) + (b:Rat) = (a+b:ℤ) := by
+  simp only [coe_Int_eq]
+  rw [add_eq _ _ (by simp) (by simp)]
+  simp
 
 /-- intCast distributes over multiplication -/
 lemma Rat.intCast_mul (a b:ℤ) : (a:Rat) * (b:Rat) = (a*b:ℤ) := by sorry
