@@ -534,7 +534,8 @@ theorem Int.sq_nonneg (n:Int) : 0 ≤ n*n := by
 
 /-- Exercise 4.1.9 -/
 theorem Int.sq_nonneg' (n:Int) : ∃ (m:Nat), n*n = m := by
-  sorry
+  have := sq_nonneg n
+  simpa only [le_iff, zero_add]
 
 /--
   Not in textbook: create an equivalence between Int and ℤ.
