@@ -381,7 +381,9 @@ instance Rat.instField : Field Rat where
   qsmul := _
   nnqsmul := _
 
-example : (3//4) / (5//6) = 9 // 10 := by sorry
+example : (3//4) / (5//6) = 9 // 10 := by
+  rw [Rat.div_eq, Rat.inv_eq, Rat.mul_eq, Rat.eq]
+  repeat norm_num
 
 def Rat.coe_int_hom : ℤ →+* Rat where
   toFun n := (n:Rat)
