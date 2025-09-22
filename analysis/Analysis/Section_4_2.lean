@@ -326,7 +326,13 @@ instance Rat.instCommRing : CommRing Rat where
 instance Rat.instRatCast : RatCast Rat where
   ratCast q := q.num // q.den
 
-theorem Rat.ratCast_inj : Function.Injective (fun n:ℚ ↦ (n:Rat)) := by sorry
+theorem Rat.ratCast_inj : Function.Injective (fun n:ℚ ↦ (n:Rat)) := by
+  intro x1 x2 heq
+  simp only [Rat.cast, RatCast.ratCast] at heq
+  have := x1.den_nz
+  have := x2.den_nz
+  rw [eq _ _ (by grind) (by grind)] at heq
+  exact Rat.eq_iff_mul_eq_mul.mpr heq
 
 theorem Rat.coe_Rat_eq (a:ℤ) {b:ℤ} (hb: b ≠ 0) : (a/b:ℚ) = a // b := by
   set q := (a/b:ℚ)
