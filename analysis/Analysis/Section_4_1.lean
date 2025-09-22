@@ -549,7 +549,7 @@ abbrev Int.equivInt : Int ≃ ℤ where
   )
   invFun n := match n with
     | .ofNat m => m
-    | .negSucc m => -(m+1)
+    | .negSucc m => -(m + 1)
   left_inv n := by
     obtain ⟨a, b, rfl⟩ := eq_diff n
     simp only [Quotient.lift_mk]
