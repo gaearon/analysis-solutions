@@ -223,8 +223,8 @@ AddGroup.ofLeftAxioms (by
   intro x
   simp only [of_Nat_eq]
   obtain ⟨a, b, hb, rfl⟩ := eq_diff x
-  rw [add_eq _ _ (by omega) (by omega)]
-  rw [eq _ _ (by omega) (by omega)]
+  rw [add_eq _ _ (by simp_all) (by simp_all)]
+  rw [eq _ _ (by simp_all) (by simp_all)]
   grind
  ) (by
   intro x
@@ -232,13 +232,20 @@ AddGroup.ofLeftAxioms (by
   simp only [of_Nat_eq]
   rw [neg_eq _ hb, add_eq _ _ hb hb]
   have : b*b > 0 := mul_self_pos.mpr hb
-  rw [eq _ _ (by omega) (by omega)]
+  rw [eq _ _ (by simp_all) (by simp_all)]
   grind
 )
 
 /-- Proposition 4.2.4 (laws of algebra) / Exercise 4.2.3 -/
 instance Rat.instAddCommGroup : AddCommGroup Rat where
-  add_comm := by sorry
+  add_comm := by
+    intro x y
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    rw [add_eq _ _ (by simp_all) (by simp_all)]
+    rw [add_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
 
 /-- Proposition 4.2.4 (laws of algebra) / Exercise 4.2.3 -/
 instance Rat.instCommMonoid : CommMonoid Rat where
