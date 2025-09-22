@@ -525,10 +525,16 @@ lemma Int.sq_nonneg_of_pos (n:Int) (h: 0 ≤ n) : 0 ≤ n*n := by
   apply mul_lt_mul_of_pos_right <;> exact ⟨h, by grind⟩
 
 /-- Exercise 4.1.9. The square of any integer is nonnegative. -/
-theorem Int.sq_nonneg (n:Int) : 0 ≤ n*n := by sorry
+theorem Int.sq_nonneg (n:Int) : 0 ≤ n*n := by
+  by_cases hn : 0 ≤ n
+  · exact sq_nonneg_of_pos n hn
+  have hn' : n ≤ 0 := by have := le_total n 0; grind
+  have hsq := sq_nonneg_of_pos _ (neg_ge_neg hn')
+  simp_all
 
 /-- Exercise 4.1.9 -/
-theorem Int.sq_nonneg' (n:Int) : ∃ (m:Nat), n*n = m := by sorry
+theorem Int.sq_nonneg' (n:Int) : ∃ (m:Nat), n*n = m := by
+  sorry
 
 /--
   Not in textbook: create an equivalence between Int and ℤ.
