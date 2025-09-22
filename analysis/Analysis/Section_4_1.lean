@@ -568,8 +568,23 @@ abbrev Int.equivInt : Int ≃ ℤ where
 /-- Not in textbook: equivalence preserves order and ring operations -/
 abbrev Int.equivInt_ordered_ring : Int ≃+*o ℤ where
   toEquiv := equivInt
-  map_add' := by sorry
-  map_mul' := by sorry
-  map_le_map_iff' := by sorry
+  map_add' := by
+    intro x y
+    obtain ⟨a, b, rfl⟩ := eq_diff x
+    obtain ⟨c, d, rfl⟩ := eq_diff y
+    simp_all only [add_eq, Quotient.lift_mk]
+    grind
+  map_mul' := by
+    intro x y
+    obtain ⟨a, b, rfl⟩ := eq_diff x
+    obtain ⟨c, d, rfl⟩ := eq_diff y
+    simp_all only [mul_eq, Quotient.lift_mk]
+    grind
+  map_le_map_iff' := by
+    intro x y
+    obtain ⟨a, b, rfl⟩ := eq_diff x
+    obtain ⟨c, d, rfl⟩ := eq_diff y
+    simp_all only [Quotient.lift_mk]
+    sorry
 
 end Section_4_1
