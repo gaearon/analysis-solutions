@@ -228,8 +228,8 @@ AddGroup.ofLeftAxioms (by
   grind
  ) (by
   intro x
-  obtain ⟨a, b, hb, rfl⟩ := eq_diff x
   simp only [of_Nat_eq]
+  obtain ⟨a, b, hb, rfl⟩ := eq_diff x
   rw [neg_eq _ hb, add_eq _ _ hb hb]
   have : b*b > 0 := mul_self_pos.mpr hb
   rw [eq _ _ (by simp_all) (by simp_all)]
@@ -264,8 +264,8 @@ instance Rat.instCommMonoid : CommMonoid Rat where
     grind
   one_mul := by
     intro x
-    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
     simp only [of_Nat_eq]
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
     rw [mul_eq _ _ (by simp_all) (by simp_all)]
     grind
   mul_one := by
@@ -277,11 +277,47 @@ instance Rat.instCommMonoid : CommMonoid Rat where
 
 /-- Proposition 4.2.4 (laws of algebra) / Exercise 4.2.3 -/
 instance Rat.instCommRing : CommRing Rat where
-  left_distrib := by sorry
-  right_distrib := by sorry
-  zero_mul := by sorry
-  mul_zero := by sorry
-  mul_assoc := by sorry
+  left_distrib := by
+    intro x y z
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    obtain ⟨e, f, hf, rfl⟩ := eq_diff z
+    repeat rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    repeat rw [add_eq _ _ (by simp_all) (by simp_all)]
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
+  right_distrib := by
+    intro x y z
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    obtain ⟨e, f, hf, rfl⟩ := eq_diff z
+    repeat rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    repeat rw [add_eq _ _ (by simp_all) (by simp_all)]
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
+  zero_mul := by
+    intro x
+    simp only [of_Nat_eq]
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
+  mul_zero := by
+    intro x
+    simp only [of_Nat_eq]
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [eq _ _ (by simp_all) (by simp_all)]
+    grind
+  mul_assoc := by
+    intro x y z
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    obtain ⟨e, f, hf, rfl⟩ := eq_diff z
+    repeat rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    grind
   -- Usually CommRing will generate a natCast instance and a proof for this.
   -- However, we are using a custom natCast for which `natCast_succ` cannot
   -- be proven automatically by `rfl`. Luckily we have proven it already.
