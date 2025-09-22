@@ -242,17 +242,38 @@ instance Rat.instAddCommGroup : AddCommGroup Rat where
     intro x y
     obtain ⟨a, b, hb, rfl⟩ := eq_diff x
     obtain ⟨c, d, hd, rfl⟩ := eq_diff y
-    rw [add_eq _ _ (by simp_all) (by simp_all)]
-    rw [add_eq _ _ (by simp_all) (by simp_all)]
+    repeat rw [add_eq _ _ (by simp_all) (by simp_all)]
     rw [eq _ _ (by simp_all) (by simp_all)]
     grind
 
 /-- Proposition 4.2.4 (laws of algebra) / Exercise 4.2.3 -/
 instance Rat.instCommMonoid : CommMonoid Rat where
-  mul_comm := by sorry
-  mul_assoc := by sorry
-  one_mul := by sorry
-  mul_one := by sorry
+  mul_comm := by
+    intro x y
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    grind
+  mul_assoc := by
+    intro x y z
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    obtain ⟨c, d, hd, rfl⟩ := eq_diff y
+    obtain ⟨e, f, hf, rfl⟩ := eq_diff z
+    repeat rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    grind
+  one_mul := by
+    intro x
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    simp only [of_Nat_eq]
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    grind
+  mul_one := by
+    intro x
+    obtain ⟨a, b, hb, rfl⟩ := eq_diff x
+    simp only [of_Nat_eq]
+    rw [mul_eq _ _ (by simp_all) (by simp_all)]
+    grind
 
 /-- Proposition 4.2.4 (laws of algebra) / Exercise 4.2.3 -/
 instance Rat.instCommRing : CommRing Rat where
